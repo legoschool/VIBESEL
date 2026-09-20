@@ -147,10 +147,12 @@ h2{font-size:17px;color:var(--main);margin:24px 0 8px}
     $('raw').value = 지시문 + code;
     $('sub').textContent = '1, 2, 3번을 차례대로 하면 됩니다. 코딩 지식은 필요 없습니다.';
     if (전체판){
-      var 글자 = Math.round(($('raw').value.length) / 1000);
+      var 만 = Math.floor($('raw').value.length / 10000);
+      var 천 = Math.round(($('raw').value.length % 10000) / 1000);
+      var 글자 = (만 ? 만 + '만 ' : '') + (천 ? 천 + '천 ' : '') + '자';
       $('long').hidden = false;
       $('long').innerHTML = '<b>이 차시는 수업용 전체판을 그대로 씁니다.</b><br>' +
-        '코드가 ' + 글자 + '천 자라 제미나이가 앱을 만드는 데 <b>2~5분</b> 걸립니다. ' +
+        '코드가 약 ' + 글자 + '라 제미나이가 앱을 만드는 데 <b>2~5분</b> 걸립니다. ' +
         '화면이 회색이어도 기다려 주세요. 만들어지는 동안 창을 닫지 마세요.';
       var d = $('s3desc');
       if (d) d.innerHTML = d.innerHTML.replace('30초쯤 뒤', '2~5분 뒤');
