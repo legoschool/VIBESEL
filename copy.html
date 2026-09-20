@@ -57,6 +57,8 @@ h2{font-size:17px;color:var(--main);margin:24px 0 8px}
       </div>
     </div>
 
+    <div class="warn" id="long" hidden></div>
+
     <div class="step">
       <div class="head"><span class="num">2</span><span class="title">제미나이 캔버스 열기</span></div>
       <p class="desc">빈 캔버스가 새 창으로 열립니다. 비어 있는 것이 정상입니다.</p>
@@ -65,7 +67,7 @@ h2{font-size:17px;color:var(--main);margin:24px 0 8px}
 
     <div class="step">
       <div class="head"><span class="num">3</span><span class="title">붙여넣고 엔터</span></div>
-      <p class="desc" style="margin-bottom:0">새 창 아래쪽 입력칸을 누르고
+      <p class="desc" id="s3desc" style="margin-bottom:0">새 창 아래쪽 입력칸을 누르고
          <span class="kbd">Ctrl</span>+<span class="kbd">V</span>, 그다음 엔터를 누릅니다.
          30초쯤 뒤 오른쪽에 앱 화면이 뜨면 성공입니다.</p>
     </div>
@@ -84,8 +86,8 @@ h2{font-size:17px;color:var(--main);margin:24px 0 8px}
     <div class="ex">방금 바꾼 것은 취소하고 이전 버전으로 되돌려 줘.</div>
 
     <h2>알아 두면 좋은 것</h2>
-    <p class="ex">앱 시작 화면 맨 아래 <b>저장소:</b> 줄을 보세요. 캔버스 안에서는 <b>캔버스 내장</b>이라고 뜨고,
-       선생님 사본에 우리 반 기록이 따로 쌓입니다.</p>
+    <p class="ex">1~6차시 앱은 시작 화면 맨 아래에 <b>저장소:</b> 줄이 있습니다. 캔버스 안에서는
+       <b>캔버스 내장</b>이라고 뜨고, 선생님 사본에 우리 반 기록이 따로 쌓입니다.</p>
     <p class="ex">고친 앱은 캔버스 오른쪽 위 <b>다운로드</b>로 .html 파일을 받아 두세요.
        그 파일 하나면 제미나이 없이도 열립니다.</p>
     <p class="ex">학생에게는 캔버스 <b>공유</b>로 만든 앱 링크만 주면 됩니다. 학생은 로그인하지 않아도 됩니다.</p>
@@ -123,19 +125,38 @@ h2{font-size:17px;color:var(--main);margin:24px 0 8px}
   document.title = (이름[n] || n + '차시') + ' 고치기';
   $('t').textContent = 이름[n] || (n + '차시');
 
-  fetch('lite/' + n + '.html', { cache: 'no-store' })
-    .then(function(r){ if (!r.ok) throw new Error(r.status); return r.text(); })
-    .then(function(code){
-      $('raw').value = 지시문 + code;
-      $('sub').textContent = '1, 2, 3번을 차례대로 하면 됩니다. 코딩 지식은 필요 없습니다.';
-      $('body').hidden = false;
+  /* 간소화판이 있으면 그것을 쓰고, 없으면 전체판을 쓴다.
+     전체판도 캔버스에서 그대로 돌지만 길어서 시간이 더 걸린다. */
+  function 받기(경로){
+    return fetch(경로 + '/' + n + '.html', { cache: 'no-store' })
+      .then(function(r){ if (!r.ok) throw new Error(r.status); return r.text(); });
+  }
+  받기('lite')
+    .then(function(code){ 채우기(code, false); })
+    .catch(function(){
+      return 받기('full').then(function(code){ 채우기(code, true); });
     })
     .catch(function(){
       $('sub').textContent = '';
       $('fail').hidden = false;
       $('fail').innerHTML = '<div class="err"><b>코드를 받지 못했습니다.</b><br>' +
-        '이 차시의 간소화판이 아직 올라가지 않았을 수 있습니다. 찾은 주소: <code>lite/' + n + '.html</code></div>';
+        '주소를 확인해 주세요: <code>lite/' + n + '.html</code> 또는 <code>full/' + n + '.html</code></div>';
     });
+
+  function 채우기(code, 전체판){
+    $('raw').value = 지시문 + code;
+    $('sub').textContent = '1, 2, 3번을 차례대로 하면 됩니다. 코딩 지식은 필요 없습니다.';
+    if (전체판){
+      var 글자 = Math.round(($('raw').value.length) / 1000);
+      $('long').hidden = false;
+      $('long').innerHTML = '<b>이 차시는 수업용 전체판을 그대로 씁니다.</b><br>' +
+        '코드가 ' + 글자 + '천 자라 제미나이가 앱을 만드는 데 <b>2~5분</b> 걸립니다. ' +
+        '화면이 회색이어도 기다려 주세요. 만들어지는 동안 창을 닫지 마세요.';
+      var d = $('s3desc');
+      if (d) d.innerHTML = d.innerHTML.replace('30초쯤 뒤', '2~5분 뒤');
+    }
+    $('body').hidden = false;
+  }
 
   /* 복사가 됐는지는 브라우저가 알려 주지 않는다.
      execCommand 가 true 를 돌려줘도 클립보드가 비어 있을 수 있어서,
