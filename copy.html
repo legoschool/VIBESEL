@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>우리 반에 맞게 고치기</title>
+<style>
+:root{--main:#7C3AED;--soft:#F5F3FF;--line:#E9D5FF;--text:#1F2937;--dim:#6B7280;--ok:#10B981}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:#fff;color:var(--text);line-height:1.75;padding:24px 16px}
+.wrap{max-width:680px;margin:0 auto}
+h1{font-size:22px;color:var(--main);margin-bottom:4px}
+.lead{font-size:15px;color:var(--dim);margin-bottom:20px}
+.step{border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.head{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.num{background:var(--main);color:#fff;width:25px;height:25px;border-radius:50%;display:flex;align-items:center;
+     justify-content:center;font-size:14px;font-weight:700;flex:none}
+.title{font-size:16px;font-weight:700}
+.desc{font-size:14px;color:var(--dim);margin-bottom:10px}
+textarea{width:100%;height:150px;padding:10px;border:1px solid var(--line);border-radius:10px;background:#FAFAFA;
+         font-family:'Consolas','D2Coding',monospace;font-size:12px;line-height:1.5;resize:vertical}
+.btn{display:block;width:100%;padding:14px;margin-top:9px;border:none;border-radius:12px;font-size:16px;
+     font-weight:700;font-family:inherit;cursor:pointer;background:var(--main);color:#fff}
+.btn.sub{background:#EDE9FE;color:var(--main)}
+.hint{font-size:14px;margin-top:9px;padding:11px 13px;border-radius:10px;background:#F0FDF4;border:1px solid #A7F3D0}
+.hint b{color:#047857}
+.kbd{display:inline-block;border:1px solid #CBD5E1;border-bottom-width:2px;border-radius:6px;padding:1px 7px;
+     font-size:13px;background:#F8FAFC;font-weight:700}
+.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:14px;
+      font-size:14px;margin:18px 0}
+.warn b{color:#B45309}
+.ex{border-left:3px solid var(--line);padding-left:13px;margin:9px 0;font-size:15px}
+h2{font-size:17px;color:var(--main);margin:24px 0 8px}
+.tail{font-size:13px;color:var(--dim);border-top:1px solid #F3F4F6;margin-top:26px;padding-top:14px}
+.err{background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:14px;font-size:14px;color:#991B1B}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1 id="t">우리 반에 맞게 고치기</h1>
+  <p class="lead" id="sub">코드를 받는 중입니다...</p>
+
+  <div id="body" hidden>
+
+    <div class="step">
+      <div class="head"><span class="num">1</span><span class="title">아래 칸의 내용을 전부 복사하기</span></div>
+      <p class="desc">앱 코드와 제미나이에게 줄 지시문이 함께 들어 있습니다. 칸 안을 누르고
+         <span class="kbd">Ctrl</span>+<span class="kbd">A</span>, <span class="kbd">Ctrl</span>+<span class="kbd">C</span>
+         를 눌러도 되고, 아래 버튼을 눌러도 됩니다.</p>
+      <textarea id="raw" readonly spellcheck="false"></textarea>
+      <button class="btn" id="b1">이 칸 전체 복사하기</button>
+      <div class="hint" id="h1" hidden>
+        <b>복사를 눌렀습니다.</b> 다음 창에서 붙여넣기가 안 되면, 위 칸을 누르고
+        <span class="kbd">Ctrl</span>+<span class="kbd">A</span>, <span class="kbd">Ctrl</span>+<span class="kbd">C</span>
+        로 직접 복사한 뒤 다시 붙여넣으세요.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="head"><span class="num">2</span><span class="title">제미나이 캔버스 열기</span></div>
+      <p class="desc">빈 캔버스가 새 창으로 열립니다. 비어 있는 것이 정상입니다.</p>
+      <button class="btn sub" id="b2">제미나이 캔버스 열기</button>
+    </div>
+
+    <div class="step">
+      <div class="head"><span class="num">3</span><span class="title">붙여넣고 엔터</span></div>
+      <p class="desc" style="margin-bottom:0">새 창 아래쪽 입력칸을 누르고
+         <span class="kbd">Ctrl</span>+<span class="kbd">V</span>, 그다음 엔터를 누릅니다.
+         30초쯤 뒤 오른쪽에 앱 화면이 뜨면 성공입니다.</p>
+    </div>
+
+    <div class="warn">
+      <b>제미나이가 "개선해 드렸습니다"라고 하면 잘못된 것입니다.</b><br>
+      복사되는 글 맨 앞에 "한 글자도 고치지 말라"는 지시가 들어 있습니다.
+      그런데도 코드를 손봐서 화면이 비어 나오면, 캔버스 왼쪽 위 되돌리기를 누르거나 새 채팅에서 다시 붙여넣으세요.
+    </div>
+
+    <h2>이제 말로 고칩니다</h2>
+    <div class="ex">CONFIG에서 제목을 '우리 반 감정 사전'으로, 학년을 '초등 6학년'으로 바꿔 줘. 다른 곳은 건드리지 마.</div>
+    <div class="ex">초등 3학년이 읽을 수 있게 낱말을 쉽게 바꾸고 문장을 짧게 줄여 줘.</div>
+    <div class="ex">글씨를 1.5배로 키우고 태블릿 세로 화면에서도 잘 보이게 해 줘.</div>
+    <div class="ex">예시에 나오는 상황을 우리 반 급식 시간과 모둠 활동 상황으로 바꿔 줘.</div>
+    <div class="ex">방금 바꾼 것은 취소하고 이전 버전으로 되돌려 줘.</div>
+
+    <h2>알아 두면 좋은 것</h2>
+    <p class="ex">앱 시작 화면 맨 아래 <b>저장소:</b> 줄을 보세요. 캔버스 안에서는 <b>캔버스 내장</b>이라고 뜨고,
+       선생님 사본에 우리 반 기록이 따로 쌓입니다.</p>
+    <p class="ex">고친 앱은 캔버스 오른쪽 위 <b>다운로드</b>로 .html 파일을 받아 두세요.
+       그 파일 하나면 제미나이 없이도 열립니다.</p>
+    <p class="ex">학생에게는 캔버스 <b>공유</b>로 만든 앱 링크만 주면 됩니다. 학생은 로그인하지 않아도 됩니다.</p>
+
+  </div>
+
+  <div id="fail" hidden></div>
+
+  <p class="tail">© 2026. 이운희 외 7명. 도서출판 광문각. 수업자료로 자유롭게 다운로드 및 편집하여 활용할 수 있습니다.</p>
+</div>
+
+<script>
+(function(){
+  var 이름 = {
+    '01':'1차시 감정 이름 찾기', '02':'2차시 내 마음 신호등 읽기', '03':'3차시 나의 강점과 가능성 찾기',
+    '04':'4차시 화가 날 때 멈추는 연습하기', '05':'5차시 선택 앞에서 행동 조절하기',
+    '06':'6차시 나만의 스트레스 대처 방법 찾기', '07':'7차시 다른 사람의 감정 읽기',
+    '08':'8차시 다름을 만났을 때 마음 받아들이기', '09':'9차시 내 마음을 전하는 말하기 연습하기',
+    '10':'10차시 잘 듣는 연습하기', '11':'11차시 갈등이 생기는 이유 알기',
+    '12':'12차시 규칙이 필요한 이유 찾기', '13':'13차시 나의 행동이 우리에게 미치는 영향 알기',
+    '14':'14차시 함께하면 잘되는 이유 알기', '15':'15차시 우리 반 문제, 해결 방법 찾기',
+    '16':'16차시 책임 있는 선택 연습하기', '17':'17차시 마음 건강 살펴보기',
+    '18':'18차시 불안·우울·스트레스 이해하기', '19':'19차시 힘들다는 신호 알아차리기',
+    '20':'20차시 용감하게 도움을 요청하기', '21':'21차시 나와 우리의 마음 돌아보기'
+  };
+  var 지시문 =
+    '아래 HTML을 한 글자도 고치지 말고 그대로 캔버스 앱으로 실행해 줘.\n' +
+    '개선, 리팩터링, 보안 처리, 코드 정리, 주석 추가는 하지 마.\n' +
+    '고칠 데가 보여도 그대로 둬. 고칠 곳은 내가 다음 메시지로 말할게.\n\n';
+
+  var n = (new URLSearchParams(location.search).get('n') || '01').replace(/[^0-9]/g, '');
+  if (n.length === 1) n = '0' + n;
+  var $ = function(id){ return document.getElementById(id); };
+
+  document.title = (이름[n] || n + '차시') + ' 고치기';
+  $('t').textContent = 이름[n] || (n + '차시');
+
+  fetch('lite/' + n + '.html', { cache: 'no-store' })
+    .then(function(r){ if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(function(code){
+      $('raw').value = 지시문 + code;
+      $('sub').textContent = '1, 2, 3번을 차례대로 하면 됩니다. 코딩 지식은 필요 없습니다.';
+      $('body').hidden = false;
+    })
+    .catch(function(){
+      $('sub').textContent = '';
+      $('fail').hidden = false;
+      $('fail').innerHTML = '<div class="err"><b>코드를 받지 못했습니다.</b><br>' +
+        '이 차시의 간소화판이 아직 올라가지 않았을 수 있습니다. 찾은 주소: <code>lite/' + n + '.html</code></div>';
+    });
+
+  /* 복사가 됐는지는 브라우저가 알려 주지 않는다.
+     execCommand 가 true 를 돌려줘도 클립보드가 비어 있을 수 있어서,
+     됐다고 단정하지 않고 직접 복사할 수 있는 칸을 늘 보여 둔다. */
+  $('b1').addEventListener('click', function(){
+    var ta = $('raw');
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(ta.value).catch(function(){});
+    }
+    try { document.execCommand('copy'); } catch (e) {}
+    $('h1').hidden = false;
+  });
+
+  $('b2').addEventListener('click', function(){
+    window.open('https://gemini.google.com/canvas', '_blank', 'noopener');
+  });
+})();
+</script>
+</body>
+</html>
