@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>잘 듣는 것이 왜 중요할까</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+    --primary: #7C3AED;
+    --primary-light: #A78BFA;
+    --primary-dark: #5B21B6;
+    --gradient: linear-gradient(135deg, #7C3AED 0%, #A78BFA 50%, #C4B5FD 100%);
+    --gradient-bg: linear-gradient(135deg, #EDE9FE 0%, #F5F3FF 50%, #FFFFFF 100%);
+    --success: #10B981;
+    --error: #EF4444;
+    --warning: #F59E0B;
+    --text: #1F2937;
+    --text-light: #6B7280;
+    --bg-card: rgba(255,255,255,0.95);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans KR', sans-serif; }
+body { background: var(--gradient-bg); min-height: 100vh; font-weight: 700; font-size: 18px; line-height: 1.7; color: var(--text); }
+h1, h2 { font-weight: 900; }
+.container { max-width: 500px; margin: 0 auto; padding: 16px; }
+.screen { display: none; }
+.screen.active { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.btn { padding: 16px 24px; border-radius: 16px; font-size: 17px; font-weight: 900; font-family: 'Noto Sans KR', sans-serif; border: none; cursor: pointer; min-height: 52px; transition: all 0.2s; width: 100%; max-width: 400px; display: block; margin: 8px auto; text-align: center; }
+.btn-primary { background: var(--gradient); color: white; box-shadow: 0 4px 15px rgba(124,58,237,0.3); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,58,237,0.4); }
+.btn-secondary { background: rgba(124,58,237,0.1); color: var(--primary); border: 2px solid var(--primary-light); }
+.btn-back { background: none; color: var(--primary); border: none; font-size: 15px; font-weight: 700; cursor: pointer; padding: 8px 12px; font-family: 'Noto Sans KR', sans-serif; }
+.btn-small { padding: 10px 16px; font-size: 14px; min-height: 40px; }
+
+input, textarea { min-height: 48px; font-size: 16px; font-family: 'Noto Sans KR', sans-serif; font-weight: 700; border: 2px solid #E5E7EB; border-radius: 12px; padding: 12px 16px; width: 100%; box-sizing: border-box; }
+input:focus, textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+textarea { min-height: 80px; resize: vertical; }
+
+.card { background: var(--bg-card); border-radius: 20px; padding: 24px; margin: 12px 0; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+
+.privacy-notice { background: rgba(124,58,237,0.05); border: 1px solid rgba(124,58,237,0.15); border-radius: 12px; padding: 14px; font-size: 13px; font-weight: 400; color: var(--text-light); line-height: 1.6; margin-top: 16px; }
+
+.nav-buttons { display: flex; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 4px; }
+
+.badge { display: inline-block; background: rgba(124,58,237,0.1); color: var(--primary); padding: 6px 14px; border-radius: 20px; font-size: 14px; font-weight: 700; }
+
+/* Choice buttons */
+.choice-btn { padding: 16px; border: 2px solid #E5E7EB; border-radius: 14px; background: white; cursor: pointer; transition: all 0.2s; text-align: left; width: 100%; margin: 6px 0; font-family: 'Noto Sans KR', sans-serif; font-weight: 700; font-size: 16px; display: block; }
+.choice-btn.selected { border-color: var(--primary); background: rgba(124,58,237,0.08); box-shadow: 0 0 0 3px rgba(124,58,237,0.15); transform: scale(1.02); }
+.choice-btn.selected::after { content: ' ✓'; color: var(--primary); font-weight: 900; }
+.choice-btn.correct { border-color: var(--success); background: rgba(16,185,129,0.1); }
+.choice-btn.incorrect { border-color: var(--primary); background: rgba(124,58,237,0.06); }
+
+/* Listen status buttons */
+.listen-btn { padding: 14px; border: 2px solid #E5E7EB; border-radius: 14px; background: white; cursor: pointer; transition: all 0.2s; text-align: center; font-size: 15px; font-weight: 700; flex: 1; margin: 4px; min-width: 90px; font-family: 'Noto Sans KR', sans-serif; }
+.listen-btn.selected { border-color: var(--primary); background: rgba(124,58,237,0.08); transform: scale(1.05); }
+.listen-row { display: flex; gap: 4px; margin: 8px 0; }
+
+/* Story bubble */
+.story-bubble { background: #F3E8FF; border-radius: 20px; padding: 20px; margin: 12px 0; border-left: 4px solid var(--primary); font-size: 16px; line-height: 1.8; position: relative; }
+.story-bubble .highlight { background: rgba(124,58,237,0.2); padding: 2px 6px; border-radius: 4px; font-weight: 900; }
+.story-bubble .character { font-size: 14px; color: var(--primary); font-weight: 900; margin-bottom: 8px; }
+
+/* Scenario card */
+.scenario-card { border: 2px solid #E5E7EB; border-radius: 16px; padding: 16px; margin: 8px 0; cursor: pointer; transition: all 0.2s; background: white; }
+.scenario-card:hover { border-color: var(--primary-light); transform: translateY(-2px); }
+.scenario-card.completed { border-color: var(--success); background: rgba(16,185,129,0.05); }
+.scenario-card .sc-header { display: flex; align-items: center; gap: 10px; }
+.scenario-card .sc-emoji { font-size: 28px; }
+.scenario-card .sc-name { font-weight: 900; font-size: 17px; }
+.scenario-card .sc-topic { font-size: 13px; color: var(--text-light); font-weight: 400; }
+.scenario-card .sc-status { font-size: 12px; margin-top: 6px; }
+
+/* Progress bar */
+.progress-wrap { background: #E5E7EB; border-radius: 10px; height: 12px; margin: 8px 0; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 10px; background: var(--gradient); transition: width 0.5s; }
+
+/* Result card */
+.result-stat { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #F3F4F6; }
+.result-stat:last-child { border-bottom: none; }
+.stat-icon { font-size: 24px; }
+.stat-bar { flex: 1; }
+.stat-label { font-size: 14px; color: var(--text-light); }
+.stat-value { font-size: 18px; font-weight: 900; color: var(--primary); }
+
+/* Keyword tags */
+.keyword-tag { display: inline-block; background: rgba(124,58,237,0.1); color: var(--primary); padding: 4px 12px; border-radius: 12px; font-size: 13px; margin: 3px; font-weight: 700; }
+
+/* Tabs */
+.tab-buttons { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+.tab-btn { padding: 8px 14px; border: 2px solid #E5E7EB; border-radius: 10px; background: white; cursor: pointer; font-size: 13px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif; }
+.tab-btn.active { border-color: var(--primary); background: rgba(124,58,237,0.08); color: var(--primary); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Toast */
+.toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(31,41,55,0.95); color: white; padding: 14px 28px; border-radius: 14px; font-size: 15px; font-weight: 700; z-index: 10000; opacity: 0; transition: all 0.3s; max-width: 90%; text-align: center; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay[style*="flex"] { display: flex; }
+.modal-content { background: white; border-radius: 20px; padding: 28px; max-width: 380px; width: 100%; text-align: center; }
+.modal-icon { font-size: 40px; margin-bottom: 12px; }
+.modal-message { font-size: 16px; line-height: 1.7; margin-bottom: 20px; color: var(--text); }
+.modal-buttons { display: flex; gap: 8px; }
+.modal-buttons .btn { flex: 1; }
+
+/* Quiz feedback */
+.quiz-feedback { padding: 14px; border-radius: 12px; margin: 10px 0; font-size: 15px; animation: fadeIn 0.3s; }
+.quiz-feedback.correct { background: rgba(16,185,129,0.1); border: 1px solid var(--success); color: #065F46; }
+.quiz-feedback.incorrect { background: rgba(245,158,11,0.08); border: 1px solid var(--warning); color: #92400E; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    body { font-size: 16px; padding: 8px; }
+    .container { max-width: 100%; padding: 12px; }
+    .btn { min-height: 48px; font-size: 16px; }
+    input, textarea { min-height: 44px; font-size: 16px; }
+}
+@media (min-width: 769px) { .container { max-width: 600px; } }
+
+/* Print */
+@media print {
+    body * { visibility: hidden; }
+    #dashboard-content, #dashboard-content * { visibility: visible; }
+    #dashboard-content { position: absolute; left: 0; top: 0; width: 100%; }
+    .btn, .nav-buttons, .tab-buttons, #toast, .modal-overlay { display: none !important; }
+    .card { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+}
+
+/* Meditation */
+.meditation-box { background: linear-gradient(135deg, #1E1B4B, #312E81); color: white; border-radius: 20px; padding: 28px; text-align: center; margin: 16px 0; }
+.meditation-box p { font-size: 17px; line-height: 2; margin: 12px 0; }
+.meditation-box .glow { color: #C4B5FD; font-weight: 900; font-size: 19px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ═══ 시작 화면 ═══ -->
+<div class="screen active" id="screen-start">
+    <div class="card" style="text-align:center;">
+        <div style="font-size:48px; margin-bottom:8px;">🔍👂</div>
+        <h1 style="font-size:24px; color:var(--primary);">경청 탐정</h1>
+        <p style="font-size:15px; color:var(--text-light); font-weight:400;">잘 듣는 것이 왜 중요할까</p>
+        <div class="badge" style="margin:12px 0;">⏱️ 예상 소요시간: 약 15~20분</div>
+        <p style="font-size:14px; color:var(--text-light); font-weight:400; margin-top:10px;">
+            친구들은 가끔 "괜찮아"라고 말하면서 괜찮지 않을 때가 있어요.<br>
+            말 속에 숨은 진짜 마음을 찾을 수 있나요?
+        </p>
+    </div>
+    <button class="btn btn-primary" onclick="showScreen('screen-login')">👩‍🏫 방 만들기 / 입장하기</button>
+    <button class="btn btn-secondary" onclick="startSoloMode()">🌟 혼자 체험하기</button>
+    <div class="privacy-notice">
+        🔐 <strong>안심하세요!</strong><br>
+        우리가 사용하는 방 코드는 오직 입장할 때만 필요한 숫자일 뿐,
+        여러분이 누구인지 알려주는 이름표가 아닙니다.
+        닉네임을 만들 때 개인정보를 포함하지 않도록 만들어 주세요.
+    </div>
+</div>
+
+<!-- ═══ 로그인 화면 ═══ -->
+<div class="screen" id="screen-login">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="showScreen('screen-start')">← 처음으로</button>
+    </div>
+    <div class="card">
+        <h2 style="text-align:center; margin-bottom:16px;">🔍 경청 탐정</h2>
+        <button class="btn btn-primary" onclick="showScreen('screen-create-room')" style="margin-bottom:8px;">👩‍🏫 방 만들기 (교사용)</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-teacher-join')" style="margin-bottom:8px;">🔑 교사로 접속하기</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-student-join')">🧒 학생으로 참여하기</button>
+    </div>
+    <div class="privacy-notice">
+        🔐 <strong>안심하세요!</strong><br>
+        입장 코드는 숫자로만 구성되어 있어 개인정보를 포함하지 않습니다.
+        여러분의 익명성은 소중히 보호됩니다.
+    </div>
+</div>
+
+<!-- ═══ 방 만들기 ═══ -->
+<div class="screen" id="screen-create-room">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="showScreen('screen-login')">← 뒤로가기</button>
+        <button class="btn-back" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <h2 style="text-align:center; margin-bottom:16px;">👩‍🏫 방 만들기</h2>
+        <div style="margin-bottom:12px;">
+            <label style="font-size:14px;">선생님 닉네임</label>
+            <input type="text" id="teacher-nickname" placeholder="예: 행복쌤" maxlength="10">
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="font-size:14px;">관리자 비밀번호 (숫자 4자리)</label>
+            <input type="password" id="teacher-password" placeholder="숫자 4자리" maxlength="4" inputmode="numeric" pattern="[0-9]*">
+        </div>
+        <button class="btn btn-primary" onclick="createRoom()">방 만들기</button>
+    </div>
+</div>
+
+<!-- ═══ 방 생성 완료 ═══ -->
+<div class="screen" id="screen-room-created">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card" style="text-align:center;">
+        <h2>✅ 방이 만들어졌어요!</h2>
+        <p style="font-size:14px; color:var(--text-light); margin:8px 0;">학생들에게 이 코드를 알려주세요</p>
+        <div id="room-code-display" style="font-size:42px; font-weight:900; color:var(--primary); letter-spacing:8px; margin:16px 0; padding:16px; background:rgba(124,58,237,0.05); border-radius:16px;"></div>
+        <button class="btn btn-secondary btn-small" onclick="copyRoomCode()">📋 코드 복사하기</button>
+        <div style="margin-top:16px;">
+            <button class="btn btn-primary" onclick="enterDashboard()">📊 교사 대시보드로 이동</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ 교사 접속 ═══ -->
+<div class="screen" id="screen-teacher-join">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="showScreen('screen-login')">← 뒤로가기</button>
+        <button class="btn-back" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <h2 style="text-align:center; margin-bottom:16px;">🔑 교사로 접속하기</h2>
+        <div style="margin-bottom:12px;">
+            <label style="font-size:14px;">방 코드 (6자리)</label>
+            <input type="text" id="teacher-room-code" placeholder="숫자 6자리" maxlength="6" inputmode="numeric">
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="font-size:14px;">비밀번호</label>
+            <input type="password" id="teacher-join-password" placeholder="숫자 4자리" maxlength="4" inputmode="numeric">
+        </div>
+        <button class="btn btn-primary" onclick="joinAsTeacher()">접속하기</button>
+    </div>
+</div>
+
+<!-- ═══ 학생 입장 ═══ -->
+<div class="screen" id="screen-student-join">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="showScreen('screen-login')">← 뒤로가기</button>
+        <button class="btn-back" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <h2 style="text-align:center; margin-bottom:16px;">🧒 학생으로 참여하기</h2>
+        <div style="margin-bottom:12px;">
+            <label style="font-size:14px;">방 코드 (6자리)</label>
+            <input type="text" id="student-room-code" placeholder="숫자 6자리" maxlength="6" inputmode="numeric">
+        </div>
+        <div style="margin-bottom:12px;">
+            <label style="font-size:14px;">닉네임</label>
+            <input type="text" id="student-nickname" placeholder="예: 별똥별" maxlength="10">
+        </div>
+        <button class="btn btn-primary" onclick="joinAsStudent()">입장하기</button>
+    </div>
+    <div class="privacy-notice">
+        🔐 닉네임을 만들 때 개인정보(이름, 생년월일 등)를 포함하지 않도록 해주세요.
+    </div>
+</div>
+
+<!-- ═══ 스토리 화면 ═══ -->
+<div class="screen" id="screen-story">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <div style="text-align:center; font-size:48px; margin-bottom:8px;">😰</div>
+        <h2 style="text-align:center; color:var(--primary);">민준이의 당황스러운 순간</h2>
+    </div>
+    <div class="story-bubble">
+        <div class="character">📖 민준이의 이야기</div>
+        오늘 점심시간에 친구 시우가 말했어.<br><br>
+        <em>"나 요즘... 좀 힘들어."</em><br><br>
+        민준이는 "응, 그래?" 하고 대답했어.<br>
+        그리고 바로 말했지. <span class="highlight">"나도! 나 어제 수학 시험 진짜 어려웠거든—"</span><br><br>
+        시우가 <span class="highlight">"...응"</span> 하고 조용해졌어.<br><br>
+        그날 저녁, 다른 친구한테서 들었어.<br>
+        <em>"시우 요즘 부모님이 많이 싸우나 봐. 힘들어하더라."</em><br><br>
+        그때서야 민준이는 깨달았어.<br>
+        시우가 <span class="highlight">"힘들어"</span>라고 했을 때, 시우는 수학 시험 얘기를 하려던 게 아니었어.<br>
+        <span class="highlight">진짜 하고 싶은 말이 있었는데, 민준이가 그걸 듣지 못한 거야.</span><br><br>
+        "나는... 듣고 있었던 걸까, 기다리고 있었던 걸까?" 🤔<br>
+        <span style="font-size:14px; color:var(--text-light);">— 내 말을 하려고 기다린 건 "듣기"가 아니야.</span>
+    </div>
+    <button class="btn btn-primary" onclick="showScreen('screen-empathy')">나도 이런 적 있을 수 있어... →</button>
+</div>
+
+<!-- ═══ 공감 화면 ═══ -->
+<div class="screen" id="screen-empathy">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="showScreen('screen-story')">← 뒤로가기</button>
+        <button class="btn-back" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <h2>💭 혹시 나도...</h2>
+        <p style="font-size:15px; color:var(--text-light); margin:8px 0;">
+            친구가 중요한 말을 했는데, 내가 그걸 놓치고 다른 말을 해버린 적 있어?<br>
+            또는, 내가 힘든 말을 했는데 상대가 바로 자기 얘기로 넘어간 적은?
+        </p>
+        <div id="empathy-choices">
+            <button class="choice-btn" data-val="놓친적있음" onclick="selectEmpathy(this, '놓친적있음')">😅 내가 친구 말을 놓친 적 있어</button>
+            <button class="choice-btn" data-val="내말무시당함" onclick="selectEmpathy(this, '내말무시당함')">😔 내 말이 무시당한 적 있어</button>
+            <button class="choice-btn" data-val="둘다" onclick="selectEmpathy(this, '둘다')">🫣 둘 다 있는 것 같아...</button>
+            <button class="choice-btn" data-val="모르겠음" onclick="selectEmpathy(this, '모르겠음')">🤷 잘 모르겠어</button>
+        </div>
+        <div style="margin-top:12px;">
+            <label style="font-size:14px;">그때 어떤 기분이었어? (선택)</label>
+            <textarea id="empathy-feeling" oninput="onAnswerInput('empathyFeeling','empathy-feeling')" placeholder="예: 나중에 알고 미안했어요, 서운했어요..."></textarea>
+        </div>
+        <button class="btn btn-primary" id="empathy-next-btn" onclick="goToConceptScreen()" style="display:none;">다음으로 →</button>
+    </div>
+</div>
+
+<!-- ═══ 개념 학습 ═══ -->
+<div class="screen" id="screen-concept">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="showScreen('screen-empathy')">← 뒤로가기</button>
+        <button class="btn-back" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <h2 style="text-align:center;">👂 vs 💜</h2>
+        <h3 style="text-align:center; color:var(--primary); margin-bottom:12px;">"듣는 척" vs "진짜 듣기"</h3>
+    </div>
+    <div class="card" id="concept-card-area">
+        <!-- 개념 카드가 여기에 렌더링 -->
+    </div>
+    <div style="text-align:center; margin:8px 0;">
+        <span id="concept-page" style="font-size:14px; color:var(--text-light);"></span>
+    </div>
+    <div style="display:flex; gap:8px;">
+        <button class="btn btn-secondary" id="concept-prev-btn" onclick="prevConcept()" style="display:none;">← 이전</button>
+        <button class="btn btn-primary" id="concept-next-btn" onclick="nextConcept()">다음 →</button>
+    </div>
+</div>
+
+<!-- ═══ 미션 안내 ═══ -->
+<div class="screen" id="screen-mission">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="showScreen('screen-concept')">← 뒤로가기</button>
+        <button class="btn-back" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:48px; margin-bottom:8px;">🕵️</div>
+        <h2 style="color:var(--primary);">경청 탐정 미션!</h2>
+        <p style="font-size:15px; color:var(--text-light); margin:12px 0;">
+            지금부터 5명의 친구가 이야기를 해줄 거야.<br>
+            그런데 주의해 — <strong>이 친구들은 속마음을 직접 말하지 않아.</strong><br>
+            "괜찮아"라고 하면서 괜찮지 않을 수도 있고,<br>
+            웃으면서 울고 싶을 수도 있어.<br><br>
+            <strong>말 속에 숨은 진짜 마음</strong>을 찾는 게 네 미션이야!
+        </p>
+        <div class="card" style="background:rgba(124,58,237,0.05); text-align:left;">
+            <p style="font-size:14px; font-weight:400;">
+                🔍 이야기를 천천히 읽고 → 듣기 상태를 체크해<br>
+                ✏️ "이 친구가 진짜 하고 싶은 말은 뭘까?" 찾아 적어봐<br>
+                ❓ 심층 퀴즈를 풀어봐 — 겉뜻이 아니라 속뜻을 물어볼 거야!<br>
+                📊 마지막에 네 경청 리포트를 확인해!
+            </p>
+        </div>
+    </div>
+    <button class="btn btn-primary" onclick="startMission()">🔍 탐정 시작! →</button>
+</div>
+
+<!-- ═══ 메인 (시나리오 선택) ═══ -->
+<div class="screen" id="screen-main">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div class="card" style="text-align:center;">
+        <h2>🔍 경청 탐정 본부</h2>
+        <div class="progress-wrap">
+            <div class="progress-fill" id="main-progress" style="width:0%"></div>
+        </div>
+        <p id="main-progress-text" style="font-size:13px; color:var(--text-light);"></p>
+    </div>
+    <div id="scenario-list"></div>
+    <div id="bonus-area" style="display:none;">
+        <div class="card" style="text-align:center; background:rgba(124,58,237,0.05);">
+            <h3 style="color:var(--primary); font-size:17px;">🗂️ 보너스 사건 파일</h3>
+            <p style="font-size:13px; color:var(--text-light); font-weight:400;">더 듣고 싶은 탐정에게만 열리는 파일이야.<br>천천히, 한 명씩 들어봐도 좋아.</p>
+            <div class="progress-wrap"><div class="progress-fill" id="bonus-progress" style="width:0%"></div></div>
+            <p id="bonus-progress-text" style="font-size:13px; color:var(--text-light);"></p>
+        </div>
+        <div id="bonus-scenario-list"></div>
+    </div>
+    <div id="complete-area" style="display:none;">
+        <button class="btn btn-primary" onclick="goToResult()">📊 경청 리포트 보기 →</button>
+    </div>
+</div>
+
+<!-- ═══ 시나리오 진행 ═══ -->
+<div class="screen" id="screen-scenario">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="backToScenarioList()">← 목록으로</button>
+        <button class="btn-back" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div id="scenario-content"></div>
+</div>
+
+<!-- ═══ 경청 리포트 ═══ -->
+<div class="screen" id="screen-result">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="showScreen('screen-main')">← 다시 탐험하기</button>
+        <button class="btn-back" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:48px;">📊</div>
+        <h2 style="color:var(--primary);">나의 경청 탐정 리포트</h2>
+    </div>
+    <div class="card">
+        <div class="result-stat">
+            <span class="stat-icon">👂</span>
+            <div class="stat-bar">
+                <div class="stat-label">집중해서 들은 부분</div>
+                <div class="progress-wrap"><div class="progress-fill" id="result-focus-bar" style="width:0%;background:var(--success);"></div></div>
+            </div>
+            <span class="stat-value" id="result-focus-count">0</span>
+        </div>
+        <div class="result-stat">
+            <span class="stat-icon">❓</span>
+            <div class="stat-bar">
+                <div class="stat-label">헷갈렸던 부분</div>
+                <div class="progress-wrap"><div class="progress-fill" id="result-confused-bar" style="width:0%;background:var(--warning);"></div></div>
+            </div>
+            <span class="stat-value" id="result-confused-count">0</span>
+        </div>
+        <div class="result-stat">
+            <span class="stat-icon">💭</span>
+            <div class="stat-bar">
+                <div class="stat-label">딴생각 났던 부분</div>
+                <div class="progress-wrap"><div class="progress-fill" id="result-wander-bar" style="width:0%;background:var(--error);"></div></div>
+            </div>
+            <span class="stat-value" id="result-wander-count">0</span>
+        </div>
+    </div>
+    <div class="card">
+        <h3>🎯 이야기와 같은 답</h3>
+        <div style="text-align:center; font-size:36px; font-weight:900; color:var(--primary);" id="result-accuracy">0%</div>
+        <p style="font-size:13px; color:var(--text-light); text-align:center;" id="result-quiz-detail"></p>
+    </div>
+    <div class="card" id="result-keywords-card">
+        <h3>📝 내가 찾은 핵심들</h3>
+        <div id="result-keywords"></div>
+    </div>
+    <button class="btn btn-primary" onclick="showScreen('screen-meditation')">🧘 마음으로 돌아오기 →</button>
+</div>
+
+<!-- ═══ 명상 화면 ═══ -->
+<div class="screen" id="screen-meditation">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="showScreen('screen-result')">← 뒤로가기</button>
+        <button class="btn-back" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div class="meditation-box">
+        <p>잠시 눈을 감아볼까?</p>
+        <p class="glow">방금 5명의 이야기를 들었어.<br>그 중에서 가장 마음에 걸리는 한 문장이 있을 거야.</p>
+        <p>어떤 친구의 어떤 말이<br>계속 머릿속에 맴돌아?</p>
+        <p class="glow">'왜 그 말이 나한테 남았을까?'</p>
+        <p style="font-size:14px;">
+            혹시 그 말이 남은 건,<br>
+            나도 비슷한 경험이 있기 때문은 아닐까?<br>
+            아니면, 누군가에게 그런 말을 한 적이 있기 때문?<br><br>
+            정답은 없어. 그냥 알아차려보자.
+        </p>
+    </div>
+    <div class="card">
+        <label style="font-size:15px;">가장 마음에 걸리는 문장이나 장면을 적어봐</label>
+        <textarea id="meditation-answer" oninput="onAnswerInput('meditation','meditation-answer')" placeholder="예: 지우가 '부탁해서 받는 관심은 진짜가 아니니까'라고 했는데, 그게 계속 생각나요..."></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="submitMeditation()">💬 질문 타임으로 →</button>
+</div>
+
+<!-- ═══ 질문 타임 ═══ -->
+<div class="screen" id="screen-questions">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="showScreen('screen-meditation')">← 뒤로가기</button>
+        <button class="btn-back" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <h2 style="color:var(--primary);">💬 깊이 생각해보기</h2>
+    </div>
+    <div class="card">
+        <h4 style="color:var(--primary);">💜 질문 1</h4>
+        <p style="font-size:15px;">5명 중, <strong>겉으로 말한 것과 속마음이 가장 달랐던 친구</strong>는 누구야?<br>그 친구의 어떤 말에서 "이건 진심이 아니구나"를 느꼈어?</p>
+        <textarea id="q1-answer" oninput="onAnswerInput('q1','q1-answer')" placeholder="예: 지우가 '별일 아냐'라고 했는데, 반복하는 것 자체가 별일이라는 뜻인 것 같아요..."></textarea>
+    </div>
+    <div class="card">
+        <h4 style="color:var(--primary);">💜 질문 2</h4>
+        <p style="font-size:15px;">만약 네가 이 5명 중 한 명한테 딱 한 마디만 해줄 수 있다면,<br><strong>누구에게 뭐라고 말해주고 싶어?</strong><br><span style="font-size:13px; color:var(--text-light);">조언 말고, 그 친구가 듣고 싶어하는 말을 해줘 봐.</span></p>
+        <textarea id="q2-answer" oninput="onAnswerInput('q2','q2-answer')" placeholder="예: 하준이한테 '잘 못해도 괜찮아. 네가 힘들다는 거 알아'라고 말해주고 싶어요."></textarea>
+    </div>
+    <div class="card">
+        <h4 style="color:var(--primary);">🌟 질문 3</h4>
+        <p style="font-size:15px;">오늘 이야기를 들으면서, <strong>혹시 누군가 나한테 했던 말이 떠올랐어?</strong><br>"그때 그 말이 이런 뜻이었을 수도 있겠구나" 하고 새롭게 이해된 게 있다면?</p>
+        <textarea id="q3-answer" oninput="onAnswerInput('q3','q3-answer')" placeholder="예: 친구가 전에 '아무거나'라고 했던 게 진짜 상관없는 게 아니라 포기한 거였을 수도 있겠다..."></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="submitQuestions()">✨ 다짐하러 가기 →</button>
+</div>
+
+<!-- ═══ 다짐 화면 ═══ -->
+<div class="screen" id="screen-pledge">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="showScreen('screen-questions')">← 뒤로가기</button>
+        <button class="btn-back" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:48px;">✨</div>
+        <h2 style="color:var(--primary);">오늘의 다짐</h2>
+        <p style="font-size:15px; line-height:2; margin:16px 0;">
+            오늘 우리는 5명의 친구 이야기를 들었어.<br><br>
+            그 친구들은 <strong>"괜찮아"라고 말하면서 괜찮지 않았고,</strong><br>
+            <strong>웃으면서 울고 싶었고,</strong><br>
+            <strong>말하고 싶은데 말할 수 없었어.</strong><br><br>
+            잘 듣는다는 건, 정답을 찾는 게 아니야.<br>
+            <strong>상대가 말하지 못한 부분까지 존중하는 것</strong>이야.<br><br>
+            "그래서 어떻게 됐어?"<br>
+            "지금은 좀 어때?"<br>
+            <strong>이런 작은 질문 하나가, 닫힌 마음을 여는 열쇠가 될 수 있어.</strong>
+        </p>
+    </div>
+    <div class="card">
+        <label style="font-size:15px;">다음 대화에서 내가 연습해볼 것 하나를 적어봐!</label>
+        <textarea id="pledge-answer" oninput="onAnswerInput('pledge','pledge-answer')" placeholder="예: 친구가 말할 때 끝까지 기다리기"></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="submitPledge()">🎉 완료! →</button>
+</div>
+
+<!-- ═══ 완료 화면 ═══ -->
+<div class="screen" id="screen-complete">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="backToMain()">← 다시 탐험하기</button>
+        <button class="btn-back" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:64px;">🎉</div>
+        <h2 style="color:var(--primary);">경청 탐정 임무 완료!</h2>
+        <div id="complete-summary" style="margin:16px 0; font-size:15px;"></div>
+        <p style="font-size:14px; color:var(--text-light); line-height:1.8;">
+            오늘 너는 친구들의 말 속에 숨은<br>
+            <strong>진짜 마음</strong>을 찾으려고 노력했어.<br><br>
+            "별일 아냐" 뒤에 숨은 외로움,<br>
+            "ㅇㅋ" 뒤에 숨은 두려움,<br>
+            "그냥 그랬어" 뒤에 숨은 서운함을<br>
+            알아차리려고 한 것만으로도 대단해.<br><br>
+            <strong>완벽하게 듣지 못했어도 괜찮아.<br>
+            알아차린 오늘부터 조금씩 달라진다.</strong> 💜
+        </p>
+    </div>
+    <button class="btn btn-primary" onclick="backToMain()">🔄 다른 친구 이야기 더 듣기</button>
+    <button class="btn btn-secondary" onclick="showScreen('screen-result')">📊 리포트 다시 보기</button>
+    <button class="btn btn-secondary" onclick="downloadMyResult()">📄 내 결과 저장하기</button>
+</div>
+
+<!-- ═══ 교사 대시보드 ═══ -->
+<div class="screen" id="screen-dashboard">
+    <div class="nav-buttons">
+        <button class="btn-back" onclick="confirmGoHome()">🏠 처음으로</button>
+        <button class="btn-back" onclick="refreshDashboard()">🔄 새로고침</button>
+    </div>
+    <div class="card" style="text-align:center;">
+        <h2>👩‍🏫 교사 대시보드</h2>
+        <p style="font-size:14px; color:var(--text-light);">방 코드: <strong id="dash-room-code"></strong></p>
+    </div>
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('tab-overview', this)">📊 현황</button>
+        <button class="tab-btn" onclick="switchTab('tab-detail', this)">📋 상세기록</button>
+        <button class="tab-btn" onclick="switchTab('tab-export', this)">📥 내보내기</button>
+        <button class="tab-btn" onclick="switchTab('tab-tts', this)">🔊 TTS</button>
+    </div>
+    <div id="dashboard-content">
+        <div class="tab-panel active" id="tab-overview"><div class="card"><p style="text-align:center; color:var(--text-light);">학생 참여를 기다리고 있어요...</p></div></div>
+        <div class="tab-panel" id="tab-detail"><div class="card"><p style="text-align:center; color:var(--text-light);">학생 데이터가 없습니다.</p></div></div>
+        <div class="tab-panel" id="tab-export">
+            <div class="card" style="text-align:center;">
+                <button class="btn btn-primary btn-small" onclick="downloadExcel()" style="margin:4px auto;">📥 엑셀 다운로드</button>
+                <button class="btn btn-secondary btn-small" onclick="downloadPDF()" style="margin:4px auto;">📄 PDF 다운로드</button>
+            </div>
+        </div>
+        <div class="tab-panel" id="tab-tts">
+            <div class="card" id="tts-content"><p style="text-align:center; color:var(--text-light);">읽어줄 내용을 선택하세요</p></div>
+        </div>
+    </div>
+    <div class="card" style="text-align:center; background:rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.2);">
+        <p style="font-size:13px; color:var(--error);">⚠️ 수업이 끝나면 데이터 초기화를 눌러주세요. 30일 후 자동 삭제됩니다.</p>
+        <button class="btn btn-small" style="background:var(--error); color:white; margin-top:8px;" onclick="confirmResetData()">🗑️ 데이터 초기화</button>
+    </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- 토스트 -->
+<div id="toast" class="toast"></div>
+
+<!-- 확인 모달 -->
+<div id="confirmModal" class="modal-overlay" style="display:none">
+    <div class="modal-content">
+        <div class="modal-icon">⚠️</div>
+        <div class="modal-message" id="confirmMessage"></div>
+        <div class="modal-buttons">
+            <button class="btn btn-secondary btn-small" onclick="closeConfirmModal()">취소</button>
+            <button class="btn btn-primary btn-small" id="confirmOkBtn" style="background:var(--error);">확인</button>
+        </div>
+    </div>
+</div>
+
+<!-- TTS 스크립트 미리보기 모달 -->
+<div id="scriptModal" class="modal-overlay" style="display:none">
+    <div class="modal-content" style="max-width:440px; text-align:left;">
+        <div class="modal-icon" style="text-align:center;">📝</div>
+        <h3 id="scriptModalTitle" style="text-align:center; color:var(--primary); font-size:17px; margin-bottom:10px;"></h3>
+        <div id="scriptModalBody" style="max-height:50vh; overflow-y:auto; font-size:14px; font-weight:400; line-height:1.8; white-space:pre-line; background:#F9FAFB; border-radius:12px; padding:14px;"></div>
+        <div class="modal-buttons" style="margin-top:16px;">
+            <button class="btn btn-secondary btn-small" onclick="closeScriptModal()">닫기</button>
+            <button class="btn btn-primary btn-small" onclick="speakPreviewedScript()">▶️ 이대로 읽기</button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase + App Logic -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s",
+    authDomain: "emo-dex.firebaseapp.com",
+    projectId: "emo-dex",
+    storageBucket: "emo-dex.firebasestorage.app",
+    messagingSenderId: "994736049700",
+    appId: "1:994736049700:web:8233fa7b68cd6e0cccd2b1",
+    measurementId: "G-6YLB5C6VNR"
+};
+
+const APP_ID = 'sel-lesson-20';
+
+let app, auth, db, currentUser = null, useFirebase = false;
+try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    useFirebase = true;
+} catch(e) { console.log('Firebase init failed:', e); }
+
+const localDB = {};
+let authReady = initAuth();
+
+async function initAuth() {
+    if (!auth) return null;
+    return new Promise((resolve) => {
+        const timeout = setTimeout(() => { resolve(null); }, 5000);
+        onAuthStateChanged(auth, (user) => {
+            if (user) { currentUser = user; clearTimeout(timeout); resolve(user); }
+        });
+        signInAnonymously(auth).catch(() => { clearTimeout(timeout); resolve(null); });
+    });
+}
+
+function getRoomRef(code) { return doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code); }
+function getStudentRef(code, nick) { return doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students', nick); }
+function getStudentsCol(code) { return collection(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students'); }
+
+const DB = {
+    async saveRoom(code, data) {
+        if (useFirebase) { try { await setDoc(getRoomRef(code), data); return; } catch(e) { console.log('FB saveRoom fail:', e); } }
+        localDB['room_'+code] = { ...(localDB['room_'+code]||{}), ...data };
+    },
+    async getRoom(code) {
+        if (useFirebase) { try { const s = await getDoc(getRoomRef(code)); return s.exists() ? s.data() : null; } catch(e) { console.log('FB getRoom fail:', e); } }
+        return localDB['room_'+code] || null;
+    },
+    async saveStudent(code, nick, data) {
+        if (useFirebase) { try { await setDoc(getStudentRef(code, nick), data, { merge: true }); return; } catch(e) { console.log('FB saveStudent fail:', e); } }
+        const k = `stu_${code}_${nick}`;
+        localDB[k] = { ...(localDB[k]||{}), ...data };
+    },
+    async getStudent(code, nick) {
+        if (useFirebase) { try { const s = await getDoc(getStudentRef(code, nick)); return s.exists() ? s.data() : null; } catch(e) { console.log('FB getStudent fail:', e); } }
+        return localDB[`stu_${code}_${nick}`] || null;
+    },
+    async getAllStudents(code) {
+        if (useFirebase) { try { const snap = await getDocs(getStudentsCol(code)); const r = {}; snap.forEach(d => { r[d.id] = d.data(); }); return r; } catch(e) { console.log('FB getAll fail:', e); } }
+        const r = {}; Object.keys(localDB).filter(k => k.startsWith(`stu_${code}_`)).forEach(k => { r[k.replace(`stu_${code}_`,'')] = localDB[k]; }); return r;
+    },
+    async deleteRoom(code) {
+        if (useFirebase) { try { const snap = await getDocs(getStudentsCol(code)); for (const d of snap.docs) await deleteDoc(d.ref); await deleteDoc(getRoomRef(code)); return; } catch(e) { console.log('FB delete fail:', e); } }
+        Object.keys(localDB).filter(k => k.includes(code)).forEach(k => delete localDB[k]);
+    },
+    async resetStudents(code) {
+        // ⚠️ 방 문서(해시 비밀번호·만료일)는 절대 지우지 않는다. 학생 subcollection만 비운다.
+        if (useFirebase) { try { const snap = await getDocs(getStudentsCol(code)); for (const d of snap.docs) await deleteDoc(d.ref); return; } catch(e) { console.log('FB resetStudents fail:', e); } }
+        Object.keys(localDB).filter(k => k.startsWith(`stu_${code}_`)).forEach(k => delete localDB[k]);
+    },
+    onStudentsChange(code, cb) {
+        if (useFirebase) { try { return onSnapshot(getStudentsCol(code), snap => { const r = {}; snap.forEach(d => { r[d.id] = d.data(); }); cb(r); }); } catch(e) { console.log('FB onSnap fail:', e); } }
+        return null;
+    }
+};
+
+// ═══ 상태 변수 ═══
+let currentRoomCode = '', currentNickname = '', isTeacher = false, isSoloMode = false;
+let unsubscribe = null, dashboardData = {};
+let confirmCallback = null;
+
+// 학생 활동 데이터
+let listenStatus = {}; // {scenarioId_partIdx: 'focus'|'confused'|'wander'}
+let quizResults = {};  // {scenarioId_partIdx: true|false}
+let keywords = [];     // 학생이 입력한 핵심들
+let completedScenarios = new Set();
+let answers = {};
+
+// ═══ 시나리오 데이터 ═══
+const SCENARIOS = [
+    {
+        id: 1, name: '지우', emoji: '👧', topic: '친구 관계의 균열', color: '#8B5CF6',
+        parts: [
+            {
+                text: '있잖아... 괜찮아, 별일 아닌데. 그냥 요즘 수아 얘기 좀 하려고. 수아가 요즘 서준이네 모둠이랑 자주 다녀. 뭐, 그럴 수 있지. 서준이네가 재미있으니까. <span class="highlight">근데 오늘 쉬는 시간에 수아가 서준이네랑 웃으면서 지나가는데, 나랑 눈이 마주쳤거든. 근데 그냥 지나갔어.</span> 아, 진짜 별일 아냐. 그냥... 좀 신경 쓰여서.',
+                question: '지우가 "별일 아니야"라고 반복하는데, 정말 별일 아닌 걸까? 지우가 진짜 신경 쓰이는 건 뭘까?',
+                quiz: { type: 'choice', q: '지우가 가장 상처받은 순간은?', opts: ['수아가 서준이네랑 놀 때', '눈이 마주쳤는데 그냥 지나간 순간', '수아가 재미있는 모둠에 간 것'], ans: 1, deep: true }
+            },
+            {
+                text: '근데 사실... 어제 그런 일도 있었어. 체육 시간에 짝 정할 때, 수아가 원래 항상 나한테 왔는데 어제는 유나한테 먼저 갔어. <span class="highlight">나는 그때 웃으면서 "나 아무나 괜찮아~"라고 했거든.</span> 근데 집에 와서 생각해보니까... 나 그때 왜 웃었지? 하나도 안 웃긴데. 그리고 한 가지 더 무서운 게 있는데... <span class="highlight">혹시 내가 먼저 뭔가 잘못한 건 아닐까?</span> 근데 뭘 잘못한 건지 모르겠어. 모르니까 물어볼 수도 없어.',
+                question: '지우가 "웃으면서 괜찮다"고 했는데 진짜 괜찮았을까? 지우의 행동과 마음이 왜 달랐을까 적어봐.',
+                quiz: { type: 'choice', q: '지우가 체육 시간에 웃으며 "아무나 괜찮아"라고 한 진짜 이유는?', opts: ['정말 괜찮아서', '서운한 티를 내면 더 밀려날까 봐 두려워서', '다른 친구랑 하고 싶어서'], ans: 1, deep: true }
+            },
+            {
+                text: '나 진짜 원하는 건 많지 않아. 매일 붙어다니자는 것도 아니야. <span class="highlight">그냥... 내가 있다는 걸 까먹지 않았으면 좋겠어.</span> 가끔 "지우야, 같이 갈래?" 이 한마디면 되거든. 근데 그 한마디가... 내가 직접 해달라고 할 수 있는 게 아니잖아. 부탁해서 받는 관심은 진짜 관심이 아니니까. <span class="highlight">그래서 더 아무 말도 못하는 거야.</span>',
+                question: '지우가 "부탁해서 받는 관심은 진짜 관심이 아니다"라고 말한 부분이 있어. 이 말 속에 숨어 있는 지우의 진짜 두려움은 뭘까?',
+                quiz: { type: 'choice', q: '지우가 수아에게 직접 말하지 못하는 가장 깊은 이유는?', opts: ['수아가 무서워서', '말해서 돌아온 관심은 진심이 아닐까 봐, 그래서 확인하는 게 더 무서워서', '말하는 게 귀찮아서', '다른 친구를 사귈 거라서'], ans: 1, deep: true }
+            }
+        ]
+    },
+    {
+        id: 2, name: '민서', emoji: '👧', topic: '가족 안에서의 외로움', color: '#EC4899',
+        parts: [
+            {
+                text: '동생이 태어난 지 6개월 됐어. 동생 진짜 귀여워, 그건 맞아. 볼이 말랑말랑하고 웃으면 나도 기분 좋아. <span class="highlight">근데... 요즘 이상한 생각이 들어. 동생이 귀여운데도 가끔 짜증이 나.</span> 그러면 "나 나쁜 언니인가?" 이런 생각이 들어서 더 힘들어. 엄마한테 그런 말 하면 안 되잖아. 엄마도 힘드니까.',
+                question: '민서가 힘든 건 동생 때문일까, 아니면 다른 이유일까? 민서가 "나쁜 언니"라고 생각하게 된 과정을 적어봐.',
+                quiz: { type: 'choice', q: '민서를 가장 힘들게 하는 건?', opts: ['동생이 시끄러워서', '동생에게 짜증나는 자신이 나쁜 사람 같아서', '엄마가 동생만 예뻐해서'], ans: 1, deep: true }
+            },
+            {
+                text: '어제 학교에서 글쓰기 대회 상 받았어. 선생님이 "민서 정말 잘 썼다!" 해주셨거든. 기분 좋아서 뛰어가서 엄마한테 말했어. 엄마가 "와, 잘했네!" 하고는 바로 동생 기저귀 갈러 갔어. <span class="highlight">나는 상장을 식탁 위에 내려놓고 방에 들어갔어. 울진 않았어. 근데 뭔가... 가슴이 텅 빈 것 같았어.</span> 이상한 건, 엄마가 나쁘게 한 건 아니거든. "잘했네"라고 했잖아. 근데 왜 이렇게 허전하지?',
+                question: '엄마가 "잘했네"라고 분명히 말해줬는데, 민서는 왜 허전했을까? 말의 내용이 아니라 어떤 게 부족했을까 적어봐.',
+                quiz: { type: 'choice', q: '민서가 진짜 원했던 건 칭찬의 "말" 이었을까?', opts: ['더 큰 칭찬의 말이 필요했다', '말이 아니라, 잠깐이라도 멈추고 함께 기뻐해주는 "시간과 시선"이 필요했다', '상품이나 선물을 원했다'], ans: 1, deep: true }
+            },
+            {
+                text: '오늘 저녁에 엄마가 동생 재우고 나서 나한테 왔어. "민서야, 오늘 학교 어땠어?" 물어봐줬어. <span class="highlight">근데 나 그때 "그냥 그랬어"라고 했어.</span> 왜 그랬는지 모르겠어. 분명 말하고 싶은 게 많았는데, 막상 물어보니까... 괜히 화가 나는 거야. 어제는 안 물어봤잖아. 오늘은 물어보잖아. <span class="highlight">물어봐주는 것도 불규칙하면 더 서운한 거 몰라?</span> 근데 이런 말을 하면 엄마가 상처받을까 봐 말 못해.',
+                question: '민서는 엄마가 물어봐줬는데 오히려 "그냥 그랬어"라고 짧게 답했어. 왜 그랬을까? 이 반응 속에 숨은 진짜 감정을 찾아봐.',
+                quiz: { type: 'choice', q: '민서가 "그냥 그랬어"라고 대답한 진짜 이유는?', opts: ['진짜 별일 없어서', '오랫동안 쌓인 서운함 때문에, 갑자기 관심 받으니 오히려 어제의 무관심이 떠올라서', '엄마가 싫어져서', '빨리 자고 싶어서'], ans: 1, deep: true }
+            }
+        ]
+    },
+    {
+        id: 3, name: '하준', emoji: '👦', topic: '"잘하는 아이"의 무게', color: '#2563EB',
+        parts: [
+            {
+                text: '나 학교에서 반장이야. 성적도 괜찮고, 발표도 잘한다고들 해. 다음 주에 모둠 발표가 있는데, 당연히 내가 하기로 됐어. 애들이 "하준이가 하면 되지~" 이러면서. <span class="highlight">나도 웃으면서 "ㅇㅋ"라고 했어.</span> 근데 사실... 저번에 발표할 때 중간에 10초 동안 아무 말도 못 한 적 있거든. 다행히 아무도 모르게 넘어갔는데, <span class="highlight">그때 손이 떨린 거를 나만 알아.</span>',
+                question: '하준이가 "ㅇㅋ"라고 웃으며 승낙한 것과, 속으로 느끼는 감정이 왜 다를까? 하준이가 거절하지 못하는 이유를 적어봐.',
+                quiz: { type: 'choice', q: '하준이가 발표를 거절하지 못하는 진짜 이유는?', opts: ['발표가 좋아서', '거절하면 지금까지 쌓아온 "잘하는 아이" 이미지가 무너질까 봐', '다른 아이들이 못해서'], ans: 1, deep: true }
+            },
+            {
+                text: '엄마도 그래. "우리 하준이는 걱정 없다~" 이러시거든. 선생님도 "하준이한테 맡기면 되지" 그러고. <span class="highlight">모든 사람이 나를 "걱정 없는 아이"로 보는데, 정작 나는 매일 걱정이야.</span> 근데 더 이상한 거 있어. 발표 준비하면서 대본을 열 번 넘게 읽어. 누가 보면 열심히 하는 거라고 하겠지만, <span class="highlight">나는 그게 열심이 아니라 불안이라는 걸 알아.</span> 충분히 외웠는데도 "혹시 틀리면 어쩌지?" 하면서 또 읽는 거거든.',
+                question: '하준이가 대본을 10번 넘게 읽는 건 "열심"일까 "불안"일까? 겉으로 보이는 것과 속마음이 왜 다른지 적어봐.',
+                quiz: { type: 'choice', q: '하준이 이야기에서 가장 핵심적인 문제는?', opts: ['발표 실력이 부족해서 연습이 필요한 것', '불안한 마음을 누구에게도 말하지 못하고 "괜찮은 척" 연기를 계속해야 하는 것', '엄마와 선생님이 기대를 너무 많이 하는 것'], ans: 1, deep: true }
+            },
+            {
+                text: '가끔 상상해. 발표 날 "나 사실 무서워"라고 말하는 거. 근데 그러면 어떻게 될까? 아마 애들이 놀랄 거야. <span class="highlight">"에이, 하준이가 무슨 무서워~" 이럴 거 아니야.</span> 그 말이 제일 무서워. 내가 힘들다고 했는데 안 믿어주는 거. 그래서 차라리 안 말하는 거야. <span class="highlight">가끔은... 한 번만 실패해보고 싶어. 실패해도 괜찮다고, 누가 그래줬으면.</span> 근데 그건 내가 부탁할 수 있는 게 아니잖아.',
+                question: '하준이가 "한 번만 실패해보고 싶다"고 했어. 보통 사람들은 성공을 원하는데, 왜 하준이는 실패를 원할까? 이 말 속에 숨은 의미를 적어봐.',
+                quiz: { type: 'choice', q: '"한 번만 실패해보고 싶다"는 말의 진짜 의미는?', opts: ['일부러 못하고 싶다', '실패해도 자기를 있는 그대로 받아들여주는 사람이 필요하다는 뜻', '발표가 귀찮아서 포기하고 싶다', '다른 사람이 발표했으면 좋겠다'], ans: 1, deep: true }
+            }
+        ]
+    },
+    {
+        id: 4, name: '서연', emoji: '🎨', topic: '좋아하는 게 흔들릴 때', color: '#EA580C',
+        parts: [
+            {
+                text: '나 그림 그리는 거 진짜 좋아해. 초등학교 1학년 때부터 매일 그렸어. 근데 얼마 전에 아빠가 그랬어. "그림은 취미로만 해. 나중에 먹고살기 힘들어." <span class="highlight">아빠가 나쁜 사람은 아니야. 아빠도 나를 걱정해서 그런 거라는 걸 알아.</span> 근데 이상한 건... 그 말을 듣고 나서 그림 그릴 때 손이 좀 달라졌어. 예전엔 막 빠르게 줄줄 그렸는데, <span class="highlight">지금은 한 줄 긋고 멈추고, "이게 맞나?" 하면서 그려.</span>',
+                question: '서연이는 아빠를 미워하지 않는다고 했어. 그런데 그림 그리는 방식이 달라졌어. 아빠의 말이 서연이의 "뭘" 바꿔놓은 걸까?',
+                quiz: { type: 'choice', q: '아빠의 말이 서연이에게 가져온 가장 큰 변화는?', opts: ['그림 실력이 떨어짐', '좋아서 그리던 것이, 항상 의미를 증명해야 하는 것으로 바뀜', '아빠와 사이가 나빠짐'], ans: 1, deep: true }
+            },
+            {
+                text: '미술 시간에 선생님이 내 그림 보고 "서연이 감각이 좋다"고 했어. 예전 같았으면 기분 좋았을 텐데, <span class="highlight">그때 내 머릿속에 바로 든 생각이 "근데 이걸로 뭐가 되는데?"였어.</span> 내가 좋아서 하던 건데, 어느 순간부터 "이게 쓸모가 있나?"를 먼저 생각하게 된 거야. 더 무서운 건, <span class="highlight">그 생각이 아빠 목소리로 들린다는 거야.</span> 아빠가 옆에 없는데도.',
+                question: '서연이는 칭찬을 받았는데 기쁘지 않았어. 왜 칭찬이 기쁨이 되지 못했을까? "아빠 목소리로 들린다"는 말의 의미를 적어봐.',
+                quiz: { type: 'choice', q: '"아빠 목소리로 들린다"는 말의 진짜 의미는?', opts: ['아빠가 항상 옆에서 잔소리를 해서', '아빠의 말이 서연이 마음속에 내면화되어, 스스로가 자기를 의심하는 목소리가 되었다는 것', '아빠 흉내를 내는 것'], ans: 1, deep: true }
+            },
+            {
+                text: '가끔 친구들한테 "나 그림 그리는 거 좋아해"라고 말하면, 애들이 "와, 대박! 나중에 화가 되겠다!" 이래. <span class="highlight">나는 그때 "아 ㅋㅋ 그냥 취미야"라고 하거든.</span> 예전에는 "응, 화가 될 거야!"라고 당당하게 말했었는데. 지금은 왜 그렇게 말 못하냐면... 당당하게 말했다가 진짜 안 되면 너무 창피할 것 같아서. <span class="highlight">꿈을 말하는 게 이렇게 무서운 건 처음이야.</span> 아빠가 한마디 한 거뿐인데, 내가 이렇게까지 변할 줄 몰랐어.',
+                question: '서연이는 "그냥 취미야"라고 말하게 됐어. 예전엔 "화가 될 거야"라고 했는데. 이 변화가 의미하는 게 뭔지, 서연이가 진짜 잃어버린 게 뭔지 적어봐.',
+                quiz: { type: 'choice', q: '서연이가 진짜 잃어버린 것은?', opts: ['그림 실력', '자기가 좋아하는 것을 떳떳하게 말할 수 있는 자신감, 즉 꿈을 향한 용기', '아빠와의 관계', '친구들의 관심'], ans: 1, deep: true }
+            }
+        ]
+    },
+    {
+        id: 5, name: '도윤', emoji: '👦', topic: '가벼운 말의 무거운 그림자', color: '#059669',
+        parts: [
+            {
+                text: '저번에 진호랑 급식 먹는데, 진호가 안경을 새로 바꿨길래 "야, 안경 바꿨네? 되게 웃기다 ㅋㅋ" 이랬어. 근데 사실 진호가 안경 고를 때 되게 고민했다는 거 나중에 들었거든. <span class="highlight">진호는 그때 웃긴 했어. 근데 그 웃음이... 평소 웃음이랑 좀 달랐어.</span> 눈이 안 웃고 입만 올라간 그런 웃음. 나는 그때는 몰랐는데, 집에 가서 갑자기 생각났어.',
+                question: '도윤이는 진호의 웃음이 "평소랑 달랐다"고 했어. 그 순간에는 몰랐다가 나중에 떠올린 거야. 이 "뒤늦게 알아차린 것"이 왜 중요한지 적어봐.',
+                quiz: { type: 'choice', q: '도윤이가 나중에서야 떠올린 "다른 웃음"은 무엇을 의미할까?', opts: ['진호가 유머 감각이 있다는 것', '진호가 상처받았지만 괜찮은 척 웃었다는 것, 그리고 도윤이는 그 신호를 놓쳤다는 것', '진호의 안경이 정말 웃겨서'], ans: 1, deep: true }
+            },
+            {
+                text: '그 후로 진호가 좀 달라졌어. 밥 먹을 때 내 옆에 안 앉아. 나한테 말도 짧아졌고. <span class="highlight">근데 이상한 건, 진호가 나한테 "뭐 잘못했냐"고 물으면 "아니, 아무것도"라고 할 것 같아.</span> 진호도 직접 말 안 하고, 나도 직접 물어보지 못하고. 서로 아는데 모른 척하는 거야. 사과하려고 했어, 진짜로. 근데 뭐라고 해야 할지 모르겠어. <span class="highlight">"미안, 장난이었어"라고 하면 오히려 더 기분 나빠할 것 같아. 왜냐면 그 말은 "네가 예민한 거야"라는 뜻으로 들릴 수 있으니까.</span>',
+                question: '도윤이가 "장난이었어"라고 말하면 안 된다고 생각한 이유를 잘 읽어봐. 이 부분이 중요한 이유가 뭘까?',
+                quiz: { type: 'choice', q: '"미안, 장난이었어"가 위험한 이유는?', opts: ['거짓말이니까', '그 말이 "상처받은 네가 이상한 거야"라는 의미로 전달될 수 있어서, 사과가 아니라 또 다른 상처가 되니까', '진호가 장난을 싫어해서', '선생님이 혼낼까 봐'], ans: 1, deep: true }
+            },
+            {
+                text: '어제 진호가 다른 애들이랑 웃는 거 봤어. 그거 보니까 좀 안심이 됐어, "아, 진호는 괜찮구나." <span class="highlight">근데 동시에 좀... 서운했어. 나 없이도 잘 놀잖아.</span> 이게 말이 되나? 내가 상처를 줬으면서 내가 서운한 게. 근데 솔직히 그랬어. 나도 아직 진호 친구이고 싶거든. <span class="highlight">사과를 해야 하는 건 아는데, 사과한 다음에 진호가 "됐어, 괜찮아"라고 안 해주면 어떡하지?</span> 그 뒤가 무서워서 시작을 못하겠어.',
+                question: '도윤이는 자기가 잘못했으면서 동시에 서운함도 느껴. 이 복잡한 감정이 왜 생기는지, 그리고 사과를 못 하는 진짜 이유가 뭔지 적어봐.',
+                quiz: { type: 'choice', q: '도윤이가 사과를 못 하는 가장 깊은 이유는?', opts: ['잘못을 모르는 것', '사과하는 방법을 모르는 것', '사과했는데 용서받지 못하면, 관계가 완전히 끝났다는 것이 확정되니까 그게 두려운 것', '진호가 먼저 말해야 한다고 생각하는 것'], ans: 2, deep: true }
+            }
+        ]
+    },
+    {
+        id: 6, name: '예린', emoji: '👧', topic: '새로 온 아이의 혼잣말', color: '#7C3AED', bonus: true,
+        parts: [
+            {
+                text: '나 이 학교 온 지 2주 됐어. 애들 다 착해, 진짜야. <span class="highlight">쉬는 시간에 누가 "예린아, 같이 갈래?" 하고 물어보면 나는 항상 "아니 괜찮아, 나 혼자가 편해"라고 해.</span> 근데 그 말 하고 나면 좀 후회돼. 왜 그렇게 말했지? 같이 갔다가 어색해지면 어떡하지 싶어서 그런 것 같아. 애들끼리만 아는 얘기가 나오면 나만 못 웃잖아. <span class="highlight">그 순간이 제일 무서워.</span>',
+                question: '예린이가 "혼자가 편하다"고 한 말은 진심일까? 예린이가 진짜 무서워하는 순간이 언제인지 적어봐.',
+                quiz: { type: 'choice', q: '예린이가 "나 혼자가 편해"라고 말하는 진짜 이유는?', opts: ['정말 혼자 있는 걸 더 좋아해서', '함께 갔다가 어색해지는 순간이 더 무서워서, 내가 먼저 거절해버리는 것', '그 친구가 마음에 들지 않아서'], ans: 1, deep: true }
+            },
+            {
+                text: '급식실 갈 때가 제일 어려워. <span class="highlight">나는 항상 신발끈을 묶어. 진짜 풀려서가 아니라, 애들이 다 나갈 때까지 시간을 벌려고.</span> 먼저 나가면 어디 앉을지 내가 정해야 하잖아. 늦게 나가면 남는 자리에 앉으면 되고. 그러면 내가 고른 게 아니라 그냥 그렇게 된 거니까 덜 창피해. 어제는 지호가 "예린아 여기 앉아" 했는데 <span class="highlight">나 "어, 어" 하고는 딴 데 앉았어.</span> 왜 그랬는지 나도 모르겠어.',
+                question: '예린이가 신발끈을 계속 묶는 행동 속에는 어떤 마음이 숨어 있을까? 지호가 불러줬는데도 딴 데 앉은 이유를 적어봐.',
+                quiz: { type: 'choice', q: '예린이가 급식실 앞에서 신발끈을 계속 묶는 행동이 뜻하는 것은?', opts: ['신발이 자주 풀려서', '거절당할 수 있는 상황 자체를 미리 만들지 않으려는 것', '운동화를 아끼고 싶어서', '급식을 별로 좋아하지 않아서'], ans: 1, deep: true }
+            },
+            {
+                text: '엄마가 어제 물어봤어. "학교 어때? 친구 사귀었어?" 나는 "응, 많아"라고 했어. <span class="highlight">거짓말은 아니야. 이름은 다 알거든.</span> 근데 이름을 아는 거랑 친구인 거랑은 다르잖아. 사실 나... 누가 먼저 계속 물어봐줬으면 좋겠어. 한 번 거절해도 다음 날 또 물어봐주는 사람. <span class="highlight">근데 그건 내가 "또 물어봐줘"라고 부탁할 수 있는 게 아니잖아.</span> 그래서 그냥 기다려. 언제까지 기다릴지는 나도 몰라.',
+                question: '예린이는 "이름은 다 안다"고 했어. 그런데 왜 그게 친구가 아니라고 느낄까? 예린이가 진짜 기다리고 있는 게 뭔지 적어봐.',
+                quiz: { type: 'choice', q: '예린이가 진짜 기다리고 있는 것은?', opts: ['더 재미있는 학교', '한 번 거절당해도 다음 날 다시 다가와 주는 사람', '엄마가 전학을 되돌려 주는 것', '혼자 있을 수 있는 조용한 자리'], ans: 1, deep: true }
+            }
+        ]
+    },
+    {
+        id: 7, name: '시윤', emoji: '👦', topic: '단톡방에서 조용해진 아이', color: '#0891B2', bonus: true,
+        parts: [
+            {
+                text: '우리 반 단톡방 있거든. 나도 들어가 있어. <span class="highlight">근데 나 요즘 거기서 말 안 해.</span> 저번에 웃긴 짤 하나 올렸는데 아무도 답이 없었어. 3분쯤 지나고 다른 애가 다른 얘기를 시작했고. 뭐, 그럴 수 있지. 다들 바쁘니까. <span class="highlight">근데 그날 밤에 나 그 대화창을 열 번쯤 다시 올려봤어.</span> 내 메시지 위아래로. 혹시 내가 뭘 이상하게 올렸나 하고.',
+                question: '시윤이는 "그럴 수 있지"라고 넘겼는데, 밤에 대화창을 열 번 다시 봤어. 말과 행동이 왜 다를까? 적어봐.',
+                quiz: { type: 'choice', q: '시윤이가 밤에 대화창을 계속 다시 본 이유는?', opts: ['올린 짤이 재미있어서 다시 보려고', '반응이 없었던 게 계속 마음에 남아서, 자기 잘못을 찾고 있었던 것', '다른 친구 소식이 궁금해서'], ans: 1, deep: true }
+            },
+            {
+                text: '어제는 애들이 단톡방에서 주말에 만나기로 하더라. 나한테 직접 말한 사람은 없었어. <span class="highlight">근데 나 그거 읽고 "ㅋㅋ 재밌겠다"라고 보냈어.</span> 그러고 폰을 뒤집어놨어. 사실은 "나도 가도 돼?"라고 쓰고 싶었어. 다섯 번쯤 썼다 지웠어. 근데 못 보내겠더라. <span class="highlight">물어봤는데 "어... 어" 이런 답이 오면, 그건 안 된다는 뜻이잖아. 그 답을 보는 게 무서워.</span>',
+                question: '시윤이는 "나도 가도 돼?"를 다섯 번 썼다 지웠어. 끝내 보내지 못한 진짜 이유가 뭘까? 적어봐.',
+                quiz: { type: 'choice', q: '시윤이가 "나도 가도 돼?"를 보내지 못한 가장 깊은 이유는?', opts: ['맞춤법이 틀릴까 봐', '애매한 대답이 오면 "나는 환영받지 못한다"는 게 확인돼 버리니까', '주말에 다른 약속이 있어서', '단톡방이 너무 시끄러워서'], ans: 1, deep: true }
+            },
+            {
+                text: '오늘 복도에서 하영이가 "시윤아, 너 요즘 톡 안 하네?" 했어. 나는 "어, 폰 잘 안 봐"라고 했어. <span class="highlight">거짓말이야. 나 하루에 백 번은 봐.</span> 왜 그렇게 말했냐면... "나 사실 끼어들기가 어려워"라고 하면 하영이가 나를 불쌍하게 볼 것 같았어. <span class="highlight">동정받는 건 소외당하는 것보다 더 싫어.</span> 그래서 아무렇지 않은 척한 거야. 근데 솔직히... 하영이가 물어봐준 건 좀 좋았어.',
+                question: '시윤이는 "폰 잘 안 본다"고 둘러댔는데, 물어봐준 건 좋았대. 이 두 마음이 함께 있는 이유를 적어봐.',
+                quiz: { type: 'choice', q: '시윤이가 하영이에게 솔직하게 말하지 못한 이유는?', opts: ['하영이가 싫어서', '동정받는 것이 소외당하는 것보다 더 두려워서', '정말로 폰을 안 봐서', '비밀로 하기로 약속해서'], ans: 1, deep: true }
+            }
+        ]
+    },
+    {
+        id: 8, name: '건우', emoji: '👦', topic: '곧 떠날 걸 아는 아이', color: '#B45309', bonus: true,
+        parts: [
+            {
+                text: '나 두 달 뒤에 이사 가. 아빠 일 때문에. 아직 애들한테는 말 안 했어. <span class="highlight">근데 나 요즘 좀 이상해. 애들이 "주말에 놀자" 하면 자꾸 "어, 나 좀 바빠"라고 해.</span> 진짜 바쁜 건 아니야. 그냥... 지금 더 친해지면 나중에 더 이상해지잖아. 어차피 갈 건데. 미리 조금씩 멀어지면 덜 아프지 않을까 싶어서.',
+                question: '건우는 "바쁘다"고 했지만 진짜 바쁜 게 아니었어. 미리 멀어지려는 마음속에 뭐가 있는지 적어봐.',
+                quiz: { type: 'choice', q: '건우가 친구들의 초대를 자꾸 거절하는 진짜 이유는?', opts: ['정말 일정이 바빠서', '헤어질 때 아플까 봐 미리 마음의 거리를 두는 것', '친구들이 재미없어져서'], ans: 1, deep: true }
+            },
+            {
+                text: '어제 태호가 그랬어. "건우 너 요즘 왜 이래? 나 뭐 잘못했냐?" <span class="highlight">나 그때 "아니, 그런 거 아니야"라고만 했어.</span> 근데 태호 표정이 안 좋았어. 나는 내가 안 아프려고 그런 건데, 그게 태호를 아프게 하고 있었던 거야. <span class="highlight">내 마음 지키려다가 태호 마음에 상처를 낸 거지.</span> 근데 지금 와서 "나 이사 가"라고 하면 태호가 "그래서 그랬냐"고 할 것 같아서 더 말을 못 하겠어.',
+                question: '건우는 자기 마음을 지키려다 태호를 아프게 했어. 말하지 않는 것이 왜 상대에게 상처가 될 수 있는지 적어봐.',
+                quiz: { type: 'choice', q: '건우가 이사 사실을 지금도 말하지 못하는 이유는?', opts: ['이사가 취소될 수도 있어서', '늦게 말한 것 때문에 태호가 더 서운해할까 봐, 시간이 지날수록 말하기가 더 어려워진 것', '태호가 관심 없을 것 같아서', '부모님이 비밀로 하라고 해서'], ans: 1, deep: true }
+            },
+            {
+                text: '가끔 상상해. 태호한테 다 말하는 거. "나 두 달 뒤에 가. 그래서 무서워서 너 피했어." <span class="highlight">그러면 태호가 뭐라고 할까? "야, 아직 두 달이나 남았잖아" 이럴까?</span> 그 말 들으면 좋을 것 같아. 남은 두 달을 아까워하는 사람이 나 말고 또 있다는 거니까. <span class="highlight">근데 반대로 "아, 그렇구나" 하고 끝나버리면... 나만 아쉬웠던 게 되잖아.</span> 그게 확인될까 봐 말을 못 해.',
+                question: '건우가 진짜 확인하기 두려운 게 뭘까? "나만 아쉬웠던 게 되잖아"라는 말 속에 숨은 마음을 적어봐.',
+                quiz: { type: 'choice', q: '건우가 가장 두려워하는 것은?', opts: ['이사 가는 것 자체', '이 관계를 아쉬워한 사람이 자기 혼자였다는 게 확인되는 것', '태호가 화를 내는 것', '새 학교에 적응하지 못하는 것'], ans: 1, deep: true }
+            }
+        ]
+    }
+];
+
+const CONCEPTS = [
+    { title: '👂 "듣는 척"의 함정', desc: '고개를 끄덕이고, "응" 하고 대답해.\n근데 머릿속으로는 다음에 뭐 말할지\n이미 생각하고 있어.\n\n상대의 말이 끝나기도 전에\n"나도 그랬어!" 끼어들기.\n이건 듣는 게 아니야.\n나를 말하려고 기다린 거야.', emoji: '😶' },
+    { title: '💜 "진짜 듣기"의 비밀', desc: '상대가 말하는 "단어" 너머에\n숨어 있는 감정을 찾는 것.\n\n"괜찮아"라고 말하면서\n목소리가 작아질 때,\n"별일 아니야"를 반복할 때,\n웃는데 눈이 안 웃을 때\n— 그 틈새에 진심이 있어.', emoji: '🤗' },
+    { title: '🔍 놓치기 쉬운 신호들', desc: '• 같은 말을 반복할 때\n  → 그게 가장 하고 싶은 말이야\n• "근데..."로 시작할 때\n  → 진짜 말이 지금부터야\n• 갑자기 말이 짧아질 때\n  → 할 말이 없는 게 아니라 할 수 없는 거야\n• "아무거나" "그냥"이라고 할 때\n  → 포기한 거야, 정말 상관없는 게 아니라', emoji: '📋' },
+    { title: '💡 왜 이게 중요할까?', desc: '"이 사람이 내 말을 진짜 듣고 있구나"\n그 느낌을 받는 순간,\n마음의 문이 살짝 열려.\n\n경청은 해결해주는 게 아니야.\n상대의 마음에\n잠시 자리를 내주는 일이야.\n\n"조언"보다 "그랬구나"가\n더 큰 힘이 될 때가 있어.', emoji: '🌟' },
+    { title: '⛔ 듣기를 막는 세 가지', desc: '① 판단 — "그건 네가 예민한 거야"\n② 조언 — "그럼 이렇게 해봐"\n③ 내 이야기 — "나도 그런 적 있는데!"\n\n셋 다 좋은 마음에서 나와.\n근데 이 셋이 나오는 순간\n말하던 사람은 입을 닫아.\n\n먼저 끝까지. 그다음이야.', emoji: '⛔' },
+    { title: '🔑 끝까지 듣는 세 가지 방법', desc: '1️⃣ 3초 기다리기\n말이 끝난 것 같아도 3초만 더.\n진짜 하고 싶은 말은 그다음에 나와.\n\n2️⃣ 되돌려주기\n"그러니까 ○○했다는 거지?"\n듣고 있다는 가장 확실한 신호야.\n\n3️⃣ 이어가는 질문 하기\n"그래서 어떻게 됐어?"\n"지금은 좀 어때?"', emoji: '🔑' },
+    { title: '🕊️ 말하지 않을 자유도 지키기', desc: '다 말하게 만드는 게\n잘 듣는 게 아니야.\n\n"말하기 싫으면 안 해도 돼.\n근데 나 여기 있어."\n\n이 한마디가\n캐묻는 열 마디보다 힘이 세.\n\n듣기는 여는 게 아니라\n기다려주는 일이야.', emoji: '🕊️' }
+];
+
+const CORE_SCENARIOS = SCENARIOS.filter(s => !s.bonus);
+const BONUS_SCENARIOS = SCENARIOS.filter(s => s.bonus);
+const REPORT_MIN = 3;          // 리포트 열람 최소 완료 수
+const BONUS_UNLOCK = 3;        // 보너스 파일 해금 조건
+function getScenario(id) { return SCENARIOS.find(s => s.id === id) || null; }
+function coreDoneCount() { return CORE_SCENARIOS.filter(s => completedScenarios.has(s.id)).length; }
+function bonusDoneCount() { return BONUS_SCENARIOS.filter(s => completedScenarios.has(s.id)).length; }
+
+// ═══ HTML 이스케이프 헬퍼 (닉네임·자유입력 XSS 방지) ═══
+function esc(v) {
+    return String(v == null ? '' : v)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+let conceptIdx = 0;
+
+// ═══ 공통 함수 ═══
+window.showScreen = function(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const t = document.getElementById(id);
+    if (t) { t.classList.add('active'); window.scrollTo(0, 0); }
+};
+
+function showToast(msg, type = 'info') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = type === 'error' ? 'rgba(239,68,68,0.95)' : type === 'success' ? 'rgba(16,185,129,0.95)' : 'rgba(31,41,55,0.95)';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+window.showConfirmModal = function(message, onConfirm) {
+    document.getElementById('confirmMessage').innerHTML = message;
+    document.getElementById('confirmModal').style.display = 'flex';
+    confirmCallback = onConfirm;
+    document.getElementById('confirmOkBtn').onclick = () => {
+        const cb = confirmCallback;
+        closeConfirmModal();
+        if (cb) cb();
+    };
+};
+
+window.closeConfirmModal = function() {
+    document.getElementById('confirmModal').style.display = 'none';
+    confirmCallback = null;
+    document.getElementById('confirmOkBtn').textContent = '확인';
+    document.getElementById('confirmOkBtn').style.background = 'var(--error)';
+};
+
+async function simpleHash(str) {
+    const enc = new TextEncoder().encode(str);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function copyToClipboard(text) {
+    try { await navigator.clipboard.writeText(text); showToast('✅ 코드가 복사되었습니다!'); } catch {
+        const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { document.execCommand('copy'); showToast('✅ 코드가 복사되었습니다!'); } catch { showToast('📋 코드: ' + text + ' (직접 복사해주세요)'); }
+        document.body.removeChild(ta);
+    }
+}
+
+// ═══ 방 만들기 ═══
+window.createRoom = async function() {
+    await authReady;
+    const nick = document.getElementById('teacher-nickname').value.trim();
+    const pw = document.getElementById('teacher-password').value.trim();
+    if (!nick) { showToast('닉네임을 입력해주세요.', 'error'); return; }
+    if (!pw || pw.length !== 4 || !/^\d+$/.test(pw)) { showToast('비밀번호는 숫자 4자리입니다.', 'error'); return; }
+    const code = String(Math.floor(Math.random() * 900000 + 100000));
+    const exp = new Date(); exp.setDate(exp.getDate() + 30);
+    const hashed = await simpleHash(pw);
+    await DB.saveRoom(code, { teacherName: nick, password: hashed, createdAt: new Date().toISOString(), expiresAt: exp.toISOString() });
+    currentRoomCode = code; isTeacher = true; isSoloMode = false; currentNickname = nick;
+    document.getElementById('room-code-display').textContent = code;
+    showScreen('screen-room-created');
+};
+
+window.copyRoomCode = function() { copyToClipboard(currentRoomCode); };
+
+window.enterDashboard = function() {
+    document.getElementById('dash-room-code').textContent = currentRoomCode;
+    startDashboardListener();
+    showScreen('screen-dashboard');
+};
+
+// ═══ 교사 접속 ═══
+window.joinAsTeacher = async function() {
+    await authReady;
+    const code = document.getElementById('teacher-room-code').value.trim();
+    const pw = document.getElementById('teacher-join-password').value.trim();
+    if (!code || !pw) { showToast('방 코드와 비밀번호를 입력해주세요.', 'error'); return; }
+    const room = await DB.getRoom(code);
+    if (!room) { showToast('존재하지 않는 방입니다.', 'error'); return; }
+    if (room.expiresAt && new Date(room.expiresAt) < new Date()) { await DB.deleteRoom(code); showToast('만료된 방입니다.', 'error'); return; }
+    const hashed = await simpleHash(pw);
+    if (room.password !== hashed) { showToast('비밀번호가 틀립니다.', 'error'); return; }
+    currentRoomCode = code; isTeacher = true; isSoloMode = false;
+    document.getElementById('dash-room-code').textContent = code;
+    startDashboardListener();
+    showScreen('screen-dashboard');
+};
+
+// ═══ 학생 입장 & 재입장 이어하기 ═══
+window.joinAsStudent = async function() {
+    await authReady;
+    const code = document.getElementById('student-room-code').value.trim();
+    const nick = document.getElementById('student-nickname').value.trim();
+    if (!code || !nick) { showToast('방 코드와 닉네임을 입력해주세요.', 'error'); return; }
+    const room = await DB.getRoom(code);
+    if (!room) { showToast('존재하지 않는 방입니다.', 'error'); return; }
+    if (room.expiresAt && new Date(room.expiresAt) < new Date()) { await DB.deleteRoom(code); showToast('만료된 방입니다.', 'error'); return; }
+
+    const existing = await DB.getStudent(code, nick);
+    if (existing) {
+        const doneList = existing.completedScenarios || [];
+        const coreDone = CORE_SCENARIOS.filter(sc => doneList.indexOf(sc.id) >= 0).length;
+        const bonusDone = BONUS_SCENARIOS.filter(sc => doneList.indexOf(sc.id) >= 0).length;
+        showConfirmModal(
+            `<strong>${esc(nick)}</strong>님, 이전에 참여한 기록이 있어요!<br><br>` +
+            `🔍 완료한 이야기: ${coreDone}/${CORE_SCENARIOS.length}` + (bonusDone ? ` (+보너스 ${bonusDone})` : '') + `<br>` +
+            `🎯 이야기와 같은 답: ${existing.quizCorrect || 0}개<br><br>` +
+            `이어서 할까요?`,
+            async () => {
+                currentRoomCode = code; currentNickname = nick; isTeacher = false; isSoloMode = false;
+                restoreStudentData(existing);
+                await DB.saveStudent(code, nick, { lastVisit: new Date().toISOString() });
+                showToast(`🎉 ${nick}님, 다시 오셨군요!`, 'success');
+                renderScenarioList();
+                showScreen('screen-main');
+            }
+        );
+        document.getElementById('confirmOkBtn').textContent = '이어하기';
+        document.getElementById('confirmOkBtn').style.background = 'var(--primary)';
+        return;
+    }
+
+    // 신규 입장
+    currentRoomCode = code; currentNickname = nick; isTeacher = false; isSoloMode = false;
+    resetStudentState();
+    restoreAnswerDOM();
+    await DB.saveStudent(code, nick, { joinedAt: new Date().toISOString(), completedScenarios: [], quizCorrect: 0, quizTotal: 0 });
+    showScreen('screen-story');
+};
+
+function resetStudentState() {
+    listenStatus = {}; quizResults = {}; keywords = []; completedScenarios = new Set(); answers = {};
+}
+
+function restoreStudentData(data) {
+    listenStatus = data.listenStatus || {};
+    quizResults = data.quizResults || {};
+    keywords = normalizeKeywords(data.keywords);
+    completedScenarios = new Set(data.completedScenarios || []);
+    answers = data.answers || {};
+    restoreAnswerDOM();
+}
+
+// 예전 저장분(문자열 배열)과 신규 저장분({key,text} 배열)을 모두 수용
+function normalizeKeywords(raw) {
+    if (!Array.isArray(raw)) return [];
+    return raw.map(k => (typeof k === 'string' ? { key: '', text: k } : { key: k.key || '', text: k.text || '' }))
+              .filter(k => k.text);
+}
+function getKeywordText(key) {
+    const hit = keywords.find(k => k.key === key);
+    return hit ? hit.text : '';
+}
+
+// 재입장 시 화면(선택 하이라이트·textarea 값)까지 되살린다
+function restoreAnswerDOM() {
+    const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+    setVal('empathy-feeling', answers.empathyFeeling);
+    setVal('meditation-answer', answers.meditation);
+    setVal('q1-answer', answers.q1);
+    setVal('q2-answer', answers.q2);
+    setVal('q3-answer', answers.q3);
+    setVal('pledge-answer', answers.pledge);
+    document.querySelectorAll('#empathy-choices .choice-btn').forEach(b => b.classList.remove('selected'));
+    if (answers.empathy) {
+        const btn = document.querySelector(`#empathy-choices .choice-btn[data-val="${answers.empathy}"]`);
+        if (btn) btn.classList.add('selected');
+        const nb = document.getElementById('empathy-next-btn');
+        if (nb) nb.style.display = 'block';
+    }
+}
+
+// ═══ 혼자 체험하기 ═══
+window.startSoloMode = function() {
+    isSoloMode = true; isTeacher = false;
+    currentRoomCode = ''; currentNickname = '탐험가';
+    resetStudentState();
+    restoreAnswerDOM();
+    showScreen('screen-story');
+};
+
+// ═══ 개념 카드 ═══
+function renderConceptCard() {
+    const c = CONCEPTS[conceptIdx];
+    document.getElementById('concept-card-area').innerHTML = `
+        <div style="text-align:center; font-size:48px; margin-bottom:8px;">${c.emoji}</div>
+        <h3 style="text-align:center; color:var(--primary);">${c.title}</h3>
+        <p style="white-space:pre-line; font-size:15px; line-height:1.8; margin-top:12px; text-align:center;">${c.desc}</p>`;
+    document.getElementById('concept-page').textContent = `${conceptIdx + 1} / ${CONCEPTS.length}`;
+    document.getElementById('concept-prev-btn').style.display = conceptIdx > 0 ? 'block' : 'none';
+    document.getElementById('concept-next-btn').textContent = conceptIdx === CONCEPTS.length - 1 ? '🕵️ 미션 시작! →' : '다음 →';
+}
+window.goToConceptScreen = function() { conceptIdx = 0; renderConceptCard(); showScreen('screen-concept'); };
+window.prevConcept = function() { if (conceptIdx > 0) { conceptIdx--; renderConceptCard(); } };
+window.nextConcept = function() { if (conceptIdx < CONCEPTS.length - 1) { conceptIdx++; renderConceptCard(); } else { showScreen('screen-mission'); } };
+
+// ═══ 공감 선택 ═══
+window.selectEmpathy = function(btn, val) {
+    document.querySelectorAll('#empathy-choices .choice-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    answers.empathy = val;
+    document.getElementById('empathy-next-btn').style.display = 'block';
+    queueSave();   // 선택 즉시 저장
+};
+
+// ═══ 즉시 저장 (디바운스) — 중간 이탈 시 유실 방지 ═══
+let saveTimer = null;
+function queueSave(delay = 800) {
+    if (isSoloMode || !currentRoomCode || !currentNickname) return;
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => { saveTimer = null; saveStudentProgress(); }, delay);
+}
+window.onAnswerInput = function(field, elId) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    answers[field] = el.value;
+    queueSave();
+};
+window.onKeywordInput = function(key) {
+    const el = document.getElementById(`keyword-input-${key}`);
+    if (!el) return;
+    const text = el.value.trim();
+    const idx = keywords.findIndex(k => k.key === key);
+    if (text) { if (idx >= 0) keywords[idx].text = text; else keywords.push({ key, text }); }
+    else if (idx >= 0) keywords.splice(idx, 1);
+    queueSave(1200);
+};
+
+// ═══ 시나리오 목록 렌더 ═══
+function scenarioCardHTML(s) {
+    const done = completedScenarios.has(s.id);
+    return `<div class="scenario-card ${done ? 'completed' : ''}" data-id="${s.id}" onclick="startScenario(${s.id})" style="border-left:4px solid ${s.color};">
+            <div class="sc-header">
+                <span class="sc-emoji">${s.emoji}</span>
+                <div><span class="sc-name">${s.name}</span><br><span class="sc-topic">${s.topic}</span></div>
+            </div>
+            <div class="sc-status">${done ? '✅ 완료!' : '👂 들어보기'}</div>
+        </div>`;
+}
+
+function renderScenarioList() {
+    document.getElementById('scenario-list').innerHTML = CORE_SCENARIOS.map(scenarioCardHTML).join('');
+    const done = coreDoneCount();
+    const pct = Math.round((done / CORE_SCENARIOS.length) * 100);
+    document.getElementById('main-progress').style.width = pct + '%';
+    document.getElementById('main-progress-text').textContent = `${done}/${CORE_SCENARIOS.length} 완료 (${pct}%)`;
+    document.getElementById('complete-area').style.display = done >= REPORT_MIN ? 'block' : 'none';
+
+    // ── 보너스 사건 파일 (기본 이야기 3개 이상 완료 시 해금) ──
+    const bonusArea = document.getElementById('bonus-area');
+    if (bonusArea) {
+        if (done >= BONUS_UNLOCK) {
+            bonusArea.style.display = 'block';
+            document.getElementById('bonus-scenario-list').innerHTML = BONUS_SCENARIOS.map(scenarioCardHTML).join('');
+            const bd = bonusDoneCount();
+            const bpct = Math.round((bd / BONUS_SCENARIOS.length) * 100);
+            document.getElementById('bonus-progress').style.width = bpct + '%';
+            document.getElementById('bonus-progress-text').textContent = `${bd}/${BONUS_SCENARIOS.length} 완료 (${bpct}%)`;
+        } else {
+            bonusArea.style.display = 'none';
+        }
+    }
+}
+
+// 미션 안내 → 본부 진입 (목록 렌더 누락으로 빈 화면이 뜨던 문제 수정)
+window.startMission = function() { renderScenarioList(); showScreen('screen-main'); };
+
+// ═══ 시나리오 진행 ═══
+let currentScenario = null, currentPartIdx = 0;
+
+window.startScenario = function(id) {
+    const found = getScenario(id);
+    if (!found) return;
+    currentScenario = found;
+    currentPartIdx = 0;
+    renderPart();
+    showScreen('screen-scenario');
+};
+
+function renderPart() {
+    const s = currentScenario, p = s.parts[currentPartIdx];
+    const key = `${s.id}_${currentPartIdx}`;
+    const content = document.getElementById('scenario-content');
+
+    content.innerHTML = `
+        <div class="card">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <span style="font-size:28px;">${s.emoji}</span>
+                <span style="font-weight:900; font-size:17px;">${s.name}의 이야기</span>
+                <span class="badge" style="margin-left:auto;">${currentPartIdx + 1}/${s.parts.length}</span>
+            </div>
+            <div class="progress-wrap"><div class="progress-fill" style="width:${((currentPartIdx + 1) / s.parts.length) * 100}%"></div></div>
+        </div>
+        <div class="story-bubble">${p.text}</div>
+        <div class="card">
+            <h4>👂 이 부분을 들을 때 내 상태는?</h4>
+            <div class="listen-row">
+                <button class="listen-btn ${listenStatus[key]==='focus'?'selected':''}" onclick="selectListen('${key}','focus',this)">👂 집중!</button>
+                <button class="listen-btn ${listenStatus[key]==='confused'?'selected':''}" onclick="selectListen('${key}','confused',this)">❓ 헷갈림</button>
+                <button class="listen-btn ${listenStatus[key]==='wander'?'selected':''}" onclick="selectListen('${key}','wander',this)">💭 딴생각</button>
+            </div>
+        </div>
+        <div class="card">
+            <h4>✏️ ${p.question}</h4>
+            <textarea id="keyword-input-${key}" oninput="onKeywordInput('${key}')" placeholder="이 친구가 진짜 하고 싶은 말을 네 말로 적어봐">${esc(getKeywordText(key))}</textarea>
+        </div>
+        <div class="card" id="quiz-area-${key}">
+            <h4>🔍 심층 퀴즈${p.quiz.deep ? ' — 속마음 읽기' : ''}</h4>
+            <p style="font-size:15px; margin-bottom:10px;">${p.quiz.q}</p>
+            ${renderQuiz(p.quiz, key)}
+        </div>
+        <div id="quiz-feedback-${key}" style="display:none;"></div>
+        <button class="btn btn-primary" id="part-next-btn" onclick="nextPart('${key}')" style="display:none;">
+            ${currentPartIdx < s.parts.length - 1 ? '다음 이야기 →' : '✅ ' + s.name + ' 완료!'}
+        </button>`;
+
+    // 이미 답한 퀴즈라면 결과 상태를 그대로 되살린다 (되돌아왔을 때 진행 불가 방지)
+    if (quizResults[key] !== undefined) restoreAnsweredQuiz(key, p.quiz);
+}
+
+function restoreAnsweredQuiz(key, quiz) {
+    const area = document.getElementById(`quiz-area-${key}`);
+    if (!area) return;
+    const btns = area.querySelectorAll('.choice-btn');
+    const wasCorrect = quizResults[key] === true;
+    btns.forEach((b, i) => {
+        b.style.pointerEvents = 'none';
+        if (quiz.type === 'choice') {
+            if (i === quiz.ans) b.classList.add('correct');
+            else if (!wasCorrect) b.classList.add('incorrect');
+        } else {
+            const val = b.textContent.indexOf('O') >= 0;
+            if (val === quiz.ans) b.classList.add('correct');
+            else if (!wasCorrect) b.classList.add('incorrect');
+        }
+    });
+    showQuizFeedback(key, wasCorrect);
+}
+
+function renderQuiz(quiz, key) {
+    if (quiz.type === 'choice') {
+        return quiz.opts.map((o, i) => `<button class="choice-btn" onclick="answerQuiz('${key}',${i},${quiz.ans},this)">${o}</button>`).join('');
+    } else if (quiz.type === 'ox') {
+        return `<div style="display:flex; gap:8px;">
+            <button class="choice-btn" style="flex:1; text-align:center;" onclick="answerOX('${key}',true,${quiz.ans},this)">⭕ O</button>
+            <button class="choice-btn" style="flex:1; text-align:center;" onclick="answerOX('${key}',false,${quiz.ans},this)">❌ X</button>
+        </div>`;
+    }
+    return '';
+}
+
+window.selectListen = function(key, status, btn) {
+    btn.parentElement.querySelectorAll('.listen-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    listenStatus[key] = status;
+    queueSave(400);   // 선택 즉시 저장
+};
+
+window.answerQuiz = function(key, selected, correct, btn) {
+    if (quizResults[key] !== undefined) return;
+    const isCorrect = selected === correct;
+    quizResults[key] = isCorrect;
+    const parent = btn.parentElement;
+    parent.querySelectorAll('.choice-btn').forEach((b, i) => {
+        b.style.pointerEvents = 'none';
+        if (i === correct) b.classList.add('correct');
+        else if (i === selected && !isCorrect) b.classList.add('incorrect');
+    });
+    showQuizFeedback(key, isCorrect);
+    queueSave(400);   // 정답 여부 즉시 저장
+};
+
+window.answerOX = function(key, selected, correct, btn) {
+    if (quizResults[key] !== undefined) return;
+    const isCorrect = selected === correct;
+    quizResults[key] = isCorrect;
+    btn.parentElement.querySelectorAll('.choice-btn').forEach(b => {
+        b.style.pointerEvents = 'none';
+        const val = b.textContent.includes('O') ? true : false;
+        if (val === correct) b.classList.add('correct');
+        else if (val === selected && !isCorrect) b.classList.add('incorrect');
+    });
+    showQuizFeedback(key, isCorrect);
+    queueSave(400);
+};
+
+function showQuizFeedback(key, isCorrect) {
+    const fb = document.getElementById(`quiz-feedback-${key}`);
+    fb.style.display = 'block';
+    const FEEDBACK = {
+        '1_0': { ok: '🎉 맞아. "별일 아냐"라고 반복하는 사람은 대부분 별일인 거야. 눈이 마주쳤는데 지나간 그 순간이, 지우에게는 "나는 투명인간"이라는 확인이 된 거지.', no: '🤔 지우가 유독 강조한 순간이 있었어. 수아가 "다른 애들과 논 것" 자체보다, 한 가지 결정적 순간이 있었는데... 다시 읽어볼까?' },
+        '1_1': { ok: '🎉 정확해. 서운한 티를 내면 "집착하는 애"로 보일까 봐, 괜찮은 척하는 거야. 이게 진짜 외로움이야 — 아프면서도 아프다고 말할 수 없는 상태.', no: '🤔 지우가 그 순간에 한 행동과 실제 감정이 달랐어. "왜 웃었을까?"라고 스스로 질문하는 부분을 다시 읽어봐.' },
+        '1_2': { ok: '🎉 깊이 들었구나. 지우는 "확인하는 행위" 자체가 두려운 거야. 물어봤는데 진심이 아닌 답이 돌아오면, 마지막 희망마저 사라지니까.', no: '🤔 지우가 왜 직접 말하지 못할까? "부탁해서 받는 관심"이라는 표현에 답이 있어. 말해서 돌아온 관심이 진짜가 아닐 수 있다는 두려움을 생각해봐.' },
+        '2_0': { ok: '🎉 잘 들었어. 민서는 동생이 싫은 게 아니라, 짜증나는 자기 자신이 싫은 거야. 감정에 대한 죄책감 — 이게 가장 무거운 짐이야.', no: '🤔 민서가 힘든 건 "동생" 때문일까, 아니면 "자기 감정" 때문일까? 민서가 "나쁜 언니인가?"라고 스스로에게 묻는 부분을 다시 읽어봐.' },
+        '2_1': { ok: '🎉 정확해. 민서에게 부족했던 건 칭찬의 "단어"가 아니라, 잠깐이라도 멈춰서 눈을 맞추고 기뻐해주는 "온전한 순간"이었어.', no: '🤔 엄마는 "잘했네"라고 말해줬어. 말의 내용은 맞았는데, 민서는 왜 허전했을까? "말" 말고 뭐가 부족했을까 생각해봐.' },
+        '2_2': { ok: '🎉 깊이 읽었구나. 오랫동안 무시당했다고 느낀 사람은, 갑자기 관심을 받으면 오히려 쌓인 서운함이 터지는 거야. "이제서야?"라는 마음이지.', no: '🤔 엄마가 물어봐줬는데 짧게 대답했어. 진짜 별일 없어서가 아니야. 오랫동안 쌓인 감정이 있을 때 사람은 어떤 반응을 보일까 생각해봐.' },
+        '3_0': { ok: '🎉 맞아. "잘하는 아이"라는 이미지가 감옥이 된 거야. 거절하면 기대가 무너지고, 주변 사람들이 실망할까 봐 계속 연기하는 거지.', no: '🤔 하준이가 싫으면 거절하면 되잖아? 근데 못해. 왜? "ㅇㅋ"라고 웃으며 수락한 그 장면에서, 하준이가 지키려는 게 뭔지 생각해봐.' },
+        '3_1': { ok: '🎉 정확해. 핵심은 발표 실력이 아니라, "괜찮은 척"을 계속해야 한다는 피로감이야. 겉과 속이 다른 채로 사는 건 정말 지치는 일이야.', no: '🤔 하준이가 대본을 10번 넘게 읽는 건 "열심"일까 "불안"일까? 하준이 스스로도 그 차이를 알고 있어. 그 부분을 다시 읽어봐.' },
+        '3_2': { ok: '🎉 놀라운 통찰이야. "실패해보고 싶다"는 말은 — 실패해도 자기를 버리지 않을 사람이 있다는 확신이 필요하다는 뜻이야. 무조건적 수용을 원하는 거지.', no: '🤔 보통 성공을 원하지만, 하준이는 "실패해보고 싶다"고 했어. 이 이상한 소원의 진짜 의미를 생각해봐. 하준이가 진짜 원하는 건 실패 자체가 아니야.' },
+        '4_0': { ok: '🎉 잘 들었어. 순수한 즐거움이 "증명해야 하는 것"으로 바뀐 거야. 한 줄 긋고 멈추는 그 손의 변화가, 마음의 변화를 보여주는 거지.', no: '🤔 서연이는 그림을 계속 그리긴 해. 그만두지 않았어. 근데 뭔가 달라졌어. "한 줄 긋고 멈추는" 부분을 다시 읽어봐. 뭐가 달라진 걸까?' },
+        '4_1': { ok: '🎉 깊이 들었구나. 아빠의 말이 서연이 안에 "내면의 비평가"로 자리 잡은 거야. 외부의 말이 내 안의 목소리가 되는 것 — 이게 가장 무서운 영향이야.', no: '🤔 서연이가 "아빠 목소리로 들린다"고 했어. 아빠가 옆에 없는데도. 이건 단순히 아빠를 떠올리는 게 아니라, 뭔가 더 깊은 변화를 뜻해. 다시 읽어봐.' },
+        '4_2': { ok: '🎉 정확해. 서연이가 잃어버린 건 실력이 아니라 "당당함"이야. 좋아하는 것을 좋아한다고 당당하게 말할 수 있는 자신감. 그게 꿈의 시작인데.', no: '🤔 서연이는 예전에 "화가 될 거야!"라고 했는데, 지금은 "그냥 취미야"라고 해. 실력이 줄었을까? 아니야. 그럼 뭐가 줄어든 걸까?' },
+        '5_0': { ok: '🎉 잘 봤어. 진호는 상처받았지만 웃었어. 그리고 도윤이는 그 순간에는 몰랐어. "나중에서야 깨달은 것" — 이게 경청의 핵심이야. 그 순간에 알아차렸다면 달라졌을 거야.', no: '🤔 도윤이가 "눈이 안 웃고 입만 올라간 웃음"이라고 했어. 이 디테일이 왜 중요할까? 진호가 정말 괜찮았던 걸까?' },
+        '5_1': { ok: '🎉 정확해. "장난이었어"는 "네가 예민한 거야"로 들릴 수 있어. 사과가 또 다른 상처가 되는 거지. 도윤이가 이걸 알고 있다는 것 자체가 대단한 거야.', no: '🤔 도윤이는 "장난이었어"가 위험하다는 걸 알아. 왜? 그 말이 상대방에게 어떤 메시지로 전달될 수 있는지 도윤이의 설명을 다시 읽어봐.' },
+        '5_2': { ok: '🎉 깊이 들었구나. 사과 자체가 아니라 "사과 이후"가 무서운 거야. 용서받지 못하면 마지막 가능성이 사라지니까, 차라리 어중간한 상태로 두는 게 "안전"한 거지.', no: '🤔 도윤이는 사과하고 싶다고 했어. 근데 못해. "방법을 몰라서"일까? 도윤이가 진짜 두려워하는 건 사과가 아니라, 사과 "다음"에 일어날 일이야.' },
+        '6_0': { ok: '🎉 잘 들었어. "혼자가 편해"는 사실 "거절당하는 게 무서워"의 다른 말이야. 먼저 거절하면 적어도 내가 고른 거니까 덜 아프거든.', no: '🤔 예린이는 말하고 나서 후회한다고 했어. 정말 혼자가 편한 사람은 후회하지 않아. 예린이가 "제일 무섭다"고 한 순간을 다시 읽어봐.' },
+        '6_1': { ok: '🎉 정확해. 신발끈은 핑계고, 진짜는 "선택하지 않기 위한 시간 벌기"야. 선택하지 않으면 거절당할 일도 없으니까.', no: '🤔 신발끈이 정말 자주 풀리는 걸까? 예린이가 "먼저 나가면 어디 앉을지 내가 정해야 하잖아"라고 한 부분을 다시 읽어봐.' },
+        '6_2': { ok: '🎉 깊이 들었구나. 예린이가 기다리는 건 "한 번 더 물어봐주는 사람"이야. 한 번의 거절로 끝나지 않는 관심 — 그게 안전하다는 증거니까.', no: '🤔 예린이는 이름은 다 안대. 그런데도 친구가 없다고 느껴. 예린이가 "부탁할 수 없다"고 한 게 뭐였는지 다시 읽어봐.' },
+        '7_0': { ok: '🎉 맞아. "그럴 수 있지"라고 넘긴 건 마음이 아니라 말뿐이었어. 열 번 다시 본 행동이 진짜 마음을 보여주는 거야.', no: '🤔 정말 아무렇지 않았다면 밤에 대화창을 열 번이나 다시 볼까? 시윤이가 뭘 찾고 있었는지 생각해봐.' },
+        '7_1': { ok: '🎉 정확해. 물어보지 않으면 "아직 모르는 상태"로 남지만, 물어보면 확정돼 버려. 그래서 모르는 채로 두는 걸 택한 거야.', no: '🤔 시윤이는 다섯 번이나 썼다 지웠어. 쓸 줄 몰라서가 아니야. 시윤이가 무서워한 건 "질문"이 아니라 "돌아올 대답"이야.' },
+        '7_2': { ok: '🎉 깊이 읽었구나. 소외감보다 동정이 더 아플 수 있어. 그래도 물어봐준 게 좋았다는 건, 시윤이가 아직 문을 닫지 않았다는 뜻이야.', no: '🤔 시윤이는 하루에 백 번 폰을 본대. 그런데 왜 "잘 안 본다"고 했을까? 시윤이가 가장 싫다고 한 게 뭔지 다시 읽어봐.' },
+        '8_0': { ok: '🎉 잘 들었어. 미리 멀어지는 건 이별을 준비하는 게 아니라, 이별이 덜 아프길 바라는 마음이야. 근데 그러면 남은 시간까지 잃게 되지.', no: '🤔 건우는 진짜 바쁜 게 아니라고 했어. 그런데도 거절해. 두 달 뒤에 무슨 일이 있는지 다시 떠올려봐.' },
+        '8_1': { ok: '🎉 정확해. 말하지 않는 것도 메시지가 돼. 태호는 이유를 몰라서 "내가 잘못했나"라고 자기를 탓하게 된 거야.', no: '🤔 태호는 "나 뭐 잘못했냐"고 물었어. 건우가 아무 말도 안 하면 태호는 그 이유를 어디서 찾게 될까?' },
+        '8_2': { ok: '🎉 놀라운 통찰이야. 건우가 두려운 건 이사가 아니라 "나만 아쉬웠다"는 확인이야. 마음의 무게가 같지 않다는 걸 아는 게 제일 무서운 거지.', no: '🤔 건우는 "야, 아직 두 달이나 남았잖아"라는 말을 듣고 싶어 해. 그 말이 무엇을 증명해주는 말인지 생각해봐.' }
+    };
+    const entry = FEEDBACK[key];
+    const msg = entry ? (isCorrect ? entry.ok : entry.no) : (isCorrect ? '🎉 잘 들었어! 말 속에 숨은 진짜 마음을 읽었구나.' : '🤔 천천히 다시 읽어볼까? 겉으로 보이는 감정 아래에 숨은 마음을 찾아봐.');
+    fb.innerHTML = `<div class="quiz-feedback ${isCorrect ? 'correct' : 'incorrect'}">${msg}</div>`;
+    document.getElementById('part-next-btn').style.display = 'block';
+}
+
+window.nextPart = async function(key) {
+    // 키워드 저장
+    const input = document.getElementById(`keyword-input-${key}`);
+    if (input && input.value.trim()) {
+        const existing = keywords.findIndex(k => k.key === key);
+        if (existing >= 0) keywords[existing].text = input.value.trim();
+        else keywords.push({ key, text: input.value.trim() });
+    }
+
+    if (currentPartIdx < currentScenario.parts.length - 1) {
+        currentPartIdx++;
+        renderPart();
+        window.scrollTo(0, 0);
+    } else {
+        completedScenarios.add(currentScenario.id);
+        showToast(`✅ ${currentScenario.name}의 이야기 완료!`, 'success');
+        await saveStudentProgress();
+        renderScenarioList();
+        showScreen('screen-main');
+    }
+};
+
+async function saveStudentProgress() {
+    if (isSoloMode) return;
+    const correct = Object.values(quizResults).filter(v => v === true).length;
+    const total = Object.values(quizResults).length;
+    await DB.saveStudent(currentRoomCode, currentNickname, {
+        listenStatus, quizResults, answers,
+        keywords,                                   // [{key,text}] — 재입장 복원용
+        keywordTexts: keywords.map(k => k.text),    // 내보내기/대시보드용
+        completedScenarios: Array.from(completedScenarios),
+        coreDone: coreDoneCount(), bonusDone: bonusDoneCount(),
+        quizCorrect: correct, quizTotal: total,
+        lastActivity: new Date().toISOString()
+    });
+}
+
+window.backToScenarioList = function() { renderScenarioList(); showScreen('screen-main'); };
+
+// ═══ 결과 화면 ═══
+window.goToResult = async function() {
+    await saveStudentProgress();
+    const focus = Object.values(listenStatus).filter(v => v === 'focus').length;
+    const confused = Object.values(listenStatus).filter(v => v === 'confused').length;
+    const wander = Object.values(listenStatus).filter(v => v === 'wander').length;
+    const total = focus + confused + wander || 1;
+    document.getElementById('result-focus-count').textContent = focus;
+    document.getElementById('result-confused-count').textContent = confused;
+    document.getElementById('result-wander-count').textContent = wander;
+    document.getElementById('result-focus-bar').style.width = (focus/total*100) + '%';
+    document.getElementById('result-confused-bar').style.width = (confused/total*100) + '%';
+    document.getElementById('result-wander-bar').style.width = (wander/total*100) + '%';
+
+    const qCorrect = Object.values(quizResults).filter(v => v === true).length;
+    const qTotal = Object.values(quizResults).length;
+    const acc = qTotal > 0 ? Math.round((qCorrect / qTotal) * 100) : 0;
+    document.getElementById('result-accuracy').textContent = acc + '%';
+    document.getElementById('result-quiz-detail').textContent = `${qCorrect}/${qTotal} 이야기와 같았어요`;
+
+    const kwArea = document.getElementById('result-keywords');
+    kwArea.innerHTML = keywords.length > 0
+        ? keywords.map(k => `<span class="keyword-tag">${esc(k.text)}</span>`).join('')
+        : '<span style="color:var(--text-light);">직접 입력한 내용이 없어요</span>';
+
+    showScreen('screen-result');
+};
+
+// ═══ 명상 / 질문 / 다짐 ═══
+window.submitMeditation = function() {
+    answers.meditation = document.getElementById('meditation-answer').value;
+    queueSave(0);
+    showScreen('screen-questions');
+};
+
+window.submitQuestions = function() {
+    answers.q1 = document.getElementById('q1-answer').value;
+    answers.q2 = document.getElementById('q2-answer').value;
+    answers.q3 = document.getElementById('q3-answer').value;
+    queueSave(0);
+    showScreen('screen-pledge');
+};
+
+window.submitPledge = async function() {
+    answers.pledge = document.getElementById('pledge-answer').value;
+    answers.empathyFeeling = document.getElementById('empathy-feeling')?.value || '';
+    if (!isSoloMode) {
+        await saveStudentProgress();
+        await DB.saveStudent(currentRoomCode, currentNickname, {
+            answers, completedAt: new Date().toISOString()
+        });
+    }
+    const done = completedScenarios.size;
+    const qCorrect = Object.values(quizResults).filter(v => v === true).length;
+    const qAll = Object.keys(quizResults).length;
+    const bd = bonusDoneCount();
+    document.getElementById('complete-summary').innerHTML = `
+        🔍 ${done}명의 친구 이야기를 들었어요!` + (bd ? ` <span style="color:var(--primary);">(보너스 ${bd}명 포함)</span>` : '') + `<br>
+        🎯 이야기와 같은 답: ${qAll > 0 ? Math.round(qCorrect/qAll*100) : 0}%<br>
+        ✨ 다짐: "${esc(answers.pledge || '...')}"`;
+    showScreen('screen-complete');
+};
+
+// ═══ 완료 후 계속 활동 ═══
+window.backToMain = function() {
+    renderScenarioList();
+    showScreen('screen-main');
+    const left = SCENARIOS.length - completedScenarios.size;
+    showToast(left > 0 ? `🔍 아직 ${left}명의 이야기가 남아 있어요!` : '🔍 모든 이야기를 들었어요! 다시 들어봐도 좋아요.', 'success');
+};
+
+// 혼자 체험 모드 포함 — 내 결과를 텍스트 파일로 저장
+window.downloadMyResult = function() {
+    const focus = Object.values(listenStatus).filter(v => v === 'focus').length;
+    const confused = Object.values(listenStatus).filter(v => v === 'confused').length;
+    const wander = Object.values(listenStatus).filter(v => v === 'wander').length;
+    const qc = Object.values(quizResults).filter(v => v === true).length;
+    const qt = Object.values(quizResults).length;
+    const L = [];
+    L.push('🔍 경청 탐정 — 나의 기록');
+    L.push('작성: ' + new Date().toLocaleString('ko-KR'));
+    L.push('탐정 이름: ' + (currentNickname || '탐험가'));
+    L.push('');
+    L.push('■ 들은 이야기 (' + completedScenarios.size + '/' + SCENARIOS.length + ')');
+    SCENARIOS.forEach(sc => { if (completedScenarios.has(sc.id)) L.push('  - ' + sc.name + ' : ' + sc.topic + (sc.bonus ? ' (보너스)' : '')); });
+    L.push('');
+    L.push('■ 듣기 상태');
+    L.push('  집중 ' + focus + ' / 헷갈림 ' + confused + ' / 딴생각 ' + wander);
+    L.push('  이야기와 같은 답 ' + qc + '/' + qt + (qt ? ' (' + Math.round(qc / qt * 100) + '%)' : ''));
+    L.push('');
+    L.push('■ 내가 찾은 진짜 마음');
+    if (keywords.length) keywords.forEach(k => L.push('  - ' + k.text));
+    else L.push('  (기록 없음)');
+    L.push('');
+    L.push('■ 마음에 남은 장면');
+    L.push('  ' + (answers.meditation || '(기록 없음)'));
+    L.push('');
+    L.push('■ 깊이 생각해보기');
+    L.push('  1) ' + (answers.q1 || '(기록 없음)'));
+    L.push('  2) ' + (answers.q2 || '(기록 없음)'));
+    L.push('  3) ' + (answers.q3 || '(기록 없음)'));
+    L.push('');
+    L.push('■ 오늘의 다짐');
+    L.push('  ' + (answers.pledge || '(기록 없음)'));
+    try {
+        const blob = new Blob(['\uFEFF' + L.join('\n')], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = '경청탐정_' + (currentNickname || '탐험가') + '.txt';
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); document.body.removeChild(a); }, 500);
+        showToast('📄 내 결과를 저장했어요!', 'success');
+    } catch (e) {
+        showToast('📄 저장이 어려운 환경이에요. 화면을 캡처해 두세요.', 'info');
+    }
+};
+
+window.confirmGoHome = function() {
+    const done = completedScenarios.size;
+    const msg = done > 0
+        ? `처음 화면으로 돌아갈까요?<br><br>🔍 완료한 시나리오: ${done}개<br>` +
+          (isSoloMode ? '⚠️ 혼자 체험 모드는 나가면 기록이 사라져요!' : '✅ 같은 닉네임으로 다시 들어오면 이어할 수 있어요!')
+        : '처음 화면으로 돌아갈까요?';
+    showConfirmModal(msg, () => { if (unsubscribe) { unsubscribe(); unsubscribe = null; } showScreen('screen-start'); });
+};
+
+// ═══ 교사 대시보드 ═══
+function startDashboardListener() {
+    if (unsubscribe) { try { unsubscribe(); } catch(e) {} unsubscribe = null; }   // 재진입 시 이전 리스너 해제
+    unsubscribe = DB.onStudentsChange(currentRoomCode, (students) => {
+        dashboardData = students;
+        renderDashboard(students);
+    });
+    if (!unsubscribe) {
+        DB.getAllStudents(currentRoomCode).then(s => { dashboardData = s; renderDashboard(s); });
+    }
+}
+
+// 학생 문서에서 "찾은 진짜 마음" 문장 배열을 꺼낸다 (구 포맷 = 문자열 배열도 수용)
+function kwList(d) {
+    if (Array.isArray(d.keywordTexts)) return d.keywordTexts.filter(Boolean);
+    if (Array.isArray(d.keywords)) return d.keywords.map(k => (typeof k === 'string' ? k : (k && k.text) || '')).filter(Boolean);
+    return [];
+}
+
+function renderDashboard(students) {
+    const entries = Object.entries(students || {});
+    const total = entries.length;
+    const completed = entries.filter(([,d]) => d.completedAt).length;
+
+    // 현황 탭
+    let focusTotal = 0, confusedTotal = 0, wanderTotal = 0;
+    entries.forEach(([,d]) => {
+        if (d.listenStatus) {
+            Object.values(d.listenStatus).forEach(v => { if(v==='focus') focusTotal++; else if(v==='confused') confusedTotal++; else if(v==='wander') wanderTotal++; });
+        }
+    });
+    const listenAll = focusTotal + confusedTotal + wanderTotal || 1;
+
+    // 시나리오별 완료 분포
+    const scCount = {};
+    SCENARIOS.forEach(sc => { scCount[sc.id] = 0; });
+    entries.forEach(([,d]) => (d.completedScenarios || []).forEach(id => { if (scCount[id] !== undefined) scCount[id]++; }));
+    const scMax = Math.max(1, ...Object.values(scCount));
+    const scBars = SCENARIOS.map(sc => `
+        <div class="result-stat">
+            <span class="stat-icon">${sc.emoji}</span>
+            <div class="stat-bar">
+                <div class="stat-label">${esc(sc.name)}${sc.bonus ? ' (보너스)' : ''} — ${esc(sc.topic)}</div>
+                <div class="progress-wrap"><div class="progress-fill" style="width:${scCount[sc.id]/scMax*100}%;background:${sc.color};"></div></div>
+            </div>
+            <span class="stat-value">${scCount[sc.id]}</span>
+        </div>`).join('');
+
+    // 공감 선택 분포
+    const EMP_LABEL = { '놓친적있음': '😅 내가 놓친 적 있어', '내말무시당함': '😔 내 말이 무시당했어', '둘다': '🫣 둘 다 있어', '모르겠음': '🤷 잘 모르겠어' };
+    const empCount = {};
+    entries.forEach(([,d]) => { const v = d.answers && d.answers.empathy; if (v) empCount[v] = (empCount[v] || 0) + 1; });
+    const empMax = Math.max(1, ...Object.values(empCount), 1);
+    const empBars = Object.keys(EMP_LABEL).map(k => `
+        <div class="result-stat">
+            <div class="stat-bar">
+                <div class="stat-label">${EMP_LABEL[k]}</div>
+                <div class="progress-wrap"><div class="progress-fill" style="width:${(empCount[k]||0)/empMax*100}%"></div></div>
+            </div>
+            <span class="stat-value">${empCount[k]||0}</span>
+        </div>`).join('');
+
+    // 학생들이 찾은 "진짜 마음" 문장 모음
+    const allKw = [];
+    entries.forEach(([n,d]) => kwList(d).forEach(t => allKw.push({ n, t })));
+
+    document.getElementById('tab-overview').innerHTML = `
+        <div class="card">
+            <h3>📊 참여 현황</h3>
+            <div class="result-stat"><span class="stat-icon">👥</span><div class="stat-bar"><div class="stat-label">참여 학생</div></div><span class="stat-value">${total}명</span></div>
+            <div class="result-stat"><span class="stat-icon">✅</span><div class="stat-bar"><div class="stat-label">완료 학생</div></div><span class="stat-value">${completed}명</span></div>
+            <div class="result-stat"><span class="stat-icon">📈</span><div class="stat-bar"><div class="stat-label">완료율</div><div class="progress-wrap"><div class="progress-fill" style="width:${total ? completed/total*100 : 0}%"></div></div></div><span class="stat-value">${total ? Math.round(completed/total*100) : 0}%</span></div>
+        </div>
+        <div class="card">
+            <h3>🗂️ 이야기별 완료 인원</h3>
+            ${scBars}
+        </div>
+        <div class="card">
+            <h3>💭 "혹시 나도..." 선택 분포</h3>
+            ${empBars}
+        </div>
+        <div class="card">
+            <h3>👂 학급 집중도</h3>
+            <div class="result-stat"><span class="stat-icon">👂</span><div class="stat-bar"><div class="stat-label">집중</div><div class="progress-wrap"><div class="progress-fill" style="width:${focusTotal/listenAll*100}%;background:var(--success);"></div></div></div><span class="stat-value">${focusTotal}</span></div>
+            <div class="result-stat"><span class="stat-icon">❓</span><div class="stat-bar"><div class="stat-label">헷갈림</div><div class="progress-wrap"><div class="progress-fill" style="width:${confusedTotal/listenAll*100}%;background:var(--warning);"></div></div></div><span class="stat-value">${confusedTotal}</span></div>
+            <div class="result-stat"><span class="stat-icon">💭</span><div class="stat-bar"><div class="stat-label">딴생각</div><div class="progress-wrap"><div class="progress-fill" style="width:${wanderTotal/listenAll*100}%;background:var(--error);"></div></div></div><span class="stat-value">${wanderTotal}</span></div>
+        </div>
+        <div class="card">
+            <h3>📝 학생들이 찾은 "진짜 마음" (${allKw.length}개)</h3>
+            <div style="max-height:260px; overflow-y:auto;">
+            ${allKw.length ? allKw.map(k => `<div style="padding:6px 0; border-bottom:1px solid #F3F4F6; font-size:14px;"><span class="keyword-tag">${esc(k.n)}</span> ${esc(k.t)}</div>`).join('') : '<p style="color:var(--text-light);">아직 기록이 없습니다.</p>'}
+            </div>
+        </div>
+        <div class="card">
+            <h3>💬 학생 다짐 모음</h3>
+            ${entries.filter(([,d]) => d.answers && d.answers.pledge).map(([n,d]) => `<div style="padding:6px 0; border-bottom:1px solid #F3F4F6;"><strong>${esc(n)}:</strong> "${esc(d.answers.pledge)}"</div>`).join('') || '<p style="color:var(--text-light);">아직 다짐을 쓴 학생이 없습니다.</p>'}
+        </div>`;
+
+    // 상세기록 탭
+    document.getElementById('tab-detail').innerHTML = `<div class="card"><h3>📋 학생별 상세 기록</h3>
+        <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <tr style="background:#F3F4F6;"><th style="padding:8px; border:1px solid #E5E7EB;">닉네임</th><th style="padding:8px; border:1px solid #E5E7EB;">기본</th><th style="padding:8px; border:1px solid #E5E7EB;">보너스</th><th style="padding:8px; border:1px solid #E5E7EB;">같은 답</th><th style="padding:8px; border:1px solid #E5E7EB;">집중</th><th style="padding:8px; border:1px solid #E5E7EB;">다짐</th></tr>
+            ${entries.length ? entries.map(([n,d]) => {
+                const list = d.completedScenarios || [];
+                const cd = CORE_SCENARIOS.filter(x => list.indexOf(x.id) >= 0).length;
+                const bd2 = BONUS_SCENARIOS.filter(x => list.indexOf(x.id) >= 0).length;
+                const qc = d.quizCorrect || 0;
+                const qt = d.quizTotal || 0;
+                const fc = d.listenStatus ? Object.values(d.listenStatus).filter(v=>v==='focus').length : 0;
+                return `<tr><td style="padding:8px; border:1px solid #E5E7EB; font-weight:700;">${esc(n)}</td><td style="padding:8px; border:1px solid #E5E7EB; text-align:center;">${cd}/${CORE_SCENARIOS.length}</td><td style="padding:8px; border:1px solid #E5E7EB; text-align:center;">${bd2}/${BONUS_SCENARIOS.length}</td><td style="padding:8px; border:1px solid #E5E7EB; text-align:center;">${qc}/${qt}</td><td style="padding:8px; border:1px solid #E5E7EB; text-align:center;">👂${fc}</td><td style="padding:8px; border:1px solid #E5E7EB;">${esc((d.answers && d.answers.pledge) || '-')}</td></tr>`;
+            }).join('') : '<tr><td colspan="6" style="padding:12px; border:1px solid #E5E7EB; text-align:center; color:#6B7280;">학생 데이터가 없습니다.</td></tr>'}
+        </table></div></div>`;
+
+    // TTS 탭
+    renderTTS(entries);
+}
+
+// ═══ TTS: 영역별 재생/정지 + 스크립트 미리보기 ═══
+let ttsScripts = {};
+let previewKey = null;
+
+function stripTags(html) { return String(html).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim(); }
+
+function buildTTSScripts(entries) {
+    const scripts = {};
+    scripts['concepts'] = { title: '👂 개념 카드 읽어주기',
+        text: CONCEPTS.map(c => c.title.replace(/[^\uAC00-\uD7A3a-zA-Z0-9 .,!?"\u2019]/g, '') + '. ' + c.desc.replace(/\n/g, ' ')).join('\n\n') };
+    SCENARIOS.forEach(sc => {
+        scripts['sc' + sc.id] = { title: `${sc.emoji} ${sc.name} 이야기 대본`,
+            text: sc.parts.map((p, i) => `${sc.name}의 이야기 ${i + 1}. ${stripTags(p.text)}`).join('\n\n') };
+    });
+    const pledges = entries.filter(([,d]) => d.answers && d.answers.pledge).map(([n,d]) => `${n} 학생. ${d.answers.pledge}`);
+    scripts['pledges'] = { title: '💬 학생 다짐 모음', text: pledges.length ? pledges.join('\n') : '아직 다짐을 쓴 학생이 없습니다.' };
+    const kws = [];
+    entries.forEach(([n,d]) => kwList(d).forEach(t => kws.push(`${n} 학생. ${t}`)));
+    scripts['keywords'] = { title: '📝 학생들이 찾은 진짜 마음', text: kws.length ? kws.join('\n') : '아직 기록이 없습니다.' };
+    const qa = [];
+    entries.forEach(([n,d]) => {
+        const a = d.answers || {};
+        if (a.q1 || a.q2 || a.q3) qa.push(`${n} 학생. ${[a.q1, a.q2, a.q3].filter(Boolean).join(' ')}`);
+    });
+    scripts['answers'] = { title: '💜 깊이 생각해보기 답변', text: qa.length ? qa.join('\n') : '아직 답변이 없습니다.' };
+    return scripts;
+}
+
+function renderTTS(entries) {
+    ttsScripts = buildTTSScripts(entries);
+    const row = (k) => `
+        <div style="border-bottom:1px solid #F3F4F6; padding:10px 0;">
+            <div style="font-size:15px; font-weight:700; margin-bottom:6px;">${esc(ttsScripts[k].title)}</div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="btn btn-primary btn-small" style="width:auto; margin:0;" onclick="speakSection('${k}')">▶️ 재생</button>
+                <button class="btn btn-secondary btn-small" style="width:auto; margin:0;" onclick="stopSpeaking()">⏹️ 정지</button>
+                <button class="btn btn-secondary btn-small" style="width:auto; margin:0;" onclick="previewScript('${k}')">📝 스크립트</button>
+            </div>
+        </div>`;
+    const scenarioRows = SCENARIOS.map(sc => row('sc' + sc.id)).join('');
+    document.getElementById('tts-content').innerHTML = `
+        <h3>🔊 영역별 읽어주기</h3>
+        <p style="font-size:13px; color:var(--text-light); font-weight:400; margin-bottom:8px;">교사용 기능입니다. 📝 버튼으로 읽을 내용을 먼저 확인할 수 있어요.</p>
+        ${row('concepts')}
+        ${scenarioRows}
+        ${row('pledges')}
+        ${row('keywords')}
+        ${row('answers')}`;
+}
+
+window.speakSection = function(key) {
+    const sc = ttsScripts[key];
+    if (!sc) return;
+    speakText(sc.text);
+};
+
+window.previewScript = function(key) {
+    const sc = ttsScripts[key];
+    if (!sc) return;
+    previewKey = key;
+    document.getElementById('scriptModalTitle').textContent = sc.title;
+    document.getElementById('scriptModalBody').textContent = sc.text;
+    document.getElementById('scriptModal').style.display = 'flex';
+};
+window.closeScriptModal = function() { document.getElementById('scriptModal').style.display = 'none'; };
+window.speakPreviewedScript = function() { if (previewKey) speakSection(previewKey); };
+
+window.speakText = function(text) {
+    window.speechSynthesis.cancel();
+    const chunks = String(text).match(/[\s\S]{1,180}/g) || [];
+    chunks.forEach(c => {
+        const u = new SpeechSynthesisUtterance(c); u.lang = 'ko-KR'; u.rate = 0.9;
+        window.speechSynthesis.speak(u);
+    });
+};
+window.stopSpeaking = function() { window.speechSynthesis.cancel(); };
+
+// 암묵적 전역 event 의존 제거 (strict mode 대응)
+window.switchTab = function(tabId, el) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById(tabId);
+    if (panel) panel.classList.add('active');
+    const btn = el || (typeof event !== 'undefined' && event ? event.target : null);
+    if (btn && btn.classList) btn.classList.add('active');
+};
+
+window.refreshDashboard = function() {
+    DB.getAllStudents(currentRoomCode).then(s => { dashboardData = s; renderDashboard(s); });
+};
+
+// ═══ 내보내기 ═══
+window.downloadExcel = function() {
+    const entries = Object.entries(dashboardData);
+    if (!entries.length) { showToast('내보낼 데이터가 없습니다.', 'error'); return; }
+    const wsData = [['닉네임', '참여시간', '마지막활동', '기본완료', '보너스완료', '이야기와같은답', '퀴즈전체', '같은답비율(%)', '집중', '헷갈림', '딴생각', '찾은진짜마음', '공감선택', '명상답변', '질문1', '질문2', '질문3', '다짐', '완료시각']];
+    entries.forEach(([n, d]) => {
+        const ls = d.listenStatus || {};
+        const a = d.answers || {};
+        const list = d.completedScenarios || [];
+        const cd = CORE_SCENARIOS.filter(x => list.indexOf(x.id) >= 0).length;
+        const bd2 = BONUS_SCENARIOS.filter(x => list.indexOf(x.id) >= 0).length;
+        const qc = d.quizCorrect || 0, qt = d.quizTotal || 0;
+        wsData.push([n, d.joinedAt || '', d.lastActivity || '', `${cd}/${CORE_SCENARIOS.length}`, `${bd2}/${BONUS_SCENARIOS.length}`, qc, qt, qt ? Math.round(qc/qt*100) : 0,
+            Object.values(ls).filter(v=>v==='focus').length, Object.values(ls).filter(v=>v==='confused').length, Object.values(ls).filter(v=>v==='wander').length,
+            kwList(d).join(' | '),
+            a.empathy || '', a.meditation || '', a.q1 || '', a.q2 || '', a.q3 || '', a.pledge || '', d.completedAt || '' ]);
+    });
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '경청탐정_결과');
+    XLSX.writeFile(wb, `SEL_경청탐정_${currentRoomCode}.xlsx`);
+    showToast('📥 엑셀 파일이 다운로드됩니다!', 'success');
+};
+
+window.downloadPDF = function() {
+    const entries = Object.entries(dashboardData);
+    if (!entries.length) { showToast('내보낼 데이터가 없습니다.', 'error'); return; }
+    let pdfBody = '';
+    const total = entries.length, completed = entries.filter(([,d]) => d.completedAt).length;
+    pdfBody += `<div class="card"><h3>📊 참여 현황</h3><p>참여 ${total}명 / 완료 ${completed}명</p></div>`;
+    // 이야기별 완료 인원
+    const scCount = {};
+    SCENARIOS.forEach(sc => { scCount[sc.id] = 0; });
+    entries.forEach(([,d]) => (d.completedScenarios||[]).forEach(id => { if (scCount[id] !== undefined) scCount[id]++; }));
+    pdfBody += `<div class="card"><h3>🗂️ 이야기별 완료 인원</h3><table><tr><th>이야기</th><th>주제</th><th>완료</th></tr>`;
+    SCENARIOS.forEach(sc => { pdfBody += `<tr><td>${esc(sc.name)}${sc.bonus?' (보너스)':''}</td><td>${esc(sc.topic)}</td><td>${scCount[sc.id]}명</td></tr>`; });
+    pdfBody += '</table></div>';
+
+    pdfBody += `<div class="card"><h3>📋 학생별 상세 기록</h3><table><tr><th>닉네임</th><th>기본</th><th>보너스</th><th>같은 답</th><th>집중</th><th>다짐</th></tr>`;
+    entries.forEach(([n,d]) => {
+        const ls = d.listenStatus || {};
+        const list = d.completedScenarios || [];
+        const cd = CORE_SCENARIOS.filter(x => list.indexOf(x.id) >= 0).length;
+        const bd2 = BONUS_SCENARIOS.filter(x => list.indexOf(x.id) >= 0).length;
+        pdfBody += `<tr><td>${esc(n)}</td><td>${cd}/${CORE_SCENARIOS.length}</td><td>${bd2}/${BONUS_SCENARIOS.length}</td><td>${d.quizCorrect||0}/${d.quizTotal||0}</td><td>👂${Object.values(ls).filter(v=>v==='focus').length}</td><td>${esc((d.answers && d.answers.pledge)||'-')}</td></tr>`;
+    });
+    pdfBody += '</table></div>';
+
+    // 학생들이 찾은 "진짜 마음"
+    pdfBody += `<div class="card"><h3>📝 학생들이 찾은 "진짜 마음"</h3><table><tr><th>닉네임</th><th>내용</th></tr>`;
+    let kwRows = 0;
+    entries.forEach(([n,d]) => kwList(d).forEach(t => { kwRows++; pdfBody += `<tr><td>${esc(n)}</td><td>${esc(t)}</td></tr>`; }));
+    if (!kwRows) pdfBody += `<tr><td colspan="2">기록 없음</td></tr>`;
+    pdfBody += '</table></div>';
+
+    // 깊이 생각해보기 답변
+    pdfBody += `<div class="card"><h3>💜 깊이 생각해보기 답변</h3><table><tr><th>닉네임</th><th>질문1</th><th>질문2</th><th>질문3</th></tr>`;
+    entries.forEach(([n,d]) => {
+        const a = d.answers || {};
+        pdfBody += `<tr><td>${esc(n)}</td><td>${esc(a.q1||'-')}</td><td>${esc(a.q2||'-')}</td><td>${esc(a.q3||'-')}</td></tr>`;
+    });
+    pdfBody += '</table></div>';
+    try {
+        const pw = window.open('', '_blank');
+        if (pw) {
+            pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>경청 탐정 대시보드</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>*{font-family:'Noto Sans KR',sans-serif;margin:0;padding:0;box-sizing:border-box;}body{padding:24px;font-size:14px;color:#1F2937;line-height:1.6;}
+.print-header{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #7C3AED;}
+.print-header h2{color:#7C3AED;font-size:20px;margin-bottom:4px;}.print-header p{color:#6B7280;font-size:12px;}
+.card{border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin:12px 0;page-break-inside:avoid;}
+table{width:100%;border-collapse:collapse;margin:8px 0;}th,td{border:1px solid #E5E7EB;padding:8px 10px;text-align:left;font-size:13px;}th{background:#F3F4F6;font-weight:700;}
+h3{color:#7C3AED;font-size:16px;margin:12px 0 8px;}.print-guide{background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;text-align:center;}@media print{.print-guide{display:none;}}</style></head><body>
+<div class="print-guide">💡 <strong>PDF로 저장하려면:</strong> 인쇄 대화상자에서 "대상"을 <strong>"PDF로 저장"</strong>으로 선택하세요.</div>
+<div class="print-header"><h2>🔍 경청 탐정 대시보드</h2><p>방 코드: ${currentRoomCode} | 출력: ${new Date().toLocaleString('ko-KR')}</p></div>
+${pdfBody}<scr`+`ipt>setTimeout(function(){window.print();},1000);</scr`+`ipt></body></html>`);
+            pw.document.close();
+            showToast('📄 새 창에서 인쇄 화면이 열립니다.', 'success');
+            return;
+        }
+    } catch(e) {}
+    try { showToast('📄 Ctrl+P를 눌러 PDF로 저장해주세요.', 'info'); setTimeout(() => window.print(), 500); } catch(e) {}
+};
+
+window.confirmResetData = function() {
+    showConfirmModal('⚠️ 학생들의 활동 기록을 모두 삭제할까요?<br>이 작업은 되돌릴 수 없습니다.<br><br><span style="font-size:14px; color:var(--text-light);">방 코드와 비밀번호는 그대로 유지되어,<br>초기화 후에도 같은 방으로 다시 들어올 수 있어요.</span>', async () => {
+        if (unsubscribe) { try { unsubscribe(); } catch(e) {} unsubscribe = null; }   // 삭제 이벤트 폭주 방지
+        await DB.resetStudents(currentRoomCode);   // ⚠️ 방 문서는 지우지 않는다
+        dashboardData = {};
+        renderDashboard({});
+        startDashboardListener();                  // 리스너 재연결
+        showToast('🗑️ 학생 기록이 초기화되었습니다. (방은 그대로예요)', 'success');
+    });
+};
+
+// 초기화
+function initApp() {
+    renderScenarioList();
+    console.log('🔍 경청 탐정 앱 로드 완료!');
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initApp);
+else initApp();
+
+// 페이지 이탈 직전 마지막 저장 시도
+window.addEventListener('pagehide', () => {
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; saveStudentProgress(); }
+});
+</script>
+</body>
+</html>

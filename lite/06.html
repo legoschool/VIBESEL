@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나만의 스트레스 대처 방법</title>
+<style>
+:root{--main:#7C3AED;--bg:#F5F3FF;--text:#1F2937;--dim:#6B7280;--success:#10B981;--warning:#F59E0B;--error:#EF4444}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;padding:16px}
+.wrap{max-width:560px;margin:0 auto}
+.screen{display:none}.screen.on{display:block}
+.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:0 2px 12px rgba(124,58,237,.08)}
+h1{font-size:25px;color:var(--main);text-align:center;margin-bottom:6px}
+h2{font-size:20px;color:var(--main);margin-bottom:10px}
+h3{font-size:16px;margin:14px 0 8px}
+p.sub{text-align:center;color:var(--dim);font-size:15px;margin-bottom:12px}
+.btn{display:block;width:100%;padding:14px;margin:8px 0;border:none;border-radius:12px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer}
+.btn-main{background:var(--main);color:#fff}
+.btn-sub{background:#EDE9FE;color:var(--main)}
+.btn-line{background:#fff;color:var(--dim);border:1px solid #E5E7EB;font-size:14px;padding:9px;width:auto;display:inline-block;margin-right:6px}
+input,textarea{width:100%;padding:12px;border:1px solid #DDD6FE;border-radius:10px;font-size:15px;font-family:inherit;margin:6px 0 12px}
+textarea{min-height:62px;resize:vertical}
+label{font-size:15px;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{padding:9px 13px;border-radius:999px;border:2px solid #E5E7EB;background:#fff;font-size:14px;font-family:inherit;cursor:pointer;font-weight:700;text-align:left}
+.chip.on{border-color:var(--main);background:#F5F3FF;color:var(--main)}
+.chip small{display:block;font-weight:400;font-size:12px;color:var(--dim)}
+.chip.on small{color:var(--main)}
+.cat{font-size:15px;font-weight:700;margin:14px 0 4px;color:var(--text)}
+.pick{border:1px solid #E9D5FF;border-radius:12px;padding:14px;margin:10px 0;background:#FAF9FF}
+.pick h4{font-size:15px;margin-bottom:8px;color:var(--main)}
+.mini{display:flex;flex-wrap:wrap;gap:6px}
+.mini button{padding:7px 11px;border-radius:999px;border:2px solid #E5E7EB;background:#fff;font-size:13px;font-family:inherit;cursor:pointer;font-weight:700}
+.mini button.on{border-color:var(--main);background:#EDE9FE;color:var(--main)}
+.box{background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:14px;margin:10px 0;font-size:15px}
+.box b{color:#B45309}
+.note{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:12px;font-size:14px;margin-top:12px}
+.stat{display:flex;justify-content:space-around;text-align:center;margin:12px 0}
+.stat b{display:block;font-size:30px;color:var(--main)}
+.stat span{font-size:13px;color:var(--dim)}
+.bar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:14px}
+.bar i{display:block;height:16px;background:var(--main);border-radius:4px;font-style:normal}
+.row{border-bottom:1px solid #F3F4F6;padding:10px 0;font-size:14px}
+.row b{color:var(--main)}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--text);color:#fff;padding:11px 20px;border-radius:999px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+.top{margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 1. 시작 -->
+  <section class="screen on" id="s-start">
+    <div class="card">
+      <h1 id="t-title"></h1>
+      <p class="sub" id="t-sub"></p>
+      <p class="sub" id="t-meta"></p>
+      <button class="btn btn-main" onclick="go('teacher')">방 만들기 (선생님)</button>
+      <button class="btn btn-sub" onclick="go('student')">방 코드로 참여하기 (학생)</button>
+      <button class="btn btn-sub" onclick="solo()">혼자 해보기</button>
+      <div class="note">스트레스는 없애는 게 아니라 다루는 것입니다. 나에게 맞는 방법을 찾는 활동입니다.</div>
+      <p class="sub" id="db-state" style="font-size:13px;margin:10px 0 0">저장소 확인 중</p>
+    </div>
+  </section>
+
+  <!-- 2. 방 입장 -->
+  <section class="screen" id="s-join">
+    <div class="card">
+      <h2 id="join-title"></h2>
+      <div id="join-teacher" style="display:none">
+        <p class="sub">아래 방 코드를 칠판에 적어 주세요.</p>
+        <h1 id="new-code" style="font-size:44px;letter-spacing:6px"></h1>
+        <button class="btn btn-main" onclick="openDash()">대시보드 열기</button>
+        <p class="sub" style="margin-top:18px">지난 시간에 만든 방을 다시 열려면</p>
+        <input id="in-dash" inputmode="numeric" maxlength="6" placeholder="예: 482913">
+        <button class="btn btn-sub" onclick="reopenDash()">그 방 대시보드 열기</button>
+      </div>
+      <div id="join-student" style="display:none">
+        <label>방 코드 (6자리)</label>
+        <input id="in-code" inputmode="numeric" maxlength="6" placeholder="예: 482913">
+        <label>닉네임 (실명 말고)</label>
+        <input id="in-nick" maxlength="10" placeholder="예: 파랑새7">
+        <button class="btn btn-main" onclick="joinRoom()">들어가기</button>
+      </div>
+      <button class="btn btn-line" onclick="home()">처음으로</button>
+    </div>
+  </section>
+
+  <!-- 3. 상황과 몸 신호 -->
+  <section class="screen" id="s-situation">
+    <div class="top"><button class="btn btn-line" onclick="home()">처음으로</button><span id="who" style="font-size:14px;color:#6B7280"></span></div>
+    <div class="card">
+      <h2>요즘 나를 힘들게 하는 것</h2>
+      <p class="sub" id="sit-guide"></p>
+      <div class="chips" id="sit-chips"></div>
+      <h3>그럴 때 몸에서 오는 신호</h3>
+      <div class="chips" id="sig-chips"></div>
+      <button class="btn btn-main" onclick="go('methods')">대처 방법 고르러 가기</button>
+    </div>
+  </section>
+
+  <!-- 4. 대처 방법 -->
+  <section class="screen" id="s-methods">
+    <div class="top"><button class="btn btn-line" onclick="go('situation')">뒤로</button></div>
+    <div class="card">
+      <h2>해 볼 만한 방법 고르기</h2>
+      <p class="sub" id="met-guide"></p>
+      <div id="met-list"></div>
+      <button class="btn btn-main" onclick="goEval()">고른 방법 살펴보기</button>
+    </div>
+  </section>
+
+  <!-- 5. 방법 평가 -->
+  <section class="screen" id="s-eval">
+    <div class="top"><button class="btn btn-line" onclick="go('methods')">뒤로</button></div>
+    <div class="card">
+      <h2>이 방법, 나한테 맞을까</h2>
+      <p class="sub">고른 방법마다 어떨 것 같은지와 언제 쓸지를 정해 보세요.</p>
+      <div id="eval-list"></div>
+      <button class="btn btn-main" onclick="goBox()">내 도구상자 만들기</button>
+    </div>
+  </section>
+
+  <!-- 6. 도구상자 -->
+  <section class="screen" id="s-box">
+    <div class="card">
+      <h2>나의 스트레스 도구상자</h2>
+      <div id="box-body"></div>
+      <h3>오늘 정한 것 중 딱 하나만 고른다면</h3>
+      <textarea id="my-one" placeholder="예: 모둠에서 답답해지면 복도를 한 바퀴 걷고 오기"></textarea>
+      <button class="btn btn-main" onclick="submitBox()">도구상자 내기</button>
+      <button class="btn btn-line" onclick="go('methods')">방법 다시 고르기</button>
+    </div>
+  </section>
+
+  <!-- 7. 완료 -->
+  <section class="screen" id="s-done">
+    <div class="card" style="text-align:center">
+      <h2 id="done-title"></h2>
+      <div id="done-body" style="text-align:left"></div>
+      <button class="btn btn-sub" onclick="copyMine()">내 도구상자 복사하기</button>
+      <button class="btn btn-line" onclick="home()">처음으로</button>
+    </div>
+  </section>
+
+  <!-- 8. 교사 대시보드 -->
+  <section class="screen" id="s-dash">
+    <div class="card">
+      <h2>교사 대시보드</h2>
+      <p class="sub">방 코드 <b id="dash-code"></b></p>
+      <div class="stat"><div><b id="n-join">0</b><span>참여</span></div><div><b id="n-done">0</b><span>도구상자 제출</span></div></div>
+      <h3>우리 반을 힘들게 하는 상황</h3><div id="dash-sit"></div>
+      <h3>많이 고른 대처 방법</h3><div id="dash-met"></div>
+      <h3>제출한 도구상자</h3><div id="dash-rows"></div>
+      <button class="btn btn-sub" onclick="copyAll()">전체 결과 복사하기</button>
+      <button class="btn btn-line" onclick="home()">처음으로</button>
+    </div>
+  </section>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+/* ═══════════════════════════════════════════════
+   여기만 고치면 우리 반 앱이 됩니다
+   ═══════════════════════════════════════════════ */
+const CONFIG = {
+  제목: '나만의 스트레스 대처 방법',
+  부제: '스트레스는 없애는 것이 아니라 다루는 것입니다',
+  학년: '초등 4학년',
+  소요시간: '15~20분',
+  상황최대: 3,   // 힘든 상황을 몇 개까지 고를지
+  방법최대: 3,   // 대처 방법을 몇 개까지 고를지
+  마무리말: '내 도구상자를 만들었어요'
+};
+
+/* 상황, 몸 신호, 대처 방법, 평가 항목.
+   우리 반 아이들이 실제로 말하는 상황으로 바꾸면 훨씬 잘 맞습니다. */
+const SITUATIONS=[
+    {id:'study',emoji:'📝',title:'공부/시험',desc:'시험이 다가오거나, 성적이 안 나왔을 때'},
+    {id:'friends',emoji:'👫',title:'친구 관계',desc:'친구와 다투거나, 소외된 느낌이 들 때'},
+    {id:'family',emoji:'🏠',title:'가족',desc:'부모님과 의견 충돌이 있거나 혼났을 때'},
+    {id:'self',emoji:'🪞',title:'나 자신',desc:'내가 부족하게 느껴지거나 자신감이 없을 때'},
+    {id:'busy',emoji:'⏰',title:'바쁜 일정',desc:'할 일이 너무 많거나 시간이 부족할 때'},
+    {id:'group',emoji:'🧩',title:'모둠 활동',desc:'역할이 안 정해지거나, 나만 하는 것 같을 때'},
+    {id:'speech',emoji:'🎤',title:'발표·주목받기',desc:'앞에 나가 말하거나 여러 사람이 나를 볼 때'},
+    {id:'compare',emoji:'🏅',title:'비교·경쟁',desc:'친구와 비교되거나 등수가 자꾸 신경 쓰일 때'},
+    {id:'online',emoji:'📱',title:'온라인·메시지',desc:'단톡방이나 댓글 때문에 마음이 불편할 때'},
+    {id:'change',emoji:'🚪',title:'낯선 변화',desc:'새 학기, 자리 바꾸기처럼 아직 익숙하지 않을 때'},
+    {id:'tired',emoji:'😴',title:'몸이 지칠 때',desc:'잠이 부족하거나 몸이 힘들어 예민해질 때'},
+    {id:'others',emoji:'💭',title:'기타',desc:'위에 없는 다른 상황'}
+];
+
+const SIGNALS=[
+    {id:'heart',emoji:'💓',label:'심장이 두근두근했어요'},
+    {id:'ache',emoji:'🤕',label:'배나 머리가 아팠어요'},
+    {id:'hot',emoji:'🥵',label:'얼굴이 화끈거렸어요'},
+    {id:'tear',emoji:'🥺',label:'눈물이 났어요'},
+    {id:'tight',emoji:'✊',label:'어깨나 주먹에 힘이 들어갔어요'},
+    {id:'quiet',emoji:'🤐',label:'말이 하기 싫어졌어요'},
+    {id:'restless',emoji:'🚶',label:'가만히 있기 힘들었어요'},
+    {id:'sleep',emoji:'😪',label:'잠이 안 오거나 자꾸 졸렸어요'},
+    {id:'appetite',emoji:'🍽️',label:'입맛이 달라졌어요'},
+    {id:'blank',emoji:'🌫️',label:'머릿속이 하얘졌어요'},
+    {id:'alone',emoji:'🫥',label:'혼자 있고 싶어졌어요'},
+    {id:'snap',emoji:'⚡',label:'작은 일에도 짜증이 났어요'}
+];
+
+const METHOD_CATS=[
+    {cat:'🫁 몸으로 풀기',methods:[
+        {id:'breathe',name:'깊게 숨 쉬기',desc:'코로 4초 들이쉬고, 입으로 8초 내쉬기',emoji:'🫁'},
+        {id:'stretch',name:'스트레칭하기',desc:'목, 어깨, 팔을 천천히 펴기',emoji:'🤸'},
+        {id:'walk',name:'잠깐 걷기',desc:'밖에 나가거나 복도를 한 바퀴 걷기',emoji:'🚶'},
+        {id:'squeeze',name:'손 꽉 쥐었다 펴기',desc:'주먹을 5초 쥐고, 천천히 펴기',emoji:'✊'},
+        {id:'dance',name:'몸 흔들기/춤추기',desc:'좋아하는 음악에 맞춰 몸 움직이기',emoji:'💃'}
+    ]},
+    {cat:'🧠 생각으로 풀기',methods:[
+        {id:'selftalk',name:'나에게 말해주기',desc:'"할 수 있어", "괜찮아" 스스로에게 말하기',emoji:'💬'},
+        {id:'rethink',name:'다시 생각해보기',desc:'"이게 정말 큰 일일까?" 다시 떠올려보기',emoji:'🔄'},
+        {id:'count',name:'천천히 숫자 세기',desc:'1부터 10까지, 또는 거꾸로 세기',emoji:'🔢'},
+        {id:'gratitude',name:'감사한 것 떠올리기',desc:'지금 감사한 것 3가지 떠올리기',emoji:'🙏'}
+    ]},
+    {cat:'🎨 기분 전환하기',methods:[
+        {id:'music',name:'음악 듣기',desc:'좋아하는 노래를 들으며 마음 달래기',emoji:'🎵'},
+        {id:'draw',name:'그림 그리기/낙서',desc:'아무거나 자유롭게 끄적이기',emoji:'✏️'},
+        {id:'nature',name:'자연 느끼기',desc:'하늘 보기, 바람 느끼기, 풀 만지기',emoji:'🌿'},
+        {id:'humor',name:'웃긴 영상 보기',desc:'좋아하는 영상이나 만화 보기',emoji:'😂'},
+        {id:'imagine',name:'좋아하는 장소 떠올리기',desc:'마음이 편한 곳을 상상하기',emoji:'🏖️'}
+    ]},
+    {cat:'🤝 함께하기',methods:[
+        {id:'talk',name:'누군가에게 말하기',desc:'친구, 가족, 선생님에게 마음 이야기하기',emoji:'🗣️'},
+        {id:'hug',name:'안아주기/안기기',desc:'가족이나 반려동물에게 안기기',emoji:'🤗'},
+        {id:'help',name:'도움 요청하기',desc:'혼자 해결이 안 되면 도움 구하기',emoji:'🆘'}
+    ]},
+    {cat:'📝 기록하기',methods:[
+        {id:'diary',name:'일기 쓰기',desc:'마음속 이야기를 글로 적어보기',emoji:'📔'},
+        {id:'list',name:'할 일 정리하기',desc:'머릿속 복잡한 것을 목록으로 정리',emoji:'📋'},
+        {id:'letter',name:'편지 쓰기',desc:'나에게 또는 누군가에게 편지 쓰기',emoji:'✉️'}
+    ]},
+    {cat:'🛋️ 쉬어가기',methods:[
+        {id:'rest',name:'아무것도 안 하기',desc:'조용히 눈을 감고 쉬기',emoji:'😌'},
+        {id:'sleep',name:'잠깐 눈 붙이기',desc:'5~10분 짧게 눈 감기',emoji:'💤'},
+        {id:'bath',name:'따뜻한 물 마시기',desc:'따뜻한 물이나 차 마시기',emoji:'☕'}
+    ]}
+];
+
+const EXTRA_METHOD_CATS=[
+    {cat:'🌟 나를 다독이기 (추가 도구)',methods:[
+        {id:'name-it',name:'감정에 이름 붙이기',desc:'"나는 지금 서운해"처럼 마음에 이름 붙이기',emoji:'🏷️'},
+        {id:'kind-hand',name:'내 손으로 나 토닥이기',desc:'가슴이나 팔을 천천히 토닥토닥 두드리기',emoji:'🫶'},
+        {id:'past-win',name:'예전에 잘 넘긴 일 떠올리기',desc:'"그때도 결국 지나갔지" 하고 떠올리기',emoji:'🏔️'},
+        {id:'future-me',name:'내일의 나에게 말 걸기',desc:'"내일의 나는 뭐라고 말해줄까?" 상상하기',emoji:'⏭️'},
+        {id:'safe-word',name:'나만의 주문 만들기',desc:'"천천히, 괜찮아" 같은 짧은 문장 정해두기',emoji:'🪄'}
+    ]},
+    {cat:'🧭 문제에 다가가기 (추가 도구)',methods:[
+        {id:'split',name:'큰 일을 잘게 쪼개기',desc:'할 일을 작은 단계로 나눠 하나만 먼저 하기',emoji:'🍰'},
+        {id:'first-step',name:'딱 1분만 시작하기',desc:'"1분만 해보자" 하고 아주 작게 시작하기',emoji:'⏱️'},
+        {id:'ask-clear',name:'궁금한 것 물어보기',desc:'모르는 부분을 선생님·친구에게 정확히 묻기',emoji:'❓'},
+        {id:'say-need',name:'내가 원하는 것 말하기',desc:'"나는 ○○했으면 좋겠어"라고 부탁해보기',emoji:'🙋'},
+        {id:'plan-b',name:'다른 방법도 적어보기',desc:'선택지를 2~3개 적고 비교해보기',emoji:'🗺️'}
+    ]},
+    {cat:'🎒 미리 준비해두기 (추가 도구)',methods:[
+        {id:'kit',name:'마음 진정 물건 챙기기',desc:'좋아하는 물건·사진을 가까이 두기',emoji:'🎒'},
+        {id:'routine',name:'하루 마무리 루틴 만들기',desc:'자기 전 같은 순서로 마음 정리하기',emoji:'🌙'},
+        {id:'water',name:'물 한 잔 천천히 마시기',desc:'차가운 물을 아주 천천히 마시며 숨 고르기',emoji:'🥤'},
+        {id:'move-day',name:'매일 조금씩 몸 움직이기',desc:'줄넘기·산책처럼 짧게라도 매일 움직이기',emoji:'🏃'},
+        {id:'sleep-fix',name:'잠 시간 지키기',desc:'자는 시간을 정해두고 지켜보기',emoji:'🛏️'}
+    ]}
+];
+
+const EVAL_OPTIONS=[
+    {id:'good',emoji:'👍',label:'나아질 것 같아',color:'var(--success)'},
+    {id:'maybe',emoji:'🤔',label:'모르겠어',color:'var(--warning)'},
+    {id:'bad',emoji:'👎',label:'안 맞을 것 같아',color:'var(--error)'}
+];
+
+const EVAL_WHEN=[
+    {id:'class',emoji:'🏫',label:'교실에서 바로'},
+    {id:'break',emoji:'🥎',label:'쉬는 시간에'},
+    {id:'home',emoji:'🏠',label:'집에 가서'},
+    {id:'night',emoji:'🌙',label:'잠들기 전에'},
+    {id:'anytime',emoji:'✨',label:'언제든 가능해'}
+];
+
+const 방법전체 = [].concat(METHOD_CATS, EXTRA_METHOD_CATS);
+
+/* ═══════════════════════════════════════════════
+   여기부터는 고치지 않아도 됩니다
+   ═══════════════════════════════════════════════ */
+
+const EMO_DEX = {
+  apiKey:"AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s", authDomain:"emo-dex.firebaseapp.com",
+  projectId:"emo-dex", storageBucket:"emo-dex.firebasestorage.app",
+  messagingSenderId:"994736049700", appId:"1:994736049700:web:8233fa7b68cd6e0cccd2b1"
+};
+const injected  = (typeof __firebase_config !== 'undefined' && __firebase_config) ? __firebase_config : null;
+const fbConfig  = injected ? (typeof injected === 'string' ? JSON.parse(injected) : injected) : EMO_DEX;
+const APP_ID    = (typeof __app_id !== 'undefined' && __app_id) ? __app_id : 'sel-lesson-11-lite';
+const AUTH_TOKEN= (typeof __initial_auth_token !== 'undefined') ? __initial_auth_token : null;
+
+let db = null, online = false, 저장소 = '';
+const memory = {};
+
+async function initDB(){
+  try{
+    const app = initializeApp(fbConfig);
+    const auth = getAuth(app);
+    db = getFirestore(app);
+    await Promise.race([
+      AUTH_TOKEN ? signInWithCustomToken(auth, AUTH_TOKEN) : signInAnonymously(auth),
+      new Promise(function(_, rej){ setTimeout(function(){ rej('timeout'); }, 6000); })
+    ]);
+    online = true;
+  }catch(e){ online = false; }
+  저장소 = online ? (injected ? '캔버스 내장' : 'emo-dex') : '이 기기에만 (다른 기기와 수합 안 됨)';
+  console.log('[DB] ' + 저장소);
+  var el = document.getElementById('db-state');
+  if (el) el.textContent = '저장소: ' + 저장소;
+}
+const ready = initDB();
+
+function studentDoc(code, nick){ return doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students', nick); }
+function studentCol(code){ return collection(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students'); }
+
+async function save(code, nick, data){
+  await ready;
+  if (online){ try { await setDoc(studentDoc(code, nick), data, {merge:true}); return; } catch(e){} }
+  memory[code] = memory[code] || {};
+  memory[code][nick] = Object.assign({}, memory[code][nick], data);
+}
+
+/* 상태 */
+var 방코드 = '', 닉네임 = '', 학생들 = {}, 내상자 = null;
+var 고른상황 = [], 고른신호 = [], 고른방법 = [], 평가 = {};
+
+function $(id){ return document.getElementById(id); }
+function esc(v){ return String(v==null?'':v).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function toast(msg){ var t = $('toast'); t.textContent = msg; t.classList.add('on'); setTimeout(function(){ t.classList.remove('on'); }, 1600); }
+function 방법찾기(id){
+  for (var i=0;i<방법전체.length;i++){
+    var m = 방법전체[i].methods.filter(function(x){ return x.id === id; });
+    if (m.length) return m[0];
+  }
+  return null;
+}
+
+function go(name){
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); });
+  if (name === 'teacher' || name === 'student'){
+    $('s-join').classList.add('on');
+    $('join-title').textContent = (name === 'teacher') ? '방 만들기' : '방 코드로 참여하기';
+    $('join-teacher').style.display = (name === 'teacher') ? 'block' : 'none';
+    $('join-student').style.display = (name === 'student') ? 'block' : 'none';
+    if (name === 'teacher'){ 방코드 = String(Math.floor(Math.random()*900000+100000)); $('new-code').textContent = 방코드; }
+    window.scrollTo(0,0); return;
+  }
+  var map = { start:'s-start', situation:'s-situation', methods:'s-methods', eval:'s-eval', box:'s-box', done:'s-done', dash:'s-dash' };
+  $(map[name]).classList.add('on');
+  window.scrollTo(0,0);
+}
+function home(){ go('start'); }
+function solo(){ 방코드 = ''; 닉네임 = '나'; $('who').textContent = '혼자 해보기'; go('situation'); }
+
+async function joinRoom(){
+  var c = $('in-code').value.trim(), n = $('in-nick').value.trim();
+  if (!/^[0-9]{6}$/.test(c)) { toast('방 코드 6자리를 숫자로 입력해 주세요'); return; }
+  if (!n) { toast('닉네임을 입력해 주세요'); return; }
+  방코드 = c; 닉네임 = n;
+  await save(c, n, { nick:n, joinedAt: Date.now() });
+  $('who').textContent = 방코드 + '번 방 · ' + 닉네임;
+  go('situation');
+}
+
+/* 상황과 신호 */
+function 다중칩(host, items, 담는배열, 최대, 라벨함수){
+  $(host).innerHTML = '';
+  items.forEach(function(it){
+    var b = document.createElement('button');
+    b.className = 'chip';
+    b.innerHTML = 라벨함수(it);
+    b.onclick = function(){
+      var i = 담는배열.indexOf(it.id);
+      if (i >= 0) { 담는배열.splice(i,1); b.classList.remove('on'); }
+      else {
+        if (최대 && 담는배열.length >= 최대) { toast('최대 ' + 최대 + '개까지 고를 수 있어요'); return; }
+        담는배열.push(it.id); b.classList.add('on');
+      }
+    };
+    $(host).appendChild(b);
+  });
+}
+function drawSituation(){
+  $('sit-guide').textContent = '최대 ' + CONFIG.상황최대 + '개까지 고를 수 있어요.';
+  다중칩('sit-chips', SITUATIONS, 고른상황, CONFIG.상황최대, function(s){
+    return s.emoji + ' ' + esc(s.title) + '<small>' + esc(s.desc) + '</small>';
+  });
+  다중칩('sig-chips', SIGNALS, 고른신호, 0, function(s){ return s.emoji + ' ' + esc(s.label); });
+}
+function drawMethods(){
+  $('met-guide').textContent = '최대 ' + CONFIG.방법최대 + '개까지 고를 수 있어요.';
+  $('met-list').innerHTML = 방법전체.map(function(c, ci){
+    return '<div class="cat">' + esc(c.cat) + '</div><div class="chips" id="met-' + ci + '"></div>';
+  }).join('');
+  방법전체.forEach(function(c, ci){
+    다중칩('met-' + ci, c.methods, 고른방법, CONFIG.방법최대, function(m){
+      return m.emoji + ' ' + esc(m.name) + '<small>' + esc(m.desc) + '</small>';
+    });
+  });
+}
+function goEval(){
+  if (!고른방법.length) { toast('해 볼 만한 방법을 하나 이상 골라 주세요'); return; }
+  $('eval-list').innerHTML = 고른방법.map(function(id){
+    var m = 방법찾기(id); if (!m) return '';
+    return '<div class="pick"><h4>' + m.emoji + ' ' + esc(m.name) + '</h4>' +
+      '<div style="font-size:14px;color:#6B7280;margin-bottom:8px">' + esc(m.desc) + '</div>' +
+      '<div style="font-size:14px;font-weight:700;margin-bottom:4px">해 보면 어떨 것 같아?</div>' +
+      '<div class="mini" data-kind="how" data-id="' + id + '">' +
+        EVAL_OPTIONS.map(function(o){ return '<button onclick="setEval(\'' + id + '\',\'how\',\'' + o.id + '\',this)">' + o.emoji + ' ' + esc(o.label) + '</button>'; }).join('') +
+      '</div>' +
+      '<div style="font-size:14px;font-weight:700;margin:8px 0 4px">언제 쓸 거야?</div>' +
+      '<div class="mini" data-kind="when" data-id="' + id + '">' +
+        EVAL_WHEN.map(function(o){ return '<button onclick="setEval(\'' + id + '\',\'when\',\'' + o.id + '\',this)">' + o.emoji + ' ' + esc(o.label) + '</button>'; }).join('') +
+      '</div></div>';
+  }).join('');
+  go('eval');
+}
+function setEval(id, kind, val, el){
+  평가[id] = 평가[id] || {};
+  평가[id][kind] = val;
+  Array.prototype.forEach.call(el.parentNode.children, function(b){ b.classList.remove('on'); });
+  el.classList.add('on');
+}
+function goBox(){
+  var 빠진 = 고른방법.filter(function(id){ return !평가[id] || !평가[id].how || !평가[id].when; });
+  if (빠진.length) { toast('방법마다 두 가지를 모두 정해 주세요'); return; }
+  var 상황이름 = 고른상황.map(function(id){ var s = SITUATIONS.filter(function(x){return x.id===id;})[0]; return s ? s.emoji + ' ' + s.title : id; });
+  var 신호이름 = 고른신호.map(function(id){ var s = SIGNALS.filter(function(x){return x.id===id;})[0]; return s ? s.label : id; });
+  $('box-body').innerHTML =
+    (상황이름.length ? '<div class="box"><b>나를 힘들게 하는 것</b><br>' + esc(상황이름.join(', ')) + '</div>' : '') +
+    (신호이름.length ? '<div class="box"><b>몸이 보내는 신호</b><br>' + esc(신호이름.join(', ')) + '</div>' : '') +
+    고른방법.map(function(id){
+      var m = 방법찾기(id);
+      var h = EVAL_OPTIONS.filter(function(o){ return o.id === 평가[id].how; })[0];
+      var w = EVAL_WHEN.filter(function(o){ return o.id === 평가[id].when; })[0];
+      return '<div class="pick"><h4>' + m.emoji + ' ' + esc(m.name) + '</h4>' +
+        '<div style="font-size:14px">' + (h ? h.emoji + ' ' + esc(h.label) : '') + ' · ' + (w ? w.emoji + ' ' + esc(w.label) : '') + '</div></div>';
+    }).join('');
+  go('box');
+}
+
+async function submitBox(){
+  var one = $('my-one').value.trim();
+  if (!one) { toast('딱 하나만 골라 한 줄 써 주세요'); return; }
+  내상자 = { nick: 닉네임, sits: 고른상황.slice(), signals: 고른신호.slice(),
+             methods: 고른방법.map(function(id){ var m=방법찾기(id); return m ? m.name : id; }),
+             one: one, doneAt: Date.now() };
+  if (방코드) await save(방코드, 닉네임, 내상자);
+  $('done-title').textContent = CONFIG.마무리말;
+  $('done-body').innerHTML = '<div class="box"><b>오늘 내가 쓸 한 가지</b><br>' + esc(one) + '</div>';
+  go('done');
+}
+function copyMine(){
+  if (!내상자) { toast('먼저 도구상자를 내 주세요'); return; }
+  copy('나의 스트레스 도구상자\n방법: ' + 내상자.methods.join(', ') + '\n오늘 쓸 한 가지: ' + 내상자.one);
+}
+
+/* 교사 대시보드 */
+function reopenDash(){
+  var c = $('in-dash').value.trim();
+  if (!/^[0-9]{6}$/.test(c)) { toast('방 코드 6자리를 숫자로 입력해 주세요'); return; }
+  방코드 = c; openDash();
+}
+function openDash(){
+  $('dash-code').textContent = 방코드;
+  go('dash');
+  ready.then(function(){
+    if (!online){ $('dash-rows').innerHTML = '<p class="sub">연결이 안 되어 이 기기 기록만 보입니다.</p>'; return; }
+    onSnapshot(studentCol(방코드), function(snap){
+      학생들 = {};
+      snap.forEach(function(d){ 학생들[d.id] = d.data(); });
+      drawDash();
+    });
+  });
+}
+function 막대(host, freq, 폭){
+  var top = Object.keys(freq).map(function(k){ return [k, freq[k]]; }).sort(function(a,b){ return b[1]-a[1]; }).slice(0,8);
+  var max = top.length ? top[0][1] : 1;
+  $(host).innerHTML = top.length
+    ? top.map(function(p){ return '<div class="bar"><span style="width:' + 폭 + 'px">' + esc(p[0]) + '</span><i style="width:' + Math.round(p[1]/max*140) + 'px"></i><span>' + p[1] + '</span></div>'; }).join('')
+    : '<p class="sub">아직 기록이 없습니다.</p>';
+}
+function drawDash(){
+  var list = Object.keys(학생들).map(function(k){ return 학생들[k]; });
+  var done = list.filter(function(s){ return s.doneAt; });
+  $('n-join').textContent = list.length;
+  $('n-done').textContent = done.length;
+
+  var fs = {}, fm = {};
+  done.forEach(function(s){
+    (s.sits||[]).forEach(function(id){ var x = SITUATIONS.filter(function(v){return v.id===id;})[0]; var n = x?x.title:id; fs[n]=(fs[n]||0)+1; });
+    (s.methods||[]).forEach(function(n){ fm[n]=(fm[n]||0)+1; });
+  });
+  막대('dash-sit', fs, 110);
+  막대('dash-met', fm, 130);
+  $('dash-rows').innerHTML = done.length
+    ? done.map(function(s){ return '<div class="row"><b>' + esc(s.nick) + '</b><br>방법: ' + esc((s.methods||[]).join(', ')) +
+        '<br>한 가지: ' + esc(s.one) + '</div>'; }).join('')
+    : '<p class="sub">아직 제출한 도구상자가 없습니다.</p>';
+}
+function copyAll(){
+  var done = Object.keys(학생들).map(function(k){ return 학생들[k]; }).filter(function(s){ return s.doneAt; });
+  if (!done.length) { toast('복사할 기록이 없습니다'); return; }
+  copy('방 ' + 방코드 + ' · ' + done.length + '명\n\n' +
+    done.map(function(s){ return [s.nick, (s.methods||[]).join(' '), s.one].join('\t'); }).join('\n'));
+}
+function copy(text){
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(function(){ toast('복사했습니다'); }, function(){ fallback(text); });
+  else fallback(text);
+}
+function fallback(text){
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); toast('복사했습니다'); }
+  catch(e){ window.prompt('직접 복사하세요 (Ctrl+C)', text); }
+  document.body.removeChild(ta);
+}
+
+/* 시작 */
+$('t-title').textContent = CONFIG.제목;
+$('t-sub').textContent = CONFIG.부제;
+$('t-meta').textContent = CONFIG.학년 + ' · 약 ' + CONFIG.소요시간;
+document.title = CONFIG.제목;
+drawSituation();
+drawMethods();
+
+Object.assign(window, { go:go, home:home, solo:solo, joinRoom:joinRoom, goEval:goEval,
+  setEval:setEval, goBox:goBox, submitBox:submitBox, copyMine:copyMine,
+  openDash:openDash, reopenDash:reopenDash, copyAll:copyAll });
+console.log('[SEL] ' + CONFIG.제목 + ' 간소화판 ready (상황 ' + SITUATIONS.length + ', 방법 ' +
+  방법전체.reduce(function(a,c){ return a + c.methods.length; }, 0) + ')');
+</script>
+</body>
+</html>

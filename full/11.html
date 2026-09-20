@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>갈등은 왜 생길까</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+    --primary:#7C3AED;--primary-light:#A78BFA;--primary-dark:#5B21B6;
+    --gradient:linear-gradient(135deg,#7C3AED 0%,#A78BFA 50%,#C4B5FD 100%);
+    --gradient-bg:linear-gradient(135deg,#EDE9FE 0%,#F5F3FF 50%,#FFFFFF 100%);
+    --success:#10B981;--error:#EF4444;--warning:#F59E0B;
+    --text:#1F2937;--text-light:#6B7280;--bg-card:rgba(255,255,255,0.95);
+    --sideA:#3B82F6;--sideB:#F59E0B;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Noto Sans KR',sans-serif}
+body{background:var(--gradient-bg);min-height:100vh;font-weight:700;font-size:18px;line-height:1.7;color:var(--text);padding-bottom:40px}
+.container{max-width:500px;margin:0 auto;padding:16px}
+.screen{display:none}.screen.active{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cardFlip{0%{transform:rotateY(0) scale(.8);opacity:0}50%{transform:rotateY(180deg) scale(1.1)}100%{transform:rotateY(360deg) scale(1);opacity:1}}
+@keyframes shineEffect{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes popIn{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes shiftArrow{0%{opacity:0;transform:translateY(-10px)}50%{opacity:1}100%{opacity:1;transform:translateY(10px)}}
+
+.btn{padding:16px 24px;border-radius:16px;font-size:17px;font-weight:900;font-family:'Noto Sans KR',sans-serif;border:none;cursor:pointer;min-height:52px;transition:all .2s;width:100%;max-width:400px;display:block;margin:8px auto;text-align:center}
+.btn-primary{background:var(--gradient);color:white;box-shadow:0 4px 15px rgba(124,58,237,.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,.4)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-secondary{background:rgba(124,58,237,.1);color:var(--primary);border:2px solid var(--primary-light)}
+.btn-small{padding:10px 16px;font-size:14px;min-height:40px;width:auto;display:inline-block;margin:4px;border-radius:12px}
+.btn-danger{background:var(--error);color:white}
+.card{background:var(--bg-card);border-radius:20px;padding:24px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+input,textarea{min-height:48px;font-size:16px;font-family:'Noto Sans KR',sans-serif;font-weight:700;border:2px solid #E5E7EB;border-radius:12px;padding:12px 16px;width:100%;box-sizing:border-box}
+input:focus,textarea:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(124,58,237,.1)}
+textarea{min-height:80px;resize:vertical}
+.nav-buttons{display:flex;justify-content:space-between;margin-bottom:16px;gap:8px}
+.nav-btn{background:rgba(124,58,237,.08);border:none;padding:8px 14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;color:var(--primary);font-family:'Noto Sans KR',sans-serif}
+.progress-bar{background:#E5E7EB;border-radius:10px;height:8px;margin-bottom:16px;overflow:hidden}
+.progress-fill{background:var(--gradient);height:100%;border-radius:10px;transition:width .5s ease}
+.choice-btn{padding:16px;border:2px solid #E5E7EB;border-radius:14px;background:white;cursor:pointer;transition:all .2s;text-align:left;margin:8px 0;display:block;width:100%;font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700}
+.choice-btn:hover{border-color:var(--primary-light);background:rgba(124,58,237,.03)}
+.choice-btn.selected{border-color:var(--primary);background:rgba(124,58,237,.08);box-shadow:0 0 0 3px rgba(124,58,237,.15);transform:scale(1.02)}
+.choice-btn.selected::after{content:' ✓';color:var(--primary);font-weight:900}
+
+.perspective-card{border-radius:16px;padding:20px;margin:12px 0;animation:slideUp .4s ease}
+.perspective-a{background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(59,130,246,.03));border:2px solid rgba(59,130,246,.2)}
+.perspective-b{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.03));border:2px solid rgba(245,158,11,.2)}
+.perspective-label{display:inline-block;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:900;margin-bottom:10px}
+.label-a{background:rgba(59,130,246,.15);color:#2563EB}
+.label-b{background:rgba(245,158,11,.15);color:#D97706}
+.character-info{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.character-emoji{font-size:2.2rem}.character-name{font-size:18px;font-weight:900}
+.character-desc{font-size:13px;color:var(--text-light);font-weight:400}
+
+.episode-dots{display:flex;justify-content:center;gap:8px;margin:12px 0}
+.ep-dot{width:12px;height:12px;border-radius:50%;background:#E5E7EB;transition:all .3s}
+.ep-dot.active{background:var(--primary);transform:scale(1.3)}.ep-dot.done{background:var(--success)}
+
+/* 감정 공감 버블 */
+.emotion-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0}
+.emotion-bubble{padding:12px 16px;border:2px solid #E5E7EB;border-radius:50px;background:white;cursor:pointer;transition:all .25s;font-size:15px;font-weight:700;text-align:center;user-select:none}
+.emotion-bubble:hover{border-color:var(--primary-light);transform:translateY(-2px)}
+.emotion-bubble.selected{border-color:var(--primary);background:rgba(124,58,237,.1);transform:scale(1.05);box-shadow:0 2px 10px rgba(124,58,237,.2)}
+.emotion-bubble.correct{border-color:var(--success);background:rgba(16,185,129,.1);animation:popIn .3s ease}
+.emotion-bubble.wrong{border-color:var(--primary);background:rgba(124,58,237,.06)}
+
+/* 판단 선택 */
+.judge-option{padding:18px;border:2px solid #E5E7EB;border-radius:16px;background:white;cursor:pointer;transition:all .2s;text-align:center;margin:8px 0;font-size:16px;font-weight:700}
+.judge-option:hover{border-color:var(--primary-light)}
+.judge-option.selected{border-color:var(--primary);background:rgba(124,58,237,.08);box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+
+/* 관점 전환 시각화 */
+.shift-visual{background:linear-gradient(135deg,#EDE9FE,#FEF3C7);border-radius:20px;padding:24px;text-align:center;margin:16px 0}
+.shift-before,.shift-after{padding:14px;border-radius:14px;margin:8px 0;font-size:16px;font-weight:700}
+.shift-before{background:rgba(239,68,68,.08);border:2px solid rgba(239,68,68,.15)}
+.shift-after{background:rgba(16,185,129,.08);border:2px solid rgba(16,185,129,.15)}
+.shift-arrow{font-size:2rem;margin:8px 0;animation:shiftArrow 1.5s ease infinite}
+
+/* 카드 수집 */
+.collect-card{width:200px;height:260px;margin:20px auto;perspective:800px}
+.collect-card-inner{width:100%;height:100%;border-radius:20px;animation:cardFlip 1.2s ease;box-shadow:0 8px 30px rgba(124,58,237,.3);overflow:hidden;position:relative}
+.collect-card-bg{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;color:white}
+.collect-card-emoji{font-size:4rem;margin-bottom:8px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.2))}
+.collect-card-name{font-size:20px;font-weight:900;text-shadow:0 1px 3px rgba(0,0,0,.2)}
+.collect-card-desc{font-size:13px;font-weight:400;margin-top:8px;opacity:.9;text-align:center}
+.collect-card-skill{font-size:12px;font-weight:700;margin-top:12px;padding:6px 14px;background:rgba(255,255,255,.2);border-radius:20px}
+.card-shine{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.3) 50%,transparent 60%);background-size:200% 100%;animation:shineEffect 2s ease 1.2s}
+
+/* 카드 갤러리 */
+.card-gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:16px 0}
+.gallery-card{border-radius:16px;padding:16px;text-align:center;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all .3s}
+.gallery-card.collected{color:white;box-shadow:0 4px 15px rgba(0,0,0,.15)}
+.gallery-card.locked{background:#F3F4F6;border:2px dashed #D1D5DB;color:#9CA3AF}
+.gallery-card-emoji{font-size:2.5rem;margin-bottom:6px}
+.gallery-card-name{font-size:14px;font-weight:900}
+
+/* 레이더 차트 */
+.radar-container{display:flex;justify-content:center;margin:16px 0}
+
+/* 원인 태그 */
+.cause-tags{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.cause-tag{padding:10px 16px;border:2px solid #E5E7EB;border-radius:12px;background:white;cursor:pointer;font-size:15px;font-weight:700;transition:all .2s}
+.cause-tag.selected{border-color:var(--primary);background:rgba(124,58,237,.1);color:var(--primary)}
+
+.check-row{display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(124,58,237,.04);border-radius:12px;margin:12px 0;cursor:pointer}
+.check-row input[type="checkbox"]{width:20px;height:20px;accent-color:var(--primary);cursor:pointer}
+
+.tab-buttons{display:flex;gap:4px;margin-bottom:16px;overflow-x:auto}
+.tab-btn{padding:10px 14px;border:none;background:rgba(124,58,237,.08);color:var(--primary);border-radius:10px;font-size:13px;font-weight:900;cursor:pointer;white-space:nowrap;font-family:'Noto Sans KR',sans-serif}
+.tab-btn.active{background:var(--primary);color:white}
+.tab-content{display:none}.tab-content.active{display:block}
+
+.privacy-notice{background:rgba(124,58,237,.05);border:1px solid rgba(124,58,237,.15);border-radius:12px;padding:14px;font-size:13px;font-weight:400;color:var(--text-light);line-height:1.6;margin-top:16px}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(31,41,55,.95);color:white;padding:14px 28px;border-radius:14px;font-size:15px;font-weight:700;z-index:10000;opacity:0;transition:all .3s;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9999;justify-content:center;align-items:center;padding:20px}
+.modal-content{background:white;border-radius:20px;padding:28px;max-width:420px;width:100%;text-align:center;animation:fadeIn .3s;max-height:85vh;overflow-y:auto}
+.modal-icon{font-size:2.5rem;margin-bottom:12px}
+.modal-message{font-size:16px;line-height:1.7;margin-bottom:20px;color:var(--text)}
+.modal-buttons{display:flex;gap:10px;justify-content:center}
+
+.badge{display:inline-block;padding:6px 14px;border-radius:20px;font-size:14px;font-weight:700}
+.badge-time{background:rgba(124,58,237,.1);color:var(--primary)}
+.badge-count{background:rgba(16,185,129,.1);color:var(--success)}
+.insight-card{background:linear-gradient(135deg,#EDE9FE,#F5F3FF);border-radius:16px;padding:20px;margin:12px 0;text-align:center;border:2px solid rgba(124,58,237,.1)}
+.insight-card .big-text{font-size:20px;font-weight:900;color:var(--primary-dark);line-height:1.8}
+
+.empathy-score{display:inline-block;padding:4px 12px;border-radius:20px;font-size:14px;font-weight:900}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.stat-box{background:rgba(124,58,237,.05);border-radius:12px;padding:14px;text-align:center}
+.stat-num{font-size:28px;font-weight:900;color:var(--primary)}
+.stat-label{font-size:13px;color:var(--text-light);font-weight:400}
+.bar-row{display:flex;align-items:center;gap:8px;margin:6px 0}
+.bar-label{min-width:80px;font-size:14px;text-align:right}
+.bar-track{flex:1;background:#E5E7EB;border-radius:8px;height:24px;overflow:hidden}
+.bar-fill{height:100%;border-radius:8px;transition:width .5s;display:flex;align-items:center;padding-left:8px;font-size:12px;color:white;font-weight:900}
+.bar-count{min-width:30px;font-size:14px}
+
+.step-indicator{display:flex;justify-content:center;gap:4px;margin:8px 0}
+.step-pip{width:8px;height:8px;border-radius:50%;background:#E5E7EB;transition:all .3s}
+.step-pip.active{background:var(--primary);transform:scale(1.3)}
+.step-pip.done{background:var(--success)}
+
+@media(max-width:768px){body{font-size:16px;padding:8px}.container{max-width:100%;padding:12px}.btn{min-height:48px;font-size:16px}input,textarea{min-height:44px;font-size:16px}.collect-card{width:170px;height:220px}}
+@media(min-width:769px){.container{max-width:600px}}
+@media print{body *{visibility:hidden}#dashboard-content,#dashboard-content *{visibility:visible}#dashboard-content{position:absolute;left:0;top:0;width:100%}.btn,.nav-buttons,.tab-buttons,#toast,.modal-overlay{display:none!important}.card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ═══ 시작 화면 ═══ -->
+<div class="screen active" id="screen-start">
+    <div style="text-align:center;margin:20px 0;">
+        <div style="font-size:4rem;animation:bounce 2s infinite;">🔍</div>
+        <h1 style="font-size:26px;font-weight:900;color:var(--primary-dark);margin:12px 0;">갈등은 왜 생길까</h1>
+        <p style="color:var(--text-light);font-weight:400;font-size:16px;">같은 상황, 다른 마음 — 갈등의 비밀을 파헤쳐 봐요!</p>
+        <span class="badge badge-time" style="margin-top:10px;">⏱️ 예상 소요시간: 약 7~10분</span>
+    </div>
+    <button class="btn btn-primary" onclick="showScreen('screen-login')">👩‍🏫 방 만들기 / 입장하기</button>
+    <button class="btn btn-secondary" onclick="startSoloMode()">🌟 혼자 체험하기</button>
+    <div class="privacy-notice">🔐 <strong>안심하세요!</strong><br>우리가 사용하는 방 코드는 오직 입장할 때만 필요한 숫자일 뿐, 여러분이 누구인지 알려주는 이름표가 아니랍니다. 입장 코드는 숫자로만 구성되어 있어 개인정보를 포함하지 않습니다. 닉네임을 만들 때 개인정보를 포함하지 않도록 만들어 주세요. 여러분의 익명성은 소중히 보호됩니다.</div>
+</div>
+
+<!-- ═══ 로그인 ═══ -->
+<div class="screen" id="screen-login">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-start')">← 처음으로</button></div>
+    <div style="text-align:center;margin-bottom:20px;"><div style="font-size:2.5rem;">🏫</div><h2 style="color:var(--primary-dark);">입장 방법을 선택하세요</h2></div>
+    <button class="btn btn-primary" onclick="showScreen('screen-create-room')">👩‍🏫 방 만들기 (교사용)</button>
+    <button class="btn btn-secondary" onclick="showScreen('screen-teacher-login')">🔑 교사로 접속하기</button>
+    <button class="btn btn-secondary" onclick="showScreen('screen-student-join')">🧒 학생으로 참여하기</button>
+    <div class="privacy-notice">🔐 <strong>안심하세요!</strong><br>방 코드와 닉네임만으로 참여할 수 있어요. 개인정보는 수집하지 않습니다.</div>
+</div>
+
+<!-- ═══ 방 만들기 ═══ -->
+<div class="screen" id="screen-create-room">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="color:var(--primary-dark);text-align:center;">👩‍🏫 새로운 방 만들기</h2>
+        <div style="margin:16px 0;"><label style="font-size:15px;">교사 닉네임</label><input type="text" id="teacher-name" placeholder="예: 김선생님" maxlength="10"></div>
+        <div style="margin:16px 0;"><label style="font-size:15px;">관리자 비밀번호 (숫자 4자리)</label><input type="password" id="room-password" placeholder="예: 1234" maxlength="4" inputmode="numeric"></div>
+        <button class="btn btn-primary" onclick="createRoom()">🚀 방 만들기</button>
+    </div>
+</div>
+
+<!-- ═══ 방 생성 완료 ═══ -->
+<div class="screen" id="screen-room-created">
+    <div class="nav-buttons"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:3rem;">🎉</div>
+        <h2 style="color:var(--primary-dark);">방이 만들어졌어요!</h2>
+        <p style="font-size:15px;font-weight:400;color:var(--text-light);margin:8px 0;">학생들에게 아래 코드를 알려주세요</p>
+        <div id="display-room-code" style="font-size:42px;font-weight:900;color:var(--primary);letter-spacing:6px;margin:16px 0;padding:16px;background:rgba(124,58,237,.06);border-radius:16px;"></div>
+        <button class="btn btn-secondary" onclick="copyRoomCode()">📋 코드 복사하기</button>
+        <button class="btn btn-primary" style="margin-top:12px;" onclick="openDashboard()">📊 대시보드 열기</button>
+    </div>
+</div>
+
+<!-- ═══ 교사 접속 ═══ -->
+<div class="screen" id="screen-teacher-login">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="color:var(--primary-dark);text-align:center;">🔑 교사로 접속하기</h2>
+        <div style="margin:16px 0;"><label style="font-size:15px;">방 코드 (숫자 6자리)</label><input type="text" id="teacher-room-code" placeholder="000000" maxlength="6" inputmode="numeric"></div>
+        <div style="margin:16px 0;"><label style="font-size:15px;">비밀번호</label><input type="password" id="teacher-pw" placeholder="****" maxlength="4" inputmode="numeric"></div>
+        <button class="btn btn-primary" onclick="joinAsTeacher()">🔓 접속하기</button>
+    </div>
+</div>
+
+<!-- ═══ 학생 입장 ═══ -->
+<div class="screen" id="screen-student-join">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="color:var(--primary-dark);text-align:center;">🧒 학생으로 참여하기</h2>
+        <div style="margin:16px 0;"><label style="font-size:15px;">방 코드 (숫자 6자리)</label><input type="text" id="student-room-code" placeholder="선생님이 알려준 코드" maxlength="6" inputmode="numeric"></div>
+        <div style="margin:16px 0;"><label style="font-size:15px;">닉네임</label><input type="text" id="student-nickname" placeholder="예: 멋진호랑이" maxlength="10"></div>
+        <button class="btn btn-primary" onclick="joinAsStudent()">🚀 입장하기</button>
+    </div>
+    <div class="privacy-notice">🔐 닉네임에 실제 이름을 넣지 마세요! 재미있는 별명을 사용해 주세요.</div>
+</div>
+
+<!-- ═══ 스토리 도입 ═══ -->
+<div class="screen" id="screen-story">
+    <div class="nav-buttons"><button class="nav-btn" onclick="goBackFromStory()">← 뒤로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:5%"></div></div>
+    <div class="card" style="text-align:center;background:linear-gradient(135deg,#EDE9FE,#FEF3C7);">
+        <div style="font-size:3rem;margin-bottom:8px;">🚌</div>
+        <h2 style="color:var(--primary-dark);font-size:22px;">체험학습 버스 안에서...</h2>
+    </div>
+    <div class="card" style="line-height:2;">
+        <p>즐거웠던 체험학습이 끝나고, 돌아오는 버스 안.</p>
+        <p>아이들은 피곤한 얼굴로 좌석에 기대거나 창밖을 보고 있어요.</p>
+        <p style="margin-top:12px;">그런데 갑자기 뒤쪽에서 목소리가 높아져요.</p>
+        <div style="background:rgba(239,68,68,.06);border-radius:12px;padding:14px;margin:12px 0;">
+            <p>😤 <strong>"네가 먼저 밀었잖아!"</strong></p>
+            <p>😡 <strong>"아니야, 네가 먼저 소리 질렀잖아!"</strong></p>
+        </div>
+        <p>놀이기구를 타려고 줄 서다가 잠깐 몸이 부딪힌 일로 다투고 있어요.</p>
+        <p style="margin-top:8px;">둘 다 <strong style="color:var(--primary);">"자기가 맞다"</strong>고 주장해요. 같은 일을 겪었는데, 왜 이렇게 다르게 기억하는 걸까요? 🤔</p>
+    </div>
+    <div class="insight-card">
+        <div class="big-text">🌟 오늘의 미션<br><span style="font-size:17px;">같은 상황, 다른 마음을 들여다보며<br><strong>갈등의 비밀</strong>을 밝혀내자!</span></div>
+    </div>
+    <label class="check-row" onclick="toggleStoryCheck()"><input type="checkbox" id="story-check"><span>이야기를 다 읽었어요! ✅</span></label>
+    <button class="btn btn-primary" id="btn-story-next" disabled onclick="showScreen('screen-cause-intro')">갈등의 비밀 알아보기 →</button>
+</div>
+
+<!-- ═══ 갈등 원인 소개 ═══ -->
+<div class="screen" id="screen-cause-intro">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-story')">← 뒤로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:12%"></div></div>
+    <div style="text-align:center;margin-bottom:16px;"><div style="font-size:2.5rem;">🔍</div><h2 style="color:var(--primary-dark);">갈등의 4가지 원인</h2><p style="color:var(--text-light);font-weight:400;font-size:15px;">대부분의 갈등은 이 4가지 중 하나에서 시작돼요!</p></div>
+    <div class="card" style="border-left:4px solid #3B82F6;"><strong>💭 오해</strong><p style="font-size:15px;font-weight:400;margin-top:4px;">상대방의 말이나 행동을 <strong>잘못 이해</strong>해서 생기는 갈등이에요.</p></div>
+    <div class="card" style="border-left:4px solid #F59E0B;"><strong>🎯 다른 기대</strong><p style="font-size:15px;font-weight:400;margin-top:4px;">서로 <strong>원하는 것이 달라서</strong> 생기는 갈등이에요.</p></div>
+    <div class="card" style="border-left:4px solid #10B981;"><strong>🗣️ 소통 부족</strong><p style="font-size:15px;font-weight:400;margin-top:4px;"><strong>마음을 충분히 이야기하지 않아서</strong> 생기는 갈등이에요.</p></div>
+    <div class="card" style="border-left:4px solid #A78BFA;"><strong>⚖️ 다른 가치관</strong><p style="font-size:15px;font-weight:400;margin-top:4px;"><strong>중요하게 생각하는 것이 달라서</strong> 생기는 갈등이에요.</p></div>
+    <label class="check-row" onclick="toggleCauseCheck()"><input type="checkbox" id="cause-check"><span>4가지 원인을 모두 읽었어요! ✅</span></label>
+    <button class="btn btn-primary" id="btn-cause-next" disabled onclick="startEpisodes()">에피소드 시작하기 →</button>
+</div>
+
+<!-- ═══ 에피소드: 읽기 (A/B 공용) ═══ -->
+<div class="screen" id="screen-ep-read">
+    <div class="nav-buttons"><button class="nav-btn" onclick="epGoBack()">← 뒤로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="progress-bar"><div class="progress-fill" id="ep-progress-read"></div></div>
+    <div class="episode-dots" id="ep-dots-read"></div>
+    <div id="ep-read-content"></div>
+    <label class="check-row"><input type="checkbox" id="ep-read-check" onchange="onReadCheck()"><span>이야기를 다 읽었어요! ✅</span></label>
+    <button class="btn btn-primary" id="btn-read-next" disabled onclick="epNextFromRead()">이 친구 마음 들여다보기 →</button>
+</div>
+
+<!-- ═══ 에피소드: 감정 공감 ═══ -->
+<div class="screen" id="screen-ep-empathy">
+    <div class="nav-buttons"><button class="nav-btn" onclick="epGoBack()">← 뒤로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="progress-bar"><div class="progress-fill" id="ep-progress-empathy"></div></div>
+    <div class="episode-dots" id="ep-dots-empathy"></div>
+    <div id="ep-empathy-content"></div>
+    <button class="btn btn-primary" id="btn-empathy-next" disabled onclick="epNextFromEmpathy()">확인하기 →</button>
+</div>
+
+<!-- ═══ 에피소드: 첫 판단 ═══ -->
+<div class="screen" id="screen-ep-judge">
+    <div class="nav-buttons"><button class="nav-btn" onclick="epGoBack()">← 뒤로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="progress-bar"><div class="progress-fill" id="ep-progress-judge"></div></div>
+    <div class="episode-dots" id="ep-dots-judge"></div>
+    <div id="ep-judge-content"></div>
+    <button class="btn btn-primary" id="btn-judge-next" disabled onclick="epNextFromJudge()">이제 반대쪽 이야기를 들어볼까? →</button>
+</div>
+
+<!-- ═══ 에피소드: 관점 전환 ═══ -->
+<div class="screen" id="screen-ep-shift">
+    <div class="nav-buttons"><button class="nav-btn" onclick="epGoBack()">← 뒤로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="progress-bar"><div class="progress-fill" id="ep-progress-shift"></div></div>
+    <div class="episode-dots" id="ep-dots-shift"></div>
+    <div id="ep-shift-content"></div>
+    <button class="btn btn-primary" id="btn-shift-next" disabled onclick="epNextFromShift()">원인 분석하기 →</button>
+</div>
+
+<!-- ═══ 에피소드: 원인 분석 ═══ -->
+<div class="screen" id="screen-ep-analyze">
+    <div class="nav-buttons"><button class="nav-btn" onclick="epGoBack()">← 뒤로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="progress-bar"><div class="progress-fill" id="ep-progress-analyze"></div></div>
+    <div id="ep-analyze-content"></div>
+</div>
+
+<!-- ═══ 에피소드: 카드 획득 ═══ -->
+<div class="screen" id="screen-ep-card">
+    <div class="nav-buttons"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="progress-bar"><div class="progress-fill" id="ep-progress-card"></div></div>
+    <div id="ep-card-content"></div>
+</div>
+
+<!-- ═══ 카드 갤러리 ═══ -->
+<div class="screen" id="screen-gallery">
+    <div class="nav-buttons"><button class="nav-btn" onclick="backFromGallery()">← 돌아가기</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div style="text-align:center;"><div style="font-size:2.5rem;">🃏</div><h2 style="color:var(--primary-dark);">나의 관점 카드</h2></div>
+    <div id="gallery-content"></div>
+</div>
+
+<!-- ═══ 성찰 ═══ -->
+<div class="screen" id="screen-reflect">
+    <div class="nav-buttons"><button class="nav-btn" onclick="backToMain()">← 뒤로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:90%"></div></div>
+    <div style="text-align:center;margin-bottom:16px;"><div style="font-size:2.5rem;">✍️</div><h2 style="color:var(--primary-dark);">마음 기록</h2><p style="font-size:15px;font-weight:400;color:var(--text-light);">오늘 배운 것을 정리해 봐요</p></div>
+    <div class="card">
+        <div style="margin-bottom:16px;"><label style="font-size:15px;">💭 갈등은 왜 생기는 걸까요? 나만의 말로 정리해 봐요.</label><textarea id="ref1" placeholder="예: 서로 다르게 생각해서..." oninput="checkReflection()"></textarea></div>
+        <div style="margin-bottom:16px;"><label style="font-size:15px;">🤝 다음에 친구와 갈등이 생기면, 어떻게 하고 싶어요?</label><textarea id="ref2" placeholder="예: 먼저 친구 이야기를 들어볼 거예요..." oninput="checkReflection()"></textarea></div>
+    </div>
+    <button class="btn btn-primary" id="btn-reflect-next" disabled onclick="submitReflection()">제출하고 마무리하기 →</button>
+</div>
+
+<!-- ═══ 완료 ═══ -->
+<div class="screen" id="screen-complete">
+    <div class="nav-buttons"><button class="nav-btn" onclick="backToMain()">← 다시 탐험하기</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="card" style="text-align:center;background:linear-gradient(135deg,#EDE9FE,#D1FAE5);">
+        <div style="font-size:4rem;animation:bounce 2s infinite;">🎉</div>
+        <h2 style="color:var(--primary-dark);font-size:22px;">멋지게 해냈어요!</h2>
+    </div>
+    <div id="complete-cards"></div>
+    <div class="radar-container"><canvas id="radarChart" width="280" height="280"></canvas></div>
+    <div id="complete-stats"></div>
+    <div class="insight-card"><div class="big-text">갈등이 생겼다는 건,<br><strong>누군가 틀렸다는 뜻이 아니야.</strong><br><br>서로 다른 눈으로<br><strong style="color:var(--primary);">같은 장면을 봤다는 신호</strong>일 수 있어.</div></div>
+    <div class="card" style="text-align:center;"><p style="font-size:16px;line-height:2;">📌 <strong>"아니야!"</strong> 대신<br><strong style="color:var(--primary);">"너는 그렇게 느꼈구나"</strong>라고<br>말해보는 연습을 해보자! 💪</p></div>
+    <div id="reflection-btn-area" style="margin-top:12px;"></div>
+    <div id="bonus-btn-area" style="margin-top:8px;"></div>
+    <div id="solo-save-area" style="margin-top:8px;"></div>
+    <button class="btn btn-secondary" onclick="openGallery()">🃏 카드 모아보기</button>
+    <button class="btn btn-secondary" onclick="backToMain()">🔄 에피소드 다시 보기</button>
+</div>
+
+<!-- ═══ 교사 대시보드 ═══ -->
+<div class="screen" id="screen-dashboard">
+    <div class="nav-buttons"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button><button class="nav-btn" onclick="refreshDashboard()">🔄 새로고침</button></div>
+    <div style="text-align:center;margin-bottom:12px;"><h2 style="color:var(--primary-dark);">👩‍🏫 교사 대시보드</h2><p style="font-size:14px;color:var(--text-light);font-weight:400;">방 코드: <strong id="dash-room-code"></strong></p></div>
+    <div class="tab-buttons">
+        <button class="tab-btn active" data-tab="tab-overview" onclick="switchTab('tab-overview', this)">📊 현황</button>
+        <button class="tab-btn" data-tab="tab-detail" onclick="switchTab('tab-detail', this)">📋 상세기록</button>
+        <button class="tab-btn" data-tab="tab-export" onclick="switchTab('tab-export', this)">📥 내보내기</button>
+        <button class="tab-btn" data-tab="tab-tts" onclick="switchTab('tab-tts', this)">🔊 TTS</button>
+    </div>
+    <div id="dashboard-content">
+        <div class="tab-content active" id="tab-overview"></div>
+        <div class="tab-content" id="tab-detail"></div>
+        <div class="tab-content" id="tab-export"><div class="card"><h3 style="color:var(--primary);margin-bottom:12px;">📥 데이터 내보내기</h3><button class="btn btn-primary" onclick="downloadExcel()">📥 엑셀 다운로드</button><button class="btn btn-secondary" style="margin-top:8px;" onclick="downloadPDF()">📄 PDF 다운로드 (인쇄)</button></div></div>
+        <div class="tab-content" id="tab-tts"><div class="card"><h3 style="color:var(--primary);margin-bottom:12px;">🔊 텍스트 읽기 (TTS)</h3><p style="font-size:14px;font-weight:400;color:var(--text-light);margin-bottom:12px;">각 섹션별로 내용을 읽어줍니다.</p><div id="tts-sections"></div><button class="btn btn-small btn-danger" onclick="stopSpeaking()" style="margin-top:8px;">⏹️ 읽기 멈추기</button></div></div>
+    </div>
+    <div class="card" style="text-align:center;margin-top:16px;"><p style="font-size:13px;color:var(--warning);">⚠️ 수업이 끝나면 데이터 초기화를 눌러주세요. 30일 후 자동 삭제됩니다.</p><button class="btn btn-small btn-danger" onclick="confirmResetData()" style="margin-top:8px;">🗑️ 데이터 초기화</button></div>
+</div>
+
+</div><!-- container -->
+
+<div id="toast" class="toast"></div>
+<div id="confirmModal" class="modal-overlay" style="display:none">
+    <div class="modal-content"><div class="modal-icon">⚠️</div><div class="modal-message" id="confirmMessage"></div>
+    <div class="modal-buttons"><button class="btn btn-secondary btn-small" onclick="closeConfirmModal()">취소</button><button class="btn btn-primary btn-small" id="confirmOkBtn" style="background:var(--error)">확인</button></div></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = { apiKey:"AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s", authDomain:"emo-dex.firebaseapp.com", projectId:"emo-dex", storageBucket:"emo-dex.firebasestorage.app", messagingSenderId:"994736049700", appId:"1:994736049700:web:8233fa7b68cd6e0cccd2b1", measurementId:"G-6YLB5C6VNR" };
+const APP_ID = 'sel-lesson-21';
+let app, auth, db, useFirebase = false;
+try { app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); useFirebase = true; } catch(e) { console.log('Firebase init failed, using local'); }
+
+const localDB = {};
+const DB = {
+    async saveRoom(code, data) { if (useFirebase) { await setDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',code), data); } else { localDB['room_'+code] = {...(localDB['room_'+code]||{}), ...data}; } },
+    async getRoom(code) { if (useFirebase) { const s = await getDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',code)); return s.exists() ? s.data() : null; } return localDB['room_'+code] || null; },
+    async saveStudent(code, nick, data) { if (useFirebase) { await setDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',code,'students',nick), data, {merge:true}); } else { const k='stu_'+code+'_'+nick; localDB[k]={...(localDB[k]||{}), ...data}; } },
+    async getStudent(code, nick) { if (useFirebase) { const s = await getDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',code,'students',nick)); return s.exists() ? s.data() : null; } return localDB['stu_'+code+'_'+nick] || null; },
+    async getAllStudents(code) { if (useFirebase) { const snap = await getDocs(collection(db,'artifacts',APP_ID,'public','data','rooms',code,'students')); const r={}; snap.forEach(d => r[d.id]=d.data()); return r; } const r={}; Object.keys(localDB).filter(k=>k.startsWith('stu_'+code+'_')).forEach(k=>{r[k.replace('stu_'+code+'_','')]=localDB[k]}); return r; },
+    async deleteRoom(code) { if (useFirebase) { const snap = await getDocs(collection(db,'artifacts',APP_ID,'public','data','rooms',code,'students')); for (const d of snap.docs) await deleteDoc(d.ref); await deleteDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',code)); } else { Object.keys(localDB).filter(k=>k.includes(code)).forEach(k=>delete localDB[k]); } },
+    async deleteAllStudents(code) { if (useFirebase) { const snap = await getDocs(collection(db,'artifacts',APP_ID,'public','data','rooms',code,'students')); for (const d of snap.docs) await deleteDoc(d.ref); } else { Object.keys(localDB).filter(k=>k.startsWith('stu_'+code+'_')).forEach(k=>delete localDB[k]); } },
+    onStudentsChange(code, cb) { if (useFirebase) { return onSnapshot(collection(db,'artifacts',APP_ID,'public','data','rooms',code,'students'), snap => { const r={}; snap.forEach(d=>r[d.id]=d.data()); cb(r); }); } cb({}); return ()=>{}; }
+};
+
+let currentUser = null;
+const authReady = new Promise((resolve) => {
+    if (!auth) { resolve(null); return; }
+    const timeout = setTimeout(() => resolve(null), 5000);
+    onAuthStateChanged(auth, user => { if(user){currentUser=user;clearTimeout(timeout);resolve(user)} });
+    signInAnonymously(auth).catch(() => { clearTimeout(timeout); resolve(null); });
+});
+
+// ═══ 상태 변수 ═══
+let currentRoomCode='', currentNickname='', isTeacher=false, isSoloMode=false;
+let currentEpisode=0, epPhase='readA'; // readA, empathyA, judge, readB, empathyB, shift, analyze, card
+let episodeData={}, collectedCards=[], reflectionDone=false;
+let selectedEmpathy=[], selectedJudge='', selectedShift='', selectedCause='';
+let empathyScores=[], shiftResults=[];
+let dashboardData={}, unsubscribe=null;
+let currentRound='core';           // 'core' | 'bonus'
+let saveTimer=null, wordCloudTexts=[], soloReflection=null;
+
+const PHASES = ['readA','empathyA','judge','readB','empathyB','shift','analyze','card'];
+
+// ═══ 에피소드 데이터 ═══
+const EPISODES = [
+    {
+        id:'ep1', title:'🎨 모둠 활동 시간', situation:'미술 시간, 큰 그림을 함께 그리는 모둠 활동이에요.',
+        sideA: {
+            emoji:'😊', name:'수아', desc:'그림 그리기를 좋아하는 꼼꼼한 아이',
+            story:'수아는 미술 시간이 좋아요. 오늘은 모둠 친구들과 큰 벽화를 그리기로 했어요.\n\n수아는 밑그림을 예쁘게 그렸어요. 색칠도 꼼꼼하게 했고요. 그런데 옆에서 현우가 수아가 그린 부분 위에 휙 선을 그어버렸어요.\n\n💭 수아의 속마음:\n"나는 열심히 그렸는데... 현우는 내 그림을 망친 거야. 내 노력을 무시하는 거 아니야?"',
+            emotions: [
+                {emoji:'😤',label:'화가 나',correct:true}, {emoji:'😢',label:'서러워',correct:true},
+                {emoji:'😞',label:'무시당한 느낌',correct:true}, {emoji:'😕',label:'당황했어',correct:true},
+                {emoji:'😊',label:'신나',correct:false}, {emoji:'😌',label:'편안해',correct:false}
+            ]
+        },
+        sideB: {
+            emoji:'😄', name:'현우', desc:'활발하고 아이디어가 많은 아이',
+            story:'현우는 모둠 활동이 신나요. 큰 그림을 같이 그리는 거잖아요!\n\n좋은 아이디어가 떠올랐어요. "여기에 무지개를 넣으면 더 예쁘겠다!" 그래서 신나게 선을 그었어요.\n\n그런데 수아가 갑자기 화를 내요. 현우는 깜짝 놀랐어요.\n\n💭 현우의 속마음:\n"나는 더 멋지게 만들려고 한 건데... 수아가 갑자기 화를 내서 당황했어. 나쁜 마음이 아니었는데..."',
+            emotions: [
+                {emoji:'😳',label:'당황했어',correct:true}, {emoji:'😢',label:'억울해',correct:true},
+                {emoji:'😔',label:'미안해',correct:true}, {emoji:'😞',label:'서운해',correct:true},
+                {emoji:'😤',label:'화가 나',correct:false}, {emoji:'😊',label:'재미있어',correct:false}
+            ]
+        },
+        causeHint:'misunderstand', causeExplain:'현우는 "함께 그리기"라고 생각했고, 수아는 "내 부분은 내가"라고 생각했어요. 서로의 생각을 확인하지 않아 오해가 생긴 거예요.',
+        card: {emoji:'🔮', name:'오해 탐정', color:'#3B82F6', desc:'겉으로 보이는 것 너머를 볼 수 있어!', skill:'오해를 발견하는 힘'}
+    },
+    {
+        id:'ep2', title:'📏 허락 없이 쓴 지우개', situation:'수학 시간, 시험 문제를 풀고 있는데...',
+        sideA: {
+            emoji:'😣', name:'지호', desc:'자기 물건을 소중히 여기는 신중한 아이',
+            story:'지호는 시험에 집중하고 있었어요. 그런데 옆에 앉은 서연이가 말도 없이 지호의 새 지우개를 집어 들었어요.\n\n아빠가 사 준 캐릭터 지우개! "지우개 좀 써도 돼?"라는 말도 없이요.\n\n💭 지호의 속마음:\n"왜 허락도 없이 내 물건을 가져가? 물어보고 쓰면 되잖아. 너무 무례해."',
+            emotions: [
+                {emoji:'😠',label:'화가 나',correct:true}, {emoji:'😤',label:'짜증나',correct:true},
+                {emoji:'😑',label:'불쾌해',correct:true}, {emoji:'😢',label:'속상해',correct:true},
+                {emoji:'😊',label:'괜찮아',correct:false}, {emoji:'😴',label:'귀찮아',correct:false}
+            ]
+        },
+        sideB: {
+            emoji:'😅', name:'서연', desc:'급하면 생각보다 행동이 먼저인 아이',
+            story:'서연이는 시험 문제를 풀다가 실수를 했어요. 빨리 지워야 하는데 자기 지우개가 없어요!\n\n바로 옆에 지호 지우개가 보였어요. "잠깐만 빌리자!" 시험 시간이니까 조용히 집어 들었어요.\n\n그런데 지호가 확 뺏으면서 화를 내요.\n\n💭 서연의 속마음:\n"잠깐 빌린 건데... 바로 돌려주려고 했는데 왜 이렇게 화를 내지?"',
+            emotions: [
+                {emoji:'😨',label:'놀랐어',correct:true}, {emoji:'😅',label:'미안해',correct:true},
+                {emoji:'😢',label:'서운해',correct:true}, {emoji:'😕',label:'당황했어',correct:true},
+                {emoji:'😠',label:'짜증나',correct:false}, {emoji:'😎',label:'당당해',correct:false}
+            ]
+        },
+        causeHint:'different_expect', causeExplain:'지호는 "내 물건은 허락 받고 쓰기"를 기대했고, 서연은 "급할 땐 잠깐 빌려도 돼"라고 생각했어요. 서로 기대하는 것이 달랐던 거예요.',
+        card: {emoji:'🎯', name:'기대 조율사', color:'#F59E0B', desc:'서로 다른 기대를 연결할 수 있어!', skill:'다른 기대를 이해하는 힘'}
+    },
+    {
+        id:'ep3', title:'⚽ 점심시간 약속', situation:'점심시간, 운동장에서 놀기로 한 친구들.',
+        sideA: {
+            emoji:'😤', name:'민준', desc:'약속을 중요하게 생각하는 성실한 아이',
+            story:'민준이와 도윤이는 어제 약속했어요. "내일 점심에 운동장에서 축구하자!"\n\n민준이는 설레는 마음으로 밥을 빨리 먹고 운동장에 나왔어요. 5분, 10분... 도윤이가 안 와요.\n\n교실에 가보니 도윤이가 다른 친구들과 카드 게임을 하고 있었어요.\n\n💭 민준의 속마음:\n"약속했잖아! 나는 기다렸는데 왜 안 온 거야? 나보다 다른 친구가 더 좋은 거야?"',
+            emotions: [
+                {emoji:'😡',label:'배신당한 느낌',correct:true}, {emoji:'😢',label:'서러워',correct:true},
+                {emoji:'😤',label:'화가 나',correct:true}, {emoji:'😞',label:'외로워',correct:true},
+                {emoji:'😊',label:'이해돼',correct:false}, {emoji:'😐',label:'무관심',correct:false}
+            ]
+        },
+        sideB: {
+            emoji:'😶', name:'도윤', desc:'어디서든 잘 어울리지만 깜빡이 잦은 아이',
+            // ⭐ "도윤이는 ~먹다가 재현이가 보여줬어요"는 주어가 뒤바뀐 비문이라 주어를 맞춰 수정
+            story:'도윤이가 밥을 먹고 있는데 옆에 앉은 재현이가 새 카드를 보여줬어요. "같이 하자!" 도윤이는 너무 하고 싶었어요.\n\n"잠깐만 하고 나가야지" 하고 시작했는데, 어느새 시간이 훌쩍...\n\n그제야 "어? 민준이랑 약속!" 하고 떠올랐어요. 급하게 나갔지만 민준이는 이미 없었어요.\n\n💭 도윤의 속마음:\n"깜빡한 거야... 일부러 안 간 게 아닌데... 민준이한테 미안해."',
+            emotions: [
+                {emoji:'😔',label:'미안해',correct:true}, {emoji:'😶',label:'찔려',correct:true},
+                {emoji:'😕',label:'당황했어',correct:true}, {emoji:'😥',label:'마음이 무거워',correct:true},
+                {emoji:'😤',label:'화가 나',correct:false}, {emoji:'😎',label:'별일 아냐',correct:false}
+            ]
+        },
+        causeHint:'lack_comm', causeExplain:'민준이에게 약속은 "반드시 지켜야 하는 것"이고, 도윤이에게는 "가벼운 계획"이었어요. 약속의 무게가 달랐는데 그 마음을 나누지 않았던 거예요.',
+        card: {emoji:'🗣️', name:'소통 해결사', color:'#10B981', desc:'말하지 않은 마음도 알아챌 수 있어!', skill:'소통의 다리를 놓는 힘'}
+    },
+    {
+        id:'ep4', title:'📖 발표 준비', situation:'국어 시간, 모둠 발표를 준비하는 중.',
+        sideA: {
+            emoji:'😰', name:'하은', desc:'책임감 강하고 성적에 신경 쓰는 아이',
+            story:'모둠 발표가 내일이에요. 하은이는 걱정이 많아요. PPT를 만들고, 대사를 나누고, 연습까지 해야 하거든요.\n\n같은 모둠 태민이가 자꾸 딴짓을 해요. "태민아, 여기 이거 맡아" 하면 "응" 하고는 다시 멍하니 앉아 있어요.\n\n💭 하은의 속마음:\n"왜 아무것도 안 하는 거야? 나만 열심히 하잖아. 너무 답답해."',
+            emotions: [
+                {emoji:'😤',label:'답답해',correct:true}, {emoji:'😠',label:'화가 나',correct:true},
+                {emoji:'😩',label:'지쳐',correct:true}, {emoji:'😑',label:'불공평해',correct:true},
+                {emoji:'😊',label:'재미있어',correct:false}, {emoji:'😌',label:'여유로워',correct:false}
+            ]
+        },
+        sideB: {
+            emoji:'😶', name:'태민', desc:'조용하고 자신감이 부족한 아이',
+            story:'태민이는 발표 준비가 무서워요. 사실 뭘 어떻게 해야 할지 모르겠어요.\n\nPPT 만드는 것도, 발표하는 것도 자신이 없어요. 하은이가 계속 "이거 해, 저거 해" 하는데, 뭘 어떻게 해야 하는지 모르니까 멈춰있게 돼요.\n\n물어보고 싶은데 "이런 것도 모르냐"고 할까 봐 무서워요.\n\n💭 태민의 속마음:\n"안 하는 게 아니라 못 하겠는 건데... 나만 못하는 것 같아..."',
+            emotions: [
+                {emoji:'😨',label:'무서워',correct:true}, {emoji:'😢',label:'위축돼',correct:true},
+                {emoji:'😔',label:'자신 없어',correct:true}, {emoji:'😞',label:'창피해',correct:true},
+                {emoji:'😤',label:'짜증나',correct:false}, {emoji:'😴',label:'귀찮아',correct:false}
+            ]
+        },
+        causeHint:'different_value', causeExplain:'하은이는 "결과와 책임"을 중요하게 여기고, 태민이는 "못해서 도움이 필요한" 상태예요. "안 하는 것"과 "못 하는 것"은 완전히 다른 건데, 겉으로는 같아 보였던 거예요.',
+        card: {emoji:'⚖️', name:'가치 존중러', color:'#A78BFA', desc:'"다름"을 "틀림"으로 보지 않아!', skill:'다른 가치를 존중하는 힘'}
+    }
+];
+
+
+// ═══ 심화 갈등 파일 (선택 라운드 · 콘텐츠 증강) ═══
+const BONUS_EPISODES = [
+    {
+        id:'b1', title:'🎮 같이 하던 카드 게임', situation:'쉬는 시간, 교실 뒤에서 카드 게임을 하던 친구들.',
+        sideA: {
+            emoji:'😐', name:'유나', desc:'규칙을 정확히 지키는 걸 좋아하는 아이',
+            story:'유나는 친구들과 카드 게임 규칙을 정해뒀어요. "한 사람이 한 번에 한 장씩만 내기!"\n\n오늘도 그 규칙대로 하고 있는데, 새로 온 준서가 두 장을 한꺼번에 냈어요.\n\n"어? 그건 안 되는데?" 유나가 말하자 준서가 "왜 안 돼?" 하고 되물었어요. 주변 친구들이 모두 쳐다봤어요.\n\n💭 유나의 속마음:\n"규칙을 지켜야 다 같이 재미있는 건데... 나만 까다로운 사람이 된 것 같아."',
+            emotions: [
+                {emoji:'😳',label:'민망해',correct:true}, {emoji:'😞',label:'억울해',correct:true},
+                {emoji:'😤',label:'답답해',correct:true}, {emoji:'😢',label:'서운해',correct:true},
+                {emoji:'😎',label:'통쾌해',correct:false}, {emoji:'😴',label:'지루해',correct:false}
+            ]
+        },
+        sideB: {
+            emoji:'🙂', name:'준서', desc:'전학 온 지 일주일 된 아이',
+            story:'준서는 전학 온 지 일주일 됐어요. 오늘 처음으로 친구들이 게임에 끼워줬어요.\n\n예전 학교에서는 카드 두 장을 한 번에 내는 게 당연했어요. 그래서 아무 생각 없이 두 장을 냈는데...\n\n유나가 "그건 안 되는데?"라고 하자 모두가 준서를 봤어요.\n\n💭 준서의 속마음:\n"내가 뭘 잘못한 거지? 겨우 끼워줬는데, 이제 안 놀아주면 어떡하지..."',
+            emotions: [
+                {emoji:'😰',label:'불안해',correct:true}, {emoji:'😳',label:'창피해',correct:true},
+                {emoji:'😕',label:'어리둥절해',correct:true}, {emoji:'😔',label:'위축돼',correct:true},
+                {emoji:'😠',label:'화가 나',correct:false}, {emoji:'😊',label:'신나',correct:false}
+            ]
+        },
+        causeHint:'misunderstand', causeExplain:'유나는 "우리 반 규칙"을 말했고, 준서는 "예전 학교 규칙"을 알고 있었어요. 서로 다른 규칙을 알고 있다는 걸 아무도 몰랐던 거예요.',
+        card: {emoji:'🕵️', name:'신호 해독가', color:'#2563EB', desc:'말 뒤에 숨은 진짜 뜻을 읽어낼 수 있어!', skill:'숨은 뜻을 읽는 힘'}
+    },
+    {
+        id:'b2', title:'🎒 자리 바꾸는 날', situation:'한 달에 한 번, 자리를 바꾸는 날이에요.',
+        sideA: {
+            emoji:'😟', name:'예린', desc:'조용한 곳에서 집중이 잘 되는 아이',
+            story:'예린이는 창가 자리에 앉고 싶었어요. 조용하고 칠판도 잘 보이거든요.\n\n제비뽑기 전에 짝꿍 다인이에게 말했어요. "나 창가 되면 좋겠다."\n\n그런데 다인이가 창가를 뽑고는 "예린아, 나 여기 앉을게!" 하며 좋아했어요.\n\n💭 예린의 속마음:\n"내가 창가 앉고 싶다고 말했는데... 기억이 안 나나? 바꿔줄 줄 알았는데."',
+            emotions: [
+                {emoji:'😞',label:'실망했어',correct:true}, {emoji:'😢',label:'서운해',correct:true},
+                {emoji:'😶',label:'말 못 하겠어',correct:true}, {emoji:'😔',label:'외로워',correct:true},
+                {emoji:'😆',label:'즐거워',correct:false}, {emoji:'😎',label:'통쾌해',correct:false}
+            ]
+        },
+        sideB: {
+            emoji:'😃', name:'다인', desc:'기분을 솔직하게 표현하는 아이',
+            story:'다인이는 제비뽑기에서 창가를 뽑고 정말 기뻤어요! 작년 내내 복도 쪽이었거든요.\n\n"예린아, 나 여기 앉을게!" 하고 신나게 말했는데, 예린이 표정이 이상했어요.\n\n왜 그런지 물어보고 싶었지만, 예린이는 아무 말도 하지 않았어요.\n\n💭 다인의 속마음:\n"내가 뭘 잘못했나? 기뻐서 말한 건데 예린이가 왜 저러지... 물어보기도 조심스러워."',
+            emotions: [
+                {emoji:'😕',label:'당황했어',correct:true}, {emoji:'😟',label:'걱정돼',correct:true},
+                {emoji:'😶',label:'눈치 보여',correct:true}, {emoji:'😞',label:'미안해',correct:true},
+                {emoji:'😤',label:'짜증나',correct:false}, {emoji:'😌',label:'홀가분해',correct:false}
+            ]
+        },
+        causeHint:'lack_comm', causeExplain:'예린이는 "말했으니 알아줄 거야"라고 생각했고, 다인이는 그 말이 부탁인 줄 몰랐어요. 마음을 끝까지 말하지 않으면 상대는 알기 어려워요.',
+        card: {emoji:'🌉', name:'마음 다리공', color:'#059669', desc:'말하지 못한 마음에 다리를 놓을 수 있어!', skill:'끝까지 말해보는 힘'}
+    },
+    {
+        id:'b3', title:'📱 답장이 늦은 날', situation:'주말 저녁, 우리 반 대화방에서 생긴 일.',
+        sideA: {
+            emoji:'😔', name:'소율', desc:'친구 관계를 소중히 여기는 아이',
+            story:'소율이는 토요일에 생일 파티 계획을 대화방에 올렸어요. "다들 올 수 있어?"\n\n다른 친구들은 바로 답했는데, 제일 친한 은우만 읽고 답이 없어요.\n\n한 시간, 두 시간... 소율이는 계속 화면을 들여다봤어요.\n\n💭 소율의 속마음:\n"읽었는데 왜 답이 없지? 오기 싫은 건가? 나랑 멀어진 걸까..."',
+            emotions: [
+                {emoji:'😰',label:'불안해',correct:true}, {emoji:'😢',label:'서운해',correct:true},
+                {emoji:'😞',label:'초조해',correct:true}, {emoji:'😔',label:'소외된 느낌',correct:true},
+                {emoji:'😎',label:'느긋해',correct:false}, {emoji:'😄',label:'설레',correct:false}
+            ]
+        },
+        sideB: {
+            emoji:'😵', name:'은우', desc:'집안일도 척척 해내는 씩씩한 아이',
+            story:'은우는 토요일에 할머니 댁에 갔어요. 오후 내내 사촌 동생들을 돌봤어요.\n\n알림은 봤지만 손이 자유롭지 않아서 "이따 답해야지" 했어요. 그런데 저녁이 되어서야 다시 생각났어요.\n\n급하게 대화방을 열었는데, 분위기가 이상했어요.\n\n💭 은우의 속마음:\n"안 간다고 한 것도 아닌데... 답이 늦었다고 이렇게 될 줄은 몰랐어."',
+            emotions: [
+                {emoji:'😨',label:'깜짝 놀랐어',correct:true}, {emoji:'😥',label:'미안해',correct:true},
+                {emoji:'😕',label:'억울해',correct:true}, {emoji:'😓',label:'난감해',correct:true},
+                {emoji:'😠',label:'화가 나',correct:false}, {emoji:'😴',label:'관심 없어',correct:false}
+            ]
+        },
+        causeHint:'different_expect', causeExplain:'소율이는 "친한 사이면 바로 답해야지"라고 기대했고, 은우는 "나중에 답해도 괜찮아"라고 생각했어요. 답장 속도에 대한 기대가 서로 달랐던 거예요.',
+        card: {emoji:'📡', name:'마음 안테나', color:'#D97706', desc:'보이지 않는 사정까지 잡아낼 수 있어!', skill:'상황을 넓게 보는 힘'}
+    },
+    {
+        id:'b4', title:'🧹 청소 시간의 기준', situation:'하교 전 청소 시간, 우리 모둠 구역에서.',
+        sideA: {
+            emoji:'😑', name:'건우', desc:'맡은 일을 빠르게 끝내고 싶어 하는 아이',
+            story:'건우는 청소를 빨리 끝내고 싶어요. 학원 버스 시간이 빠듯하거든요.\n\n서둘러 쓸고 "다 했다!" 하며 빗자루를 놓았는데, 같은 모둠 채아가 그 자리를 다시 쓸었어요.\n\n건우는 얼굴이 화끈해졌어요.\n\n💭 건우의 속마음:\n"내가 한 게 마음에 안 든다는 거야? 다들 보는 앞에서 왜 저래..."',
+            emotions: [
+                {emoji:'😳',label:'창피해',correct:true}, {emoji:'😤',label:'발끈해',correct:true},
+                {emoji:'😞',label:'무시당한 느낌',correct:true}, {emoji:'😥',label:'조급해',correct:true},
+                {emoji:'😊',label:'고마워',correct:false}, {emoji:'😌',label:'차분해',correct:false}
+            ]
+        },
+        sideB: {
+            emoji:'😐', name:'채아', desc:'맡은 일은 끝까지 하는 아이',
+            story:'채아는 이번 주 청소 점검을 맡았어요. 선생님이 "구석까지 깨끗하게"라고 하셨거든요.\n\n건우가 쓴 자리에 먼지가 남아 있어서 조용히 다시 쓸었어요. 혼내려던 게 아니라, 우리 모둠이 점검에 통과하길 바랐어요.\n\n그런데 건우 표정이 굳었어요.\n\n💭 채아의 속마음:\n"나는 우리 모둠이 잘 되게 하려던 건데... 왜 화가 난 거지?"',
+            emotions: [
+                {emoji:'😕',label:'당황했어',correct:true}, {emoji:'😔',label:'속상해',correct:true},
+                {emoji:'😟',label:'걱정돼',correct:true}, {emoji:'😶',label:'눈치 보여',correct:true},
+                {emoji:'😆',label:'재미있어',correct:false}, {emoji:'😎',label:'통쾌해',correct:false}
+            ]
+        },
+        causeHint:'different_value', causeExplain:'건우에게는 "제시간에 끝내기"가, 채아에게는 "제대로 끝내기"가 더 중요했어요. 둘 다 틀리지 않았지만, 중요하게 여기는 것이 달랐던 거예요.',
+        card: {emoji:'🧭', name:'가치 나침반', color:'#DB2777', desc:'서로 다른 기준 사이에서 길을 찾을 수 있어!', skill:'다른 기준을 살피는 힘'}
+    }
+];
+
+const MASTER_CARD = {emoji:'🌈', name:'관점 마스터', color:'linear-gradient(135deg,#5B21B6,#DB2777)', desc:'여덟 갈등을 모두 양쪽 눈으로 본 사람!', skill:'같은 장면을 두 눈으로 보는 힘'};
+
+// 현재 라운드의 에피소드 목록 / 전체 목록
+function EPS(){ return currentRound==='bonus' ? BONUS_EPISODES : EPISODES; }
+function ALL_EPS(){ return EPISODES.concat(BONUS_EPISODES); }
+function epDone(ep){ return !!(episodeData[ep.id] && episodeData[ep.id].cause); }
+function doneCount(list){ return list.filter(epDone).length; }
+function firstIncomplete(list){ for(let i=0;i<list.length;i++){ if(!epDone(list[i])) return i; } return 0; }
+
+function computeEmpathyScores(){
+    const out=[];
+    ALL_EPS().forEach(ep=>{ const d=episodeData[ep.id]; if(!d) return;
+        if(d.empathyA && typeof d.empathyA.score==='number') out.push(d.empathyA.score);
+        if(d.empathyB && typeof d.empathyB.score==='number') out.push(d.empathyB.score);
+    });
+    return out;
+}
+function computeShiftResults(){
+    const out=[];
+    ALL_EPS().forEach(ep=>{ const d=episodeData[ep.id]; if(!d || !d.shiftResult) return;
+        out.push({first:d.firstJudge||'unsure', after:d.shiftResult, shifted:!!d.perspectiveShifted});
+    });
+    return out;
+}
+
+// 학생 데이터 즉시 저장 (디바운스) — 중간 이탈 시 유실 방지
+async function persist(extra) {
+    if (isSoloMode || isTeacher || !currentRoomCode || !currentNickname) return;
+    try {
+        await DB.saveStudent(currentRoomCode, currentNickname, Object.assign({
+            episodes: episodeData, collectedCards: collectedCards,
+            empathyScores: empathyScores, shiftResults: shiftResults,
+            lastRound: currentRound, lastEpisode: currentEpisode, lastPhase: epPhase,
+            updatedAt: new Date().toISOString()
+        }, extra||{}));
+    } catch(e) { console.log('[save]', e && e.message); }
+}
+function persistSoon(extra) {
+    if (isSoloMode || isTeacher) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=>persist(extra), 500);
+}
+
+const CAUSE_OPTIONS = [
+    {id:'misunderstand',label:'💭 오해',desc:'잘못 이해해서'},
+    {id:'different_expect',label:'🎯 다른 기대',desc:'원하는 게 달라서'},
+    {id:'lack_comm',label:'🗣️ 소통 부족',desc:'말을 안 해서'},
+    {id:'different_value',label:'⚖️ 다른 가치관',desc:'중요한 게 달라서'}
+];
+
+const HERO_CARD = {emoji:'🦸', name:'갈등 해결 히어로', color:'linear-gradient(135deg,#7C3AED,#EC4899)', desc:'모든 관점을 이해하는 진정한 히어로!', skill:'갈등을 기회로 바꾸는 힘'};
+
+// ═══ 화면 전환 ═══
+window.showScreen = function(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const t = document.getElementById(id);
+    if (t) { t.classList.add('active'); window.scrollTo(0,0); }
+};
+
+function showToast(msg, type='info') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = type==='error'?'rgba(239,68,68,.95)':type==='success'?'rgba(16,185,129,.95)':'rgba(31,41,55,.95)';
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function esc(s) {
+    return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ═══ 커스텀 모달 (v3.4: cb 먼저 저장!) ═══
+let confirmCallback = null;
+window.showConfirmModal = function(message, onConfirm) {
+    document.getElementById('confirmMessage').innerHTML = message;
+    document.getElementById('confirmModal').style.display = 'flex';
+    confirmCallback = onConfirm;
+    document.getElementById('confirmOkBtn').onclick = () => {
+        const cb = confirmCallback;
+        closeConfirmModal();
+        if (cb) cb();
+    };
+};
+window.closeConfirmModal = function() {
+    document.getElementById('confirmModal').style.display = 'none';
+    confirmCallback = null;
+    document.getElementById('confirmOkBtn').textContent = '확인';
+    document.getElementById('confirmOkBtn').style.background = 'var(--error)';
+};
+
+async function hashPassword(pw) {
+    const data = new TextEncoder().encode(pw + 'sel-salt-21');
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function copyToClipboard(text) {
+    try { await navigator.clipboard.writeText(text); showToast('✅ 코드가 복사되었습니다!','success'); } catch(err) {
+        const ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;opacity:0;left:-9999px';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { document.execCommand('copy'); showToast('✅ 코드가 복사되었습니다!','success'); } catch(e) { showToast('📋 코드: '+text+' (직접 복사해주세요)'); }
+        document.body.removeChild(ta);
+    }
+}
+window.copyRoomCode = function() { copyToClipboard(currentRoomCode); };
+
+// ═══ 방 만들기 / 입장 ═══
+window.createRoom = async function() {
+    await authReady;
+    const name=document.getElementById('teacher-name').value.trim(), pw=document.getElementById('room-password').value.trim();
+    if (!name) { showToast('닉네임을 입력해주세요.','error'); return; }
+    if (!/^\d{4}$/.test(pw)) { showToast('비밀번호는 숫자 4자리입니다.','error'); return; }
+    const code=String(Math.floor(Math.random()*900000+100000));
+    const expires=new Date(); expires.setDate(expires.getDate()+30);
+    await DB.saveRoom(code, { teacherName:name, password:await hashPassword(pw), createdAt:new Date().toISOString(), expiresAt:expires.toISOString() });
+    currentRoomCode=code; isTeacher=true; isSoloMode=false;
+    document.getElementById('display-room-code').textContent=code;
+    showScreen('screen-room-created');
+    showToast('🎉 방이 만들어졌어요!','success');
+};
+
+window.openDashboard = function() {
+    document.getElementById('dash-room-code').textContent=currentRoomCode;
+    startDashboardListener();
+    showScreen('screen-dashboard');
+};
+
+window.joinAsTeacher = async function() {
+    await authReady;
+    const code=document.getElementById('teacher-room-code').value.trim(), pw=document.getElementById('teacher-pw').value.trim();
+    if (!code||!pw) { showToast('방 코드와 비밀번호를 입력해주세요.','error'); return; }
+    const room = await DB.getRoom(code);
+    if (!room) { showToast('존재하지 않는 방입니다.','error'); return; }
+    if (room.expiresAt && new Date(room.expiresAt)<new Date()) { await DB.deleteRoom(code); showToast('만료된 방입니다.','error'); return; }
+    if (room.password !== await hashPassword(pw)) { showToast('비밀번호가 틀렸습니다.','error'); return; }
+    currentRoomCode=code; isTeacher=true; isSoloMode=false;
+    document.getElementById('dash-room-code').textContent=code;
+    startDashboardListener();
+    showScreen('screen-dashboard');
+};
+
+window.joinAsStudent = async function() {
+    await authReady;
+    const code=document.getElementById('student-room-code').value.trim(), nick=document.getElementById('student-nickname').value.trim();
+    if (!code||!nick) { showToast('방 코드와 닉네임을 입력해주세요.','error'); return; }
+    const room = await DB.getRoom(code);
+    if (!room) { showToast('존재하지 않는 방입니다.','error'); return; }
+    if (room.expiresAt && new Date(room.expiresAt)<new Date()) { await DB.deleteRoom(code); showToast('만료된 방입니다.','error'); return; }
+
+    const existing = await DB.getStudent(code, nick);
+    if (existing) {
+        const eps = existing.episodes || {};
+        const coreDone = EPISODES.filter(e=>eps[e.id] && eps[e.id].cause).length;
+        const bonusDoneN = BONUS_EPISODES.filter(e=>eps[e.id] && eps[e.id].cause).length;
+        const cards = existing.collectedCards ? existing.collectedCards.length : 0;
+        showConfirmModal(
+            `<strong>${esc(nick)}</strong>님, 이전에 참여한 기록이 있어요!<br><br>`+
+            `🔍 기본 에피소드: ${coreDone}/${EPISODES.length} 완료<br>`+
+            (bonusDoneN>0 ? `🔥 심화 에피소드: ${bonusDoneN}/${BONUS_EPISODES.length} 완료<br>` : '')+
+            `🃏 카드: ${cards}/${ALL_EPS().length} 수집<br>`+
+            `${existing.reflection ? '✅ 성찰 완료' : '📝 성찰 미작성'}<br><br>이어서 할까요?`,
+            async () => {
+                currentRoomCode=code; currentNickname=nick; isTeacher=false; isSoloMode=false;
+                restoreStudentData(existing);
+                await DB.saveStudent(code, nick, {lastVisit:new Date().toISOString()});
+                showToast(`🎉 ${nick}님, 다시 오셨군요!`,'success');
+                if (coreDone >= EPISODES.length && existing.reflection) { renderGallery(); renderComplete(); showScreen('screen-complete'); }
+                else if (coreDone >= EPISODES.length) { showScreen('screen-reflect'); }
+                else {
+                    currentRound='core';
+                    currentEpisode = (typeof existing.lastEpisode==='number' && existing.lastRound!=='bonus') ? Math.min(existing.lastEpisode, EPISODES.length-1) : coreDone;
+                    epPhase = (existing.lastPhase && PHASES.indexOf(existing.lastPhase)>=0 && existing.lastRound!=='bonus') ? existing.lastPhase : 'readA';
+                    if (epPhase==='card') epPhase='analyze';
+                    renderCurrentPhase();
+                }
+            }
+        );
+        document.getElementById('confirmOkBtn').textContent='이어하기';
+        document.getElementById('confirmOkBtn').style.background='var(--primary)';
+        return;
+    }
+
+    currentRoomCode=code; currentNickname=nick; isTeacher=false; isSoloMode=false;
+    resetStudentState();
+    await DB.saveStudent(code, nick, {joinedAt:new Date().toISOString(), nickname:nick, episodes:{}, collectedCards:[], empathyScores:[], shiftResults:[], lastRound:'core', lastEpisode:0, lastPhase:'readA'});
+    showScreen('screen-story');
+};
+
+window.startSoloMode = function() {
+    isSoloMode=true; isTeacher=false; currentNickname='탐험가'; currentRoomCode='';
+    resetStudentState();
+    showScreen('screen-story');
+};
+
+function resetStudentState() {
+    episodeData={}; collectedCards=[]; empathyScores=[]; shiftResults=[]; reflectionDone=false;
+    currentEpisode=0; epPhase='readA'; currentRound='core'; soloReflection=null;
+    const r1=document.getElementById('ref1'), r2=document.getElementById('ref2');
+    if(r1) r1.value=''; if(r2) r2.value='';
+    const rb=document.getElementById('btn-reflect-next'); if(rb) rb.disabled=true;
+    const sc=document.getElementById('story-check'); if(sc) sc.checked=false;
+    const cc=document.getElementById('cause-check'); if(cc) cc.checked=false;
+    const sb=document.getElementById('btn-story-next'); if(sb) sb.disabled=true;
+    const cb=document.getElementById('btn-cause-next'); if(cb) cb.disabled=true;
+}
+
+function restoreStudentData(data) {
+    episodeData = data.episodes || {};
+    collectedCards = data.collectedCards || [];
+    empathyScores = computeEmpathyScores();      // 저장 배열 대신 에피소드 기록에서 재계산(중복 제거)
+    shiftResults = computeShiftResults();
+    reflectionDone = !!data.reflection;
+    currentRound = data.lastRound === 'bonus' ? 'bonus' : 'core';
+    const ref = data.reflection || data.reflectionDraft;
+    soloReflection = data.reflection || null;
+    // DOM 복원 (textarea 값 + 제출 버튼 상태)
+    setTimeout(() => {
+        const r1=document.getElementById('ref1'), r2=document.getElementById('ref2');
+        if(r1) r1.value = ref ? (ref.q1||'') : '';
+        if(r2) r2.value = ref ? (ref.q2||'') : '';
+        const btn=document.getElementById('btn-reflect-next');
+        if(btn) btn.disabled = !(r1 && r2 && r1.value.trim() && r2.value.trim());
+        const sc=document.getElementById('story-check'); if(sc) sc.checked=true;
+        const cc=document.getElementById('cause-check'); if(cc) cc.checked=true;
+        const sb=document.getElementById('btn-story-next'); if(sb) sb.disabled=false;
+        const cb=document.getElementById('btn-cause-next'); if(cb) cb.disabled=false;
+    }, 60);
+    renderGallery();
+}
+
+// ═══ 스토리/원인소개 체크박스 ═══
+window.toggleStoryCheck = function() {
+    setTimeout(()=>{document.getElementById('btn-story-next').disabled = !document.getElementById('story-check').checked;},10);
+};
+window.toggleCauseCheck = function() {
+    setTimeout(()=>{document.getElementById('btn-cause-next').disabled = !document.getElementById('cause-check').checked;},10);
+};
+
+// ═══ 에피소드 진행 시스템 ═══
+function getProgress() {
+    const list = EPS();
+    const span = 80 / Math.max(1, list.length);
+    const phaseIdx = Math.max(0, PHASES.indexOf(epPhase));
+    return Math.min(95, 15 + currentEpisode * span + (phaseIdx / PHASES.length) * span);
+}
+
+function renderEpDots(containerId) {
+    const el=document.getElementById(containerId); if(!el)return;
+    let html='';
+    const list = EPS();
+    for(let i=0;i<list.length;i++){
+        const cls = i===currentEpisode ? 'active' : (epDone(list[i]) ? 'done' : '');
+        html+=`<div class="ep-dot ${cls}"></div>`;
+    }
+    el.innerHTML=html;
+}
+
+function renderStepPips(containerId, currentStep, totalSteps) {
+    const el=document.getElementById(containerId); if(!el)return;
+    let html='<div class="step-indicator">';
+    for(let i=0;i<totalSteps;i++){
+        const cls = i===currentStep ? 'active' : (i<currentStep ? 'done' : '');
+        html+=`<div class="step-pip ${cls}"></div>`;
+    }
+    html+='</div>';
+    el.insertAdjacentHTML('afterbegin',html);
+}
+
+window.startEpisodes = function() {
+    currentRound='core';
+    if(currentEpisode>=EPISODES.length || currentEpisode<0) currentEpisode=0;
+    epPhase='readA';
+    renderCurrentPhase();
+};
+
+window.startBonusRound = function() {
+    currentRound='bonus';
+    currentEpisode = firstIncomplete(BONUS_EPISODES);
+    epPhase='readA';
+    renderCurrentPhase();
+    showToast('🔥 심화 갈등 파일이 열렸어요!','success');
+};
+
+function renderCurrentPhase() {
+    const list = EPS();
+    if(currentEpisode>=list.length || currentEpisode<0) currentEpisode=0;
+    const ep = list[currentEpisode];
+    const pct = getProgress();
+
+    switch(epPhase) {
+        case 'readA': renderRead(ep, 'A', pct); break;
+        case 'empathyA': renderEmpathy(ep, 'A', pct); break;
+        case 'judge': renderJudge(ep, pct); break;
+        case 'readB': renderRead(ep, 'B', pct); break;
+        case 'empathyB': renderEmpathy(ep, 'B', pct); break;
+        case 'shift': renderShift(ep, pct); break;
+        case 'analyze': renderAnalyze(ep, pct); break;
+        case 'card': renderCardReveal(ep, pct); break;
+    }
+    persistSoon();
+}
+
+// ── 읽기 ──
+function renderRead(ep, side, pct) {
+    const s = side==='A' ? ep.sideA : ep.sideB;
+    const labelClass = side==='A' ? 'label-a' : 'label-b';
+    const cardClass = side==='A' ? 'perspective-a' : 'perspective-b';
+    const sideLabel = side==='A' ? '👈 A의 입장' : '👉 B의 입장';
+
+    document.getElementById('ep-progress-read').style.width=pct+'%';
+    renderEpDots('ep-dots-read');
+
+    document.getElementById('ep-read-content').innerHTML = `
+        <div style="text-align:center;margin-bottom:12px;">
+            <span class="badge badge-count">${currentRound==='bonus'?'🔥 심화 ':''}에피소드 ${currentEpisode+1}/${EPS().length}</span>
+            <h2 style="color:var(--primary-dark);margin-top:8px;">${ep.title}</h2>
+            <p style="font-size:15px;font-weight:400;color:var(--text-light);">${ep.situation}</p>
+        </div>
+        <div class="perspective-card ${cardClass}">
+            <span class="perspective-label ${labelClass}">${sideLabel}</span>
+            <div class="character-info">
+                <span class="character-emoji">${s.emoji}</span>
+                <div><div class="character-name">${s.name}</div><div class="character-desc">${s.desc}</div></div>
+            </div>
+            <div style="font-size:15px;line-height:1.9;white-space:pre-line;">${s.story}</div>
+        </div>
+    `;
+    document.getElementById('ep-read-check').checked=false;
+    document.getElementById('btn-read-next').disabled=true;
+    document.getElementById('btn-read-next').textContent = '이 친구 마음 들여다보기 →';
+    showScreen('screen-ep-read');
+}
+
+window.onReadCheck = function() { document.getElementById('btn-read-next').disabled=!document.getElementById('ep-read-check').checked; };
+
+window.epNextFromRead = function() {
+    if(epPhase==='readA') { epPhase='empathyA'; }
+    else { epPhase='empathyB'; }
+    renderCurrentPhase();
+};
+
+// ── 감정 공감 ──
+function renderEmpathy(ep, side, pct) {
+    const s = side==='A' ? ep.sideA : ep.sideB;
+    selectedEmpathy = [];
+
+    document.getElementById('ep-progress-empathy').style.width=pct+'%';
+    renderEpDots('ep-dots-empathy');
+
+    const shuffled = [...s.emotions].sort(()=>Math.random()-0.5);
+
+    document.getElementById('ep-empathy-content').innerHTML = `
+        <div style="text-align:center;margin-bottom:16px;">
+            <div style="font-size:2.5rem;">🎭</div>
+            <h2 style="color:var(--primary-dark);">${s.name}의 마음은?</h2>
+            <p style="font-size:15px;font-weight:400;color:var(--text-light);">이야기를 듣고 나니, ${s.name}(이)가 어떤 감정을 느꼈을 것 같아요?<br><strong>여러 개 골라도 돼요!</strong></p>
+        </div>
+        <div class="emotion-grid" id="empathy-grid">
+            ${shuffled.map((e,i) => `
+                <button class="emotion-bubble" data-idx="${i}" data-label="${e.label}" data-correct="${e.correct}" onclick="toggleEmpathy(this)">${e.emoji} ${e.label}</button>
+            `).join('')}
+        </div>
+        <div id="empathy-hint" style="text-align:center;font-size:14px;color:var(--text-light);font-weight:400;margin-top:8px;">
+            💡 ${s.name}(이)가 느꼈을 것 같은 감정을 모두 골라보세요
+        </div>
+    `;
+    const bEmp = document.getElementById('btn-empathy-next');
+    bEmp.disabled=true;
+    bEmp.textContent='확인하기 →';
+    bEmp.onclick = function(){ window.epNextFromEmpathy(); };   // 이전 단계에서 덮어쓴 핸들러 초기화
+    showScreen('screen-ep-empathy');
+}
+
+// 받침에 따라 이/가
+function josaGa(w){const c=String(w).charCodeAt(String(w).length-1);if(c<0xAC00||c>0xD7A3)return w+'이(가)';return w+(((c-0xAC00)%28)?'이':'가');}
+window.toggleEmpathy = function(btn) {
+    btn.classList.toggle('selected');
+    selectedEmpathy = Array.from(document.querySelectorAll('#empathy-grid .emotion-bubble.selected')).map(b=>b.dataset.label);
+    document.getElementById('btn-empathy-next').disabled = selectedEmpathy.length === 0;
+};
+
+window.epNextFromEmpathy = function() {
+    // 정답 확인 애니메이션
+    const bubbles = document.querySelectorAll('#empathy-grid .emotion-bubble');
+    let correct=0, total=0;
+    bubbles.forEach(b => {
+        const isCorrect = b.dataset.correct === 'true';
+        const isSelected = b.classList.contains('selected');
+        if(isCorrect) { total++; b.classList.add('correct'); b.classList.remove('selected'); if(isSelected) correct++; }
+        else if(isSelected) { b.classList.add('wrong'); b.classList.remove('selected'); }
+        b.style.pointerEvents='none';
+    });
+
+    const score = total>0 ? Math.round(correct/total*100) : 0;
+    const side = epPhase==='empathyA' ? 'A' : 'B';
+    const ep = EPS()[currentEpisode];
+    const s = side==='A' ? ep.sideA : ep.sideB;
+
+    document.getElementById('empathy-hint').innerHTML = `
+        <div style="background:rgba(16,185,129,.08);border-radius:12px;padding:14px;margin-top:8px;">
+            <div style="font-size:16px;font-weight:900;color:var(--success);">
+                🎭 ${s.name}의 마음을 이렇게 읽었어요
+            </div>
+            <div style="font-size:14px;font-weight:400;margin-top:4px;">
+                ${s.name}의 속마음에 나온 감정 ${total}개 중 ${correct}개를 골랐어요. 다르게 고른 감정도 ${josaGa(s.name)} 함께 느꼈을 수 있어요.
+                <span class="empathy-score" style="background:${score>=75?'rgba(16,185,129,.15);color:var(--success)':'rgba(245,158,11,.15);color:var(--warning)'}">${score}%</span>
+            </div>
+        </div>
+    `;
+
+    if(!episodeData[ep.id]) episodeData[ep.id]={};
+    if(side==='A') episodeData[ep.id].empathyA = {selected:selectedEmpathy, score};
+    else episodeData[ep.id].empathyB = {selected:selectedEmpathy, score};
+    empathyScores = computeEmpathyScores();   // 재시도 시 중복 누적 방지
+    persist();
+
+    document.getElementById('btn-empathy-next').textContent = side==='A' ? '지금 어떻게 보여? →' : '생각이 바뀌었나? →';
+    document.getElementById('btn-empathy-next').onclick = () => {
+        if(side==='A') { epPhase='judge'; }
+        else { epPhase='shift'; }
+        renderCurrentPhase();
+    };
+};
+
+// ── 첫 판단 ──
+function renderJudge(ep, pct) {
+    selectedJudge = '';
+    document.getElementById('ep-progress-judge').style.width=pct+'%';
+    renderEpDots('ep-dots-judge');
+
+    // ⭐ 받침 있는 이름(민준·하은·예린·소율)에서 "민준가"처럼 비문이 되어, sideB와 같은 '(이)가' 표기로 통일
+    document.getElementById('ep-judge-content').innerHTML = `
+        <div style="text-align:center;margin-bottom:16px;">
+            <div style="font-size:2.5rem;">💥</div>
+            <h2 style="color:var(--primary-dark);">지금 이 상황, 어떻게 보여요?</h2>
+            <p style="font-size:15px;font-weight:400;color:var(--text-light);">${ep.sideA.name}의 이야기만 들었어요.<br>지금 느낌은?</p>
+        </div>
+        <div id="judge-options">
+            <button class="judge-option" data-val="sideA" onclick="selectJudge(this)">
+                😤 ${ep.sideA.name}(이)가 맞는 것 같아! ${ep.sideB.name}(이)가 잘못한 거지.
+            </button>
+            <button class="judge-option" data-val="wantMore" onclick="selectJudge(this)">
+                🤔 글쎄... ${ep.sideB.name} 이야기도 들어봐야 할 것 같아.
+            </button>
+            <button class="judge-option" data-val="unsure" onclick="selectJudge(this)">
+                😶 아직 잘 모르겠어.
+            </button>
+        </div>
+    `;
+    const prevJudge = episodeData[ep.id] && episodeData[ep.id].firstJudge;
+    if (prevJudge) {
+        const pj = document.querySelector('#judge-options [data-val="'+prevJudge+'"]');
+        if (pj) { pj.classList.add('selected'); selectedJudge = prevJudge; }
+    }
+    document.getElementById('btn-judge-next').disabled = !selectedJudge;
+    showScreen('screen-ep-judge');
+}
+
+window.selectJudge = function(btn) {
+    document.querySelectorAll('#judge-options .judge-option').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedJudge = btn.dataset.val;
+    const jep = EPS()[currentEpisode];
+    if(!episodeData[jep.id]) episodeData[jep.id]={};
+    episodeData[jep.id].firstJudge = selectedJudge;
+    document.getElementById('btn-judge-next').disabled=false;
+    persistSoon();
+};
+
+window.epNextFromJudge = function() { epPhase='readB'; renderCurrentPhase(); };
+
+// ── 관점 전환 ──
+function renderShift(ep, pct) {
+    selectedShift = '';
+    document.getElementById('ep-progress-shift').style.width=pct+'%';
+    renderEpDots('ep-dots-shift');
+
+    const firstJudge = episodeData[ep.id]?.firstJudge || 'unsure';
+    // ⭐ 첫 판단 선택지와 같은 문장이므로 '(이)가' 표기로 통일 ("민준가" 비문 방지)
+    const firstLabel = firstJudge==='sideA' ? `😤 "${ep.sideA.name}(이)가 맞는 것 같아"` :
+                       firstJudge==='wantMore' ? `🤔 "더 들어봐야 할 것 같아"` :
+                       `😶 "잘 모르겠어"`;
+
+    document.getElementById('ep-shift-content').innerHTML = `
+        <div style="text-align:center;margin-bottom:16px;">
+            <div style="font-size:2.5rem;">🔄</div>
+            <h2 style="color:var(--primary-dark);">양쪽 이야기를 다 들었어요!</h2>
+            <p style="font-size:15px;font-weight:400;color:var(--text-light);">처음에 이렇게 생각했었죠:</p>
+            <div class="shift-before">${firstLabel}</div>
+            <div class="shift-arrow">⬇️</div>
+            <p style="font-size:15px;font-weight:400;color:var(--text-light);">이제 ${ep.sideB.name}의 이야기도 들었는데,<br><strong>생각이 바뀌었나요?</strong></p>
+        </div>
+        <div id="shift-options">
+            <button class="judge-option" data-val="stillA" onclick="selectShift(this)">
+                😤 여전히 ${ep.sideA.name} 마음이 더 이해돼
+            </button>
+            <button class="judge-option" data-val="shifted" onclick="selectShift(this)">
+                😮 어? ${ep.sideB.name}도 나름 이유가 있었네!
+            </button>
+            <button class="judge-option" data-val="both" onclick="selectShift(this)">
+                🤝 둘 다 이해돼! 서로 달랐을 뿐이야
+            </button>
+            <button class="judge-option" data-val="nowB" onclick="selectShift(this)">
+                🔄 ${ep.sideB.name} 마음이 더 이해돼
+            </button>
+        </div>
+        <div id="shift-result" style="margin-top:12px;"></div>
+    `;
+    document.getElementById('btn-shift-next').disabled=true;
+    showScreen('screen-ep-shift');
+    const prevShift = episodeData[ep.id] && episodeData[ep.id].shiftResult;
+    if (prevShift) {
+        const ps = document.querySelector('#shift-options [data-val="'+prevShift+'"]');
+        if (ps) window.selectShift(ps);
+    }
+}
+
+window.selectShift = function(btn) {
+    document.querySelectorAll('#shift-options .judge-option').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedShift = btn.dataset.val;
+
+    const ep = EPS()[currentEpisode];
+    const firstJudge = episodeData[ep.id]?.firstJudge || 'unsure';
+    const shifted = (firstJudge==='sideA' && selectedShift!=='stillA');
+    const alreadyOpen = (firstJudge==='wantMore' || firstJudge==='unsure');
+
+    if(!episodeData[ep.id]) episodeData[ep.id]={};
+    episodeData[ep.id].shiftResult = selectedShift;
+    episodeData[ep.id].perspectiveShifted = shifted;
+    shiftResults = computeShiftResults();   // 재시도 시 중복 누적 방지
+    persistSoon();
+
+    let resultHTML;
+    if (shifted) {
+        resultHTML = `<div class="shift-visual" style="animation:slideUp .5s ease;">
+            <div style="font-size:2rem;">🌟</div>
+            <div style="font-size:18px;font-weight:900;color:var(--primary-dark);">관점이 전환됐어요!</div>
+            <p style="font-size:14px;font-weight:400;margin-top:8px;">한쪽 이야기만 들으면 한쪽만 보이지만,<br><strong>양쪽 이야기를 들으면 더 넓게 볼 수 있어요.</strong><br>이것이 바로 '관점 전환'이에요! ✨</p>
+        </div>`;
+    } else if (alreadyOpen) {
+        resultHTML = `<div class="shift-visual" style="animation:slideUp .5s ease;">
+            <div style="font-size:2rem;">👏</div>
+            <div style="font-size:18px;font-weight:900;color:var(--success);">처음부터 열린 마음이었어요!</div>
+            <p style="font-size:14px;font-weight:400;margin-top:8px;">양쪽 이야기를 다 들어봐야 한다는 걸<br><strong>이미 알고 있었네요!</strong> 대단해요! 🌈</p>
+        </div>`;
+    } else {
+        resultHTML = `<div class="shift-visual" style="animation:slideUp .5s ease;">
+            <div style="font-size:2rem;">💪</div>
+            <div style="font-size:18px;font-weight:900;color:var(--warning);">자기 생각이 있다는 건 좋은 거예요!</div>
+            <p style="font-size:14px;font-weight:400;margin-top:8px;">갈등에서 중요한 건<br><strong>"내 생각이 맞을 수도, 다를 수도 있어"</strong>라는 열린 마음이에요. 🤔</p>
+        </div>`;
+    }
+    document.getElementById('shift-result').innerHTML = resultHTML;
+    document.getElementById('btn-shift-next').disabled=false;
+};
+
+window.epNextFromShift = function() { epPhase='analyze'; renderCurrentPhase(); };
+
+// ── 원인 분석 ──
+function renderAnalyze(ep, pct) {
+    selectedCause = episodeData[ep.id]?.cause || '';
+    document.getElementById('ep-progress-analyze').style.width=pct+'%';
+
+    document.getElementById('ep-analyze-content').innerHTML = `
+        <div style="text-align:center;margin-bottom:16px;">
+            <div style="font-size:2.5rem;">🔍</div>
+            <h2 style="color:var(--primary-dark);">이 갈등은 왜 생겼을까?</h2>
+            <p style="font-size:15px;font-weight:400;color:var(--text-light);">${ep.sideA.name}와(과) ${ep.sideB.name}의 갈등 원인을 분석해 봐요!</p>
+        </div>
+        <div class="card"><div style="font-size:15px;margin-bottom:12px;"><strong>갈등의 원인을 골라주세요:</strong></div>
+            <div class="cause-tags" id="cause-tags">
+                ${CAUSE_OPTIONS.map(c=>`<button class="cause-tag ${selectedCause===c.id?'selected':''}" data-cause="${c.id}" onclick="selectCause('${c.id}')">${c.label}</button>`).join('')}
+            </div>
+        </div>
+        <div class="card"><label style="font-size:15px;"><strong>왜 그렇게 생각했어요?</strong></label>
+            <textarea id="analyze-reason" placeholder="예: 서로 다르게 생각해서..." oninput="checkAnalyze()">${esc(episodeData[ep.id]?.reason||'')}</textarea>
+        </div>
+        <button class="btn btn-primary" id="btn-analyze-submit" ${selectedCause&&episodeData[ep.id]?.reason?'':'disabled'} onclick="submitAnalysis()">분석 완료! →</button>
+    `;
+    showScreen('screen-ep-analyze');
+}
+
+window.selectCause = function(causeId) {
+    document.querySelectorAll('#cause-tags .cause-tag').forEach(t=>t.classList.remove('selected'));
+    document.querySelector(`#cause-tags [data-cause="${causeId}"]`).classList.add('selected');
+    selectedCause = causeId;
+    const cep = EPS()[currentEpisode];
+    if(!episodeData[cep.id]) episodeData[cep.id]={};
+    episodeData[cep.id].cause = causeId;
+    checkAnalyze();
+    persistSoon();
+};
+
+window.checkAnalyze = function() {
+    const reason = document.getElementById('analyze-reason')?.value.trim();
+    const btn = document.getElementById('btn-analyze-submit');
+    if (btn) btn.disabled = !(selectedCause && reason);
+    // 입력 즉시 저장 — 중간 이탈해도 유실되지 않음
+    const aep = EPS()[currentEpisode];
+    if (aep) { if(!episodeData[aep.id]) episodeData[aep.id]={}; episodeData[aep.id].reason = reason||''; }
+    persistSoon();
+};
+
+window.submitAnalysis = async function() {
+    const ep = EPS()[currentEpisode];
+    const reason = document.getElementById('analyze-reason').value.trim();
+    if(!episodeData[ep.id]) episodeData[ep.id]={};
+    episodeData[ep.id].reason = reason;
+    await persist();
+
+    const causeLabel = CAUSE_OPTIONS.find(c=>c.id===selectedCause)?.label||'';
+    showConfirmModal(
+        `<div style="text-align:left;">`+
+        `<div style="font-size:15px;margin-bottom:12px;"><strong>✅ 잘 분석했어요!</strong></div>`+
+        `<div style="font-size:14px;color:var(--text-light);margin-bottom:8px;">내가 고른 원인: <strong>${causeLabel}</strong></div>`+
+        `<div style="background:rgba(124,58,237,.05);border-radius:12px;padding:12px;font-size:14px;line-height:1.7;">`+
+        `💡 <strong>이 갈등의 핵심:</strong><br>${ep.causeExplain}</div></div>`,
+        () => { epPhase='card'; renderCurrentPhase(); }
+    );
+    document.getElementById('confirmOkBtn').textContent='카드 받기! 🃏';
+    document.getElementById('confirmOkBtn').style.background='var(--primary)';
+};
+
+// ── 카드 획득 ──
+function renderCardReveal(ep, pct) {
+    document.getElementById('ep-progress-card').style.width=pct+'%';
+
+    if (!collectedCards.includes(ep.id)) collectedCards.push(ep.id);
+
+    const c = ep.card;
+    const roundList = EPS();
+    const roundCards = roundList.filter(e=>collectedCards.includes(e.id)).length;
+    const isAllCollected = roundCards >= roundList.length;
+    const allDone = collectedCards.length >= ALL_EPS().length;
+    persist();
+
+    document.getElementById('ep-card-content').innerHTML = `
+        <div style="text-align:center;margin-bottom:12px;">
+            <h2 style="color:var(--primary-dark);">🃏 새로운 카드 획득!</h2>
+        </div>
+        <div class="collect-card">
+            <div class="collect-card-inner" style="background:${c.color};">
+                <div class="collect-card-bg">
+                    <div class="collect-card-emoji">${c.emoji}</div>
+                    <div class="collect-card-name">${c.name}</div>
+                    <div class="collect-card-desc">${c.desc}</div>
+                    <div class="collect-card-skill">✨ ${c.skill}</div>
+                </div>
+                <div class="card-shine"></div>
+            </div>
+        </div>
+        <div style="text-align:center;margin:16px 0;">
+            <span class="badge badge-count">🃏 ${collectedCards.length}/${ALL_EPS().length} 카드 수집</span>
+        </div>
+        ${isAllCollected ? `
+            <div class="insight-card" style="animation:popIn .5s ease .5s both;">
+                <div style="font-size:3rem;">${allDone ? '🌈' : '🦸'}</div>
+                <div class="big-text" style="font-size:18px;">${allDone ? `모든 카드를 모았어요!<br><strong style="color:var(--primary);">관점 마스터!</strong>` : `${currentRound==='bonus'?'심화':'기본'} 카드를 모두 모았어요!<br><strong style="color:var(--primary);">갈등 해결 히어로!</strong>`}</div>
+            </div>
+        ` : ''}
+        <button class="btn btn-primary" onclick="nextAfterCard()">${currentEpisode < roundList.length-1 ? '다음 에피소드 →' : (currentRound==='core' ? '성찰하러 가기 ✍️' : '결과 보러 가기 🎉')}</button>
+        <button class="btn btn-secondary" onclick="openGallery()">🃏 카드 모아보기</button>
+    `;
+    showScreen('screen-ep-card');
+    showToast(`🃏 "${c.name}" 카드를 획득했어요!`, 'success');
+}
+
+window.nextAfterCard = function() {
+    const roundList = EPS();
+    currentEpisode++;
+    if (currentEpisode < roundList.length) { epPhase='readA'; renderCurrentPhase(); }
+    else if (currentRound === 'core') { currentEpisode = roundList.length-1; showScreen('screen-reflect'); }
+    else { currentEpisode = roundList.length-1; renderComplete(); showScreen('screen-complete'); }
+};
+
+// ═══ 카드 갤러리 ═══
+window.openGallery = function() { renderGallery(); showScreen('screen-gallery'); };
+window.backFromGallery = function() {
+    if (reflectionDone || doneCount(EPISODES) >= EPISODES.length) { renderComplete(); showScreen('screen-complete'); }
+    else { backToMain(); }
+};
+
+function renderGallery() {
+    let html = '<div style="text-align:center;margin:8px 0 4px;"><span class="badge badge-count">🃏 ' + collectedCards.length + '/' + ALL_EPS().length + ' 수집</span></div>';
+    html += '<div style="font-size:14px;font-weight:900;color:var(--primary-dark);margin:12px 0 4px;">기본 갈등 파일</div>';
+    html += '<div class="card-gallery">';
+    EPISODES.forEach(ep => {
+        const collected = collectedCards.includes(ep.id);
+        if (collected) {
+            html += `<div class="gallery-card collected" style="background:${ep.card.color};">
+                <div class="gallery-card-emoji">${ep.card.emoji}</div>
+                <div class="gallery-card-name">${ep.card.name}</div>
+                <div style="font-size:11px;font-weight:400;opacity:.9;margin-top:4px;">${ep.card.skill}</div>
+            </div>`;
+        } else {
+            html += `<div class="gallery-card locked">
+                <div class="gallery-card-emoji" style="font-size:2rem;">❓</div>
+                <div class="gallery-card-name">???</div>
+                <div style="font-size:11px;margin-top:4px;">${ep.title} 완료 시 획득</div>
+            </div>`;
+        }
+    });
+    html += '</div>';
+    if (doneCount(EPISODES) >= EPISODES.length || BONUS_EPISODES.some(e=>collectedCards.includes(e.id))) {
+        html += '<div style="font-size:14px;font-weight:900;color:var(--primary-dark);margin:16px 0 4px;">🔥 심화 갈등 파일</div>';
+        html += '<div class="card-gallery">';
+        BONUS_EPISODES.forEach(ep => {
+            const collected = collectedCards.includes(ep.id);
+            if (collected) {
+                html += `<div class="gallery-card collected" style="background:${ep.card.color};">
+                    <div class="gallery-card-emoji">${ep.card.emoji}</div>
+                    <div class="gallery-card-name">${ep.card.name}</div>
+                    <div style="font-size:11px;font-weight:400;opacity:.9;margin-top:4px;">${ep.card.skill}</div>
+                </div>`;
+            } else {
+                html += `<div class="gallery-card locked">
+                    <div class="gallery-card-emoji" style="font-size:2rem;">❓</div>
+                    <div class="gallery-card-name">???</div>
+                    <div style="font-size:11px;margin-top:4px;">${ep.title} 완료 시 획득</div>
+                </div>`;
+            }
+        });
+        html += '</div>';
+    }
+    const heroGot = EPISODES.every(e=>collectedCards.includes(e.id));
+    const masterGot = ALL_EPS().every(e=>collectedCards.includes(e.id));
+    if (heroGot) {
+        html += `<div class="collect-card" style="margin:20px auto;">
+            <div class="collect-card-inner" style="background:${HERO_CARD.color};">
+                <div class="collect-card-bg"><div class="collect-card-emoji">${HERO_CARD.emoji}</div>
+                <div class="collect-card-name">${HERO_CARD.name}</div>
+                <div class="collect-card-desc">${HERO_CARD.desc}</div>
+                <div class="collect-card-skill">✨ ${HERO_CARD.skill}</div></div>
+            </div>
+        </div>`;
+    }
+    if (masterGot) {
+        html += `<div class="collect-card" style="margin:20px auto;">
+            <div class="collect-card-inner" style="background:${MASTER_CARD.color};">
+                <div class="collect-card-bg"><div class="collect-card-emoji">${MASTER_CARD.emoji}</div>
+                <div class="collect-card-name">${MASTER_CARD.name}</div>
+                <div class="collect-card-desc">${MASTER_CARD.desc}</div>
+                <div class="collect-card-skill">✨ ${MASTER_CARD.skill}</div></div>
+            </div>
+        </div>`;
+    }
+    document.getElementById('gallery-content').innerHTML = html;
+}
+
+// ═══ 성찰 ═══
+window.checkReflection = function() {
+    const r1=document.getElementById('ref1').value.trim(), r2=document.getElementById('ref2').value.trim();
+    document.getElementById('btn-reflect-next').disabled=!(r1&&r2);
+    if (r1 || r2) persistSoon({ reflectionDraft:{q1:r1,q2:r2} });   // 제출 전에도 임시 저장
+};
+
+window.submitReflection = async function() {
+    const r1=document.getElementById('ref1').value.trim(), r2=document.getElementById('ref2').value.trim();
+    reflectionDone=true;
+    soloReflection = {q1:r1, q2:r2};
+    await persist({ reflection:{q1:r1,q2:r2}, completedAt:new Date().toISOString() });
+    renderComplete();
+    showScreen('screen-complete');
+    showToast('🎉 멋지게 해냈어요!','success');
+};
+
+// ═══ 완료 화면 + 레이더 차트 ═══
+function renderComplete() {
+    const all = ALL_EPS();
+    const bonusStarted = BONUS_EPISODES.some(e=>episodeData[e.id]);
+    const bonusDone = doneCount(BONUS_EPISODES);
+
+    // 카드 갤러리 (기본 + 심화)
+    let cardsHTML = '<div class="card-gallery" style="margin:12px 0;">';
+    const shownList = bonusStarted ? all : EPISODES;
+    shownList.forEach(ep => {
+        const collected = collectedCards.includes(ep.id);
+        cardsHTML += collected
+            ? `<div class="gallery-card collected" style="background:${ep.card.color};padding:12px;min-height:90px;"><div style="font-size:1.8rem;">${ep.card.emoji}</div><div style="font-size:12px;font-weight:900;">${ep.card.name}</div></div>`
+            : `<div class="gallery-card locked" style="padding:12px;min-height:90px;"><div style="font-size:1.5rem;">❓</div><div style="font-size:12px;">???</div></div>`;
+    });
+    cardsHTML += '</div>';
+    document.getElementById('complete-cards').innerHTML = cardsHTML;
+
+    // 통계 (배열 길이 기반)
+    const avgEmpathy = empathyScores.length ? Math.round(empathyScores.reduce((a,b)=>a+b,0)/empathyScores.length) : 0;
+    const shiftCount = shiftResults.filter(r=>r.shifted).length;
+    const openCount = shiftResults.filter(r=>r.first==='wantMore'||r.first==='unsure').length;
+    const shiftTotal = Math.max(1, shiftResults.length);
+    const attempted = all.filter(ep=>episodeData[ep.id] && episodeData[ep.id].cause);
+    const causeMatch = attempted.filter(ep=>episodeData[ep.id].cause===ep.causeHint).length;
+    const attemptedN = Math.max(1, attempted.length);
+
+    document.getElementById('complete-stats').innerHTML = `
+        <div class="stat-grid">
+            <div class="stat-box"><div class="stat-num">${avgEmpathy}%</div><div class="stat-label">이야기 속 감정과 같은 선택 (평균)</div></div>
+            <div class="stat-box"><div class="stat-num">${shiftCount+openCount}/${shiftResults.length||EPISODES.length}</div><div class="stat-label">관점 전환 성공</div></div>
+            <div class="stat-box"><div class="stat-num">${causeMatch}/${attempted.length||EPISODES.length}</div><div class="stat-label">핵심 원인과 같은 관점</div></div>
+            <div class="stat-box"><div class="stat-num">${collectedCards.length}/${all.length}</div><div class="stat-label">수집 카드</div></div>
+        </div>
+        <div style="font-size:13px;font-weight:400;color:var(--text-light);text-align:center;margin:4px 0 8px;">
+            💡 원인을 다르게 골랐어도 괜찮아요. 갈등은 <strong>누가 틀렸나</strong>가 아니라 <strong>서로 어떤 기대와 해석이 달랐나</strong>를 보는 일이니까요.
+        </div>
+    `;
+
+    // 레이더 차트
+    drawRadarChart(avgEmpathy, Math.round((shiftCount+openCount)/shiftTotal*100), Math.round(causeMatch/attemptedN*100), avgEmpathy > 50 ? Math.min(100, avgEmpathy+10) : 40);
+
+    // 성찰 버튼
+    const btnArea = document.getElementById('reflection-btn-area');
+    btnArea.innerHTML = reflectionDone
+        ? `<button class="btn btn-secondary" onclick="showScreen('screen-reflect')">📝 성찰 수정하기</button><div style="font-size:13px;color:var(--success);font-weight:700;text-align:center;margin-top:4px;">✅ 성찰 작성 완료!</div>`
+        : `<button class="btn btn-primary" onclick="showScreen('screen-reflect')">📝 성찰 작성하기 →</button>`;
+
+    // 심화 라운드 버튼 (더 하고 싶으면 계속)
+    const bonusArea = document.getElementById('bonus-btn-area');
+    if (bonusArea) {
+        if (bonusDone >= BONUS_EPISODES.length) {
+            bonusArea.innerHTML = `<div class="insight-card" style="padding:14px;"><div style="font-size:2rem;">🌈</div><div style="font-size:16px;font-weight:900;color:var(--primary-dark);">심화 갈등 파일까지 모두 열었어요!<br>관점 마스터 🎉</div></div>
+                <button class="btn btn-secondary" onclick="startBonusRound()">🔁 심화 갈등 다시 보기</button>`;
+        } else if (bonusStarted) {
+            bonusArea.innerHTML = `<button class="btn btn-primary" onclick="startBonusRound()">🔥 심화 갈등 이어하기 (${bonusDone}/${BONUS_EPISODES.length})</button>`;
+        } else {
+            bonusArea.innerHTML = `<div style="font-size:14px;font-weight:400;color:var(--text-light);text-align:center;margin:8px 0 4px;">더 해보고 싶다면? 갈등 파일이 4개 더 있어요!</div>
+                <button class="btn btn-primary" onclick="startBonusRound()">🔥 심화 갈등 파일 열기 (4개 더)</button>`;
+        }
+    }
+
+    // 혼자 체험 결과 저장 (지침서 6-3)
+    const soloArea = document.getElementById('solo-save-area');
+    if (soloArea) soloArea.innerHTML = isSoloMode
+        ? `<button class="btn btn-secondary" onclick="downloadSoloResult()">📄 내 결과 저장하기 (txt)</button>`
+        : '';
+}
+
+// 혼자 체험 결과 텍스트 저장
+window.downloadSoloResult = function() {
+    const all = ALL_EPS();
+    const lines = [];
+    lines.push('갈등은 왜 생길까 — 나의 활동 기록');
+    lines.push('작성: ' + new Date().toLocaleString('ko-KR'));
+    lines.push('='.repeat(40));
+    all.forEach(ep => {
+        const d = episodeData[ep.id];
+        if (!d) return;
+        lines.push('');
+        lines.push('[' + ep.title + '] ' + ep.situation);
+        if (d.empathyA) lines.push(' · ' + ep.sideA.name + '의 마음으로 고른 감정: ' + (d.empathyA.selected||[]).join(', ') + ' (' + d.empathyA.score + '%)');
+        if (d.empathyB) lines.push(' · ' + ep.sideB.name + '의 마음으로 고른 감정: ' + (d.empathyB.selected||[]).join(', ') + ' (' + d.empathyB.score + '%)');
+        if (d.shiftResult) lines.push(' · 양쪽 이야기를 들은 뒤: ' + (d.perspectiveShifted ? '관점이 전환됨' : '내 생각 유지'));
+        if (d.cause) {
+            const c = CAUSE_OPTIONS.find(x=>x.id===d.cause);
+            lines.push(' · 내가 고른 갈등 원인: ' + (c?c.label:d.cause));
+        }
+        if (d.reason) lines.push(' · 그렇게 생각한 이유: ' + d.reason);
+        lines.push(' · 이 갈등의 핵심: ' + ep.causeExplain);
+    });
+    lines.push('');
+    lines.push('='.repeat(40));
+    lines.push('수집한 관점 카드: ' + collectedCards.length + '/' + all.length);
+    collectedCards.forEach(id => { const ep = all.find(e=>e.id===id); if(ep) lines.push(' - ' + ep.card.emoji + ' ' + ep.card.name + ' : ' + ep.card.skill); });
+    if (soloReflection) {
+        lines.push('');
+        lines.push('[마음 기록]');
+        lines.push('💭 갈등은 왜 생길까? → ' + (soloReflection.q1||''));
+        lines.push('🤝 다음에 갈등이 생기면? → ' + (soloReflection.q2||''));
+    }
+    lines.push('');
+    lines.push('갈등이 생겼다는 건 누군가 틀렸다는 뜻이 아니라,');
+    lines.push('서로 다른 눈으로 같은 장면을 봤다는 신호일 수 있어요.');
+    try {
+        const blob = new Blob([lines.join('\n')], {type:'text/plain;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = '갈등은왜생길까_나의기록.txt';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(()=>URL.revokeObjectURL(url), 1000);
+        showToast('📄 결과를 저장했어요!','success');
+    } catch(e) {
+        showToast('📄 저장이 어려운 환경이에요. 화면을 캡처해 보세요.');
+    }
+};
+
+function drawRadarChart(empathy, shift, analysis, openMind) {
+    const canvas = document.getElementById('radarChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w=canvas.width, h=canvas.height, cx=w/2, cy=h/2, r=100;
+
+    ctx.clearRect(0,0,w,h);
+    const labels = ['공감력','관점전환','분석력','열린마음'];
+    const values = [empathy/100, shift/100, analysis/100, openMind/100];
+    const angles = labels.map((_,i)=> -Math.PI/2 + (2*Math.PI*i/4));
+
+    // 배경 그리드
+    [0.25,0.5,0.75,1].forEach(scale => {
+        ctx.beginPath();
+        angles.forEach((a,i)=>{
+            const x=cx+Math.cos(a)*r*scale, y=cy+Math.sin(a)*r*scale;
+            i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+        });
+        ctx.closePath();
+        ctx.strokeStyle='rgba(124,58,237,0.1)';
+        ctx.stroke();
+    });
+
+    // 축
+    angles.forEach(a => {
+        ctx.beginPath();ctx.moveTo(cx,cy);
+        ctx.lineTo(cx+Math.cos(a)*r, cy+Math.sin(a)*r);
+        ctx.strokeStyle='rgba(124,58,237,0.15)';ctx.stroke();
+    });
+
+    // 데이터
+    ctx.beginPath();
+    values.forEach((v,i)=>{
+        const x=cx+Math.cos(angles[i])*r*v, y=cy+Math.sin(angles[i])*r*v;
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.closePath();
+    ctx.fillStyle='rgba(124,58,237,0.15)';ctx.fill();
+    ctx.strokeStyle='#7C3AED';ctx.lineWidth=2;ctx.stroke();
+
+    // 점
+    values.forEach((v,i)=>{
+        const x=cx+Math.cos(angles[i])*r*v, y=cy+Math.sin(angles[i])*r*v;
+        ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fillStyle='#7C3AED';ctx.fill();
+        ctx.fillStyle='white';ctx.beginPath();ctx.arc(x,y,2,0,Math.PI*2);ctx.fill();
+    });
+
+    // 레이블
+    ctx.fillStyle='#1F2937';ctx.font='bold 13px Noto Sans KR';ctx.textAlign='center';
+    const offsets = [{x:0,y:-12},{x:14,y:0},{x:0,y:16},{x:-14,y:0}];
+    labels.forEach((l,i)=>{
+        const x=cx+Math.cos(angles[i])*(r+22)+offsets[i].x;
+        const y=cy+Math.sin(angles[i])*(r+22)+offsets[i].y;
+        ctx.fillText(l,x,y);
+        ctx.font='bold 11px Noto Sans KR';ctx.fillStyle='#7C3AED';
+        ctx.fillText(Math.round(values[i]*100)+'%',x,y+14);
+        ctx.fillStyle='#1F2937';ctx.font='bold 13px Noto Sans KR';
+    });
+}
+
+// ═══ 네비게이션 ═══
+window.goBackFromStory = function() { isSoloMode ? showScreen('screen-start') : showScreen('screen-student-join'); };
+
+window.epGoBack = function() {
+    const idx = PHASES.indexOf(epPhase);
+    if (idx <= 0) {
+        if (currentEpisode === 0) {
+            if (currentRound === 'bonus') { renderComplete(); showScreen('screen-complete'); }
+            else showScreen('screen-cause-intro');
+        }
+        else { currentEpisode--; epPhase='card'; renderCurrentPhase(); }
+    } else {
+        epPhase = PHASES[idx-1];
+        renderCurrentPhase();
+    }
+};
+
+window.backToMain = function() {
+    if(currentEpisode >= EPS().length || currentEpisode < 0) currentEpisode = 0;
+    epPhase = 'readA';
+    renderGallery();
+    renderCurrentPhase();
+};
+
+window.confirmGoHome = function() {
+    const cards = collectedCards.length;
+    const msg = cards > 0
+        ? `처음 화면으로 돌아갈까요?<br><br>🃏 수집한 카드: ${cards}/${ALL_EPS().length}<br>`+
+          (isSoloMode ? '⚠️ 혼자 체험 모드는 나가면 기록이 사라져요!' : '✅ 같은 닉네임으로 다시 들어오면 이어할 수 있어요!')
+        : '처음 화면으로 돌아갈까요?';
+    showConfirmModal(msg, () => {
+        if(unsubscribe){unsubscribe();unsubscribe=null;}
+        if(saveTimer){clearTimeout(saveTimer);saveTimer=null;}
+        isTeacher=false; isSoloMode=false;
+        showScreen('screen-start');
+    });
+};
+
+// ═══ 교사 대시보드 ═══
+function startDashboardListener() {
+    if(unsubscribe) { try{unsubscribe();}catch(e){} unsubscribe=null; }   // 재진입 시 이전 리스너 해제
+    unsubscribe = DB.onStudentsChange(currentRoomCode, s=>{ dashboardData=s; renderDashboard(s); });
+}
+window.refreshDashboard = function() { DB.getAllStudents(currentRoomCode).then(s=>{dashboardData=s;renderDashboard(s);}); };
+
+function renderDashboard(students) {
+    const entries=Object.entries(students), total=entries.length;
+    const completed=entries.filter(([,d])=>d.completedAt).length;
+    const colors={misunderstand:'#3B82F6',different_expect:'#F59E0B',lack_comm:'#10B981',different_value:'#A78BFA'};
+    const ALL = ALL_EPS();
+
+    // ═══ 현황 탭 ═══
+    let ov=`<div class="stat-grid"><div class="stat-box"><div class="stat-num">${total}</div><div class="stat-label">참여 학생</div></div><div class="stat-box"><div class="stat-num">${completed}</div><div class="stat-label">완료 학생</div></div></div>`;
+
+    // 진행률
+    const pct = total ? Math.round(completed/total*100) : 0;
+    ov+=`<div class="card"><h3 style="color:var(--primary);margin-bottom:8px;">📈 완료 진행률</h3><div class="progress-bar" style="height:14px;"><div class="progress-fill" style="width:${pct}%"></div></div><div style="text-align:center;font-size:14px;font-weight:400;color:var(--text-light);margin-top:6px;">${completed}명 완료 / ${total}명 참여 (${pct}%)</div></div>`;
+
+    // 갈등 원인 분포
+    const cc={}; CAUSE_OPTIONS.forEach(c=>cc[c.id]=0);
+    entries.forEach(([,d])=>{if(d.episodes)Object.values(d.episodes).forEach(ep=>{if(ep.cause&&cc[ep.cause]!==undefined)cc[ep.cause]++})});
+    const mc=Math.max(...Object.values(cc),1);
+    ov+=`<div class="card"><h3 style="color:var(--primary);margin-bottom:12px;">🔍 갈등 원인 분포</h3><div class="chart-container" id="tts-cause">`;
+    CAUSE_OPTIONS.forEach(c=>{const cnt=cc[c.id],w=mc>0?(cnt/mc*100):0;ov+=`<div class="bar-row"><div class="bar-label">${c.label}</div><div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${colors[c.id]}">${cnt>0?cnt:''}</div></div><div class="bar-count">${cnt}회</div></div>`;});
+    ov+=`</div></div>`;
+
+    // 에피소드별 원인 선택 패턴 (책 본문: 우리 반 친구들의 갈등 원인 패턴 살피기)
+    let patternHTML='';
+    ALL.forEach(ep=>{
+        const per={}; CAUSE_OPTIONS.forEach(c=>per[c.id]=0); let sum=0;
+        entries.forEach(([,d])=>{const e=d.episodes&&d.episodes[ep.id]; if(e&&e.cause&&per[e.cause]!==undefined){per[e.cause]++;sum++;}});
+        if(!sum) return;
+        let best=CAUSE_OPTIONS[0], bv=-1;
+        CAUSE_OPTIONS.forEach(c=>{ if(per[c.id]>bv){bv=per[c.id];best=c;} });
+        patternHTML+=`<div style="margin:12px 0;"><div style="font-size:14px;font-weight:900;">${esc(ep.title)} <span style="font-weight:400;color:var(--text-light);font-size:12px;">(${sum}명 응답)</span></div>`;
+        patternHTML+=`<div style="display:flex;height:24px;border-radius:8px;overflow:hidden;margin-top:5px;background:#F3F4F6;">`;
+        CAUSE_OPTIONS.forEach(c=>{ const p=per[c.id]/sum*100; if(p>0) patternHTML+=`<div title="${esc(c.label)}" style="width:${p}%;background:${colors[c.id]};color:white;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;">${per[c.id]}</div>`; });
+        patternHTML+=`</div><div style="font-size:12px;font-weight:400;color:var(--text-light);margin-top:3px;">가장 많이 고른 원인: <strong>${best.label}</strong> · 이 갈등의 핵심: ${esc(ep.causeExplain).slice(0,60)}…</div></div>`;
+    });
+    ov+=`<div class="card"><h3 style="color:var(--primary);margin-bottom:6px;">🧩 에피소드별 원인 선택 패턴</h3><div style="font-size:13px;font-weight:400;color:var(--text-light);margin-bottom:6px;">우리 반 친구들이 같은 갈등을 어떤 원인으로 봤는지 살펴보세요. 답이 갈릴수록 "서로 다르게 본다"는 걸 함께 이야기하기 좋아요.</div><div id="tts-pattern">${patternHTML||'<p style="font-size:14px;font-weight:400;color:var(--text-light);">아직 분석한 학생이 없습니다.</p>'}</div></div>`;
+
+    // 관점 전환 분포
+    let shiftedCnt=0, openCnt=0, stuckCnt=0;
+    entries.forEach(([,d])=>{if(d.shiftResults)d.shiftResults.forEach(r=>{if(r.shifted)shiftedCnt++;else if(r.first==='wantMore'||r.first==='unsure')openCnt++;else stuckCnt++;})});
+    const shiftTotal=shiftedCnt+openCnt+stuckCnt||1;
+    ov+=`<div class="card"><h3 style="color:var(--primary);margin-bottom:12px;">🔄 관점 전환 분포</h3><div id="tts-shift">`;
+    [{l:'🌟 관점 전환됨',c:shiftedCnt,cl:'var(--success)'},{l:'👏 처음부터 열린 마음',c:openCnt,cl:'var(--primary)'},{l:'💪 자기 생각 유지',c:stuckCnt,cl:'var(--warning)'}].forEach(r=>{
+        const w=(r.c/shiftTotal*100);ov+=`<div class="bar-row"><div class="bar-label" style="min-width:120px;font-size:13px;">${r.l}</div><div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${r.cl}">${r.c>0?r.c:''}</div></div><div class="bar-count">${r.c}</div></div>`;
+    });
+    ov+=`</div></div>`;
+
+    // 평균 공감 정확도
+    const allScores=entries.flatMap(([,d])=>d.empathyScores||[]);
+    const avgEmp=allScores.length?Math.round(allScores.reduce((a,b)=>a+b,0)/allScores.length):0;
+    const maxEmp=allScores.length?Math.max(...allScores):0, minEmp=allScores.length?Math.min(...allScores):0;
+    ov+=`<div class="card"><h3 style="color:var(--primary);margin-bottom:12px;">🎭 이야기 속 감정과 같은 선택</h3><div style="text-align:center;"><div class="stat-num" style="font-size:36px;">${avgEmp}%</div><div class="stat-label">학급 이야기 속 감정과 같은 선택 (평균)</div></div><div class="stat-grid" style="margin-top:8px;"><div class="stat-box"><div class="stat-num" style="font-size:20px;">${maxEmp}%</div><div class="stat-label">최고</div></div><div class="stat-box"><div class="stat-num" style="font-size:20px;">${minEmp}%</div><div class="stat-label">최저</div></div></div></div>`;
+
+    // 심화 라운드 참여
+    const bonusN = entries.filter(([,d])=>d.episodes && BONUS_EPISODES.some(e=>d.episodes[e.id])).length;
+    if (bonusN>0) ov+=`<div class="card"><h3 style="color:var(--primary);margin-bottom:6px;">🔥 심화 갈등 파일</h3><p style="font-size:14px;font-weight:400;">${bonusN}명이 심화 에피소드까지 진행했어요.</p></div>`;
+
+    // 이유·성찰 워드 클라우드
+    wordCloudTexts = [];
+    entries.forEach(([,d])=>{
+        if(d.episodes) Object.values(d.episodes).forEach(e=>{ if(e.reason) wordCloudTexts.push(e.reason); });
+        if(d.reflection){ if(d.reflection.q1) wordCloudTexts.push(d.reflection.q1); if(d.reflection.q2) wordCloudTexts.push(d.reflection.q2); }
+    });
+    ov+=`<div class="card"><h3 style="color:var(--primary);margin-bottom:8px;">☁️ 학생들이 많이 쓴 말</h3><canvas id="reasonCloud" height="220" style="width:100%;"></canvas></div>`;
+
+    // 성찰
+    const refs=entries.filter(([,d])=>d.reflection).map(([n,d])=>({name:n,...d.reflection}));
+    if(refs.length>0){
+        ov+=`<div class="card"><h3 style="color:var(--primary);margin-bottom:12px;">💬 학생들의 성찰</h3><div id="tts-reflections">`;
+        refs.forEach(r=>{ov+=`<div style="background:rgba(124,58,237,.04);border-radius:10px;padding:10px;margin:6px 0;font-size:14px;"><strong>${esc(r.name)}</strong><br><span style="font-weight:400;">💭 ${esc(r.q1||'')}</span><br><span style="font-weight:400;">🤝 ${esc(r.q2||'')}</span></div>`;});
+        ov+=`</div></div>`;
+    }
+    document.getElementById('tab-overview').innerHTML=ov;
+    drawWordCloud('reasonCloud', wordCloudTexts);
+
+    // ═══ 상세기록 탭 ═══
+    let dt=`<div class="card"><h3 style="color:var(--primary);margin-bottom:12px;">📋 학생별 상세 기록</h3>`;
+    if(!entries.length) dt+=`<p style="text-align:center;color:var(--text-light);font-weight:400;">아직 참여한 학생이 없습니다.</p>`;
+    else entries.forEach(([name,data])=>{
+        dt+=`<div style="border:1px solid #E5E7EB;border-radius:12px;padding:12px;margin:8px 0;">`;
+        dt+=`<div style="font-weight:900;font-size:16px;color:var(--primary-dark);">${esc(name)} ${data.collectedCards?`<span class="badge badge-count" style="font-size:11px;">🃏${data.collectedCards.length}/${ALL.length}</span>`:''}</div>`;
+        dt+=`<div style="font-size:12px;color:var(--text-light);font-weight:400;">참여: ${data.joinedAt?new Date(data.joinedAt).toLocaleString('ko-KR'):'-'}${data.lastVisit?' · 재입장: '+new Date(data.lastVisit).toLocaleString('ko-KR'):''}</div>`;
+        if(data.episodes) Object.entries(data.episodes).forEach(([epId,epD])=>{
+            const ep=ALL.find(e=>e.id===epId);
+            const cl=CAUSE_OPTIONS.find(c=>c.id===epD.cause)?.label||'-';
+            const shifted=epD.perspectiveShifted?'🌟전환':'➖유지';
+            const ea=epD.empathyA?`${ep?esc(ep.sideA.name):'A'} ${epD.empathyA.score}%`:'';
+            const eb=epD.empathyB?` / ${ep?esc(ep.sideB.name):'B'} ${epD.empathyB.score}%`:'';
+            dt+=`<div style="font-size:13px;margin-top:6px;padding:6px;background:#f9fafb;border-radius:8px;"><strong>${ep?esc(ep.title):esc(epId)}</strong> → ${cl} | ${shifted}${ea?` | 🎭 ${ea}${eb}`:''}<br><span style="font-weight:400;">${esc(epD.reason||'')}</span></div>`;
+        });
+        if(data.reflection) dt+=`<div style="font-size:13px;margin-top:6px;padding:6px;background:#f0fdf4;border-radius:8px;"><strong>성찰:</strong><br><span style="font-weight:400;">💭 ${esc(data.reflection.q1||'')}<br>🤝 ${esc(data.reflection.q2||'')}</span></div>`;
+        dt+=`${data.completedAt?'<div style="font-size:12px;color:var(--success);margin-top:4px;">✅ 완료</div>':'<div style="font-size:12px;color:var(--warning);margin-top:4px;">⏳ 진행중</div>'}</div>`;
+    });
+    dt+=`</div>`;
+    document.getElementById('tab-detail').innerHTML=dt;
+
+    // ═══ TTS ═══
+    let tts='';
+    [{id:'tts-cause',label:'갈등 원인 분포',icon:'🔍'},{id:'tts-pattern',label:'에피소드별 원인 패턴',icon:'🧩'},{id:'tts-shift',label:'관점 전환 분포',icon:'🔄'},{id:'tts-reflections',label:'학생 성찰',icon:'💬'}].forEach(s=>{
+        tts+=`<div style="display:flex;gap:6px;align-items:center;margin:6px 0;"><button class="btn btn-small btn-primary" onclick="speakSection('${s.id}')" style="flex:1;">▶️ ${s.icon} ${s.label}</button><button class="btn btn-small btn-secondary" onclick="showScriptPreview('${s.id}')">📝</button></div>`;
+    });
+    document.getElementById('tts-sections').innerHTML=tts;
+}
+
+// 워드 클라우드 (숨은 탭에서 clientWidth=0 → 폭 가드)
+function drawWordCloud(canvasId, texts) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    const cw = parent ? parent.clientWidth : 0;
+    canvas.width = Math.max(260, cw - 24);
+    canvas.height = 220;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const stop = new Set(['그리고','그래서','하지만','그런데','저는','내가','나는','너무','정말','같아요','생각','때문에','것을','것이','해서','하고','있는','있어요','했어요','거예요','에게','에서','으로','한테','서로','다들','우리','그냥','조금','계속']);
+    const freq = {};
+    (texts||[]).forEach(t => { String(t||'').split(/[^가-힣a-zA-Z0-9]+/).forEach(w => { if(w.length>=2 && !stop.has(w)) freq[w]=(freq[w]||0)+1; }); });
+    const words = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,26);
+    ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    if (!words.length) {
+        ctx.fillStyle='#9CA3AF'; ctx.font='700 14px Noto Sans KR'; ctx.textAlign='center';
+        ctx.fillText('아직 작성된 내용이 없습니다.', canvas.width/2, 110);
+        return;
+    }
+    const max = words[0][1];
+    const palette=['#7C3AED','#3B82F6','#F59E0B','#10B981','#EC4899','#5B21B6'];
+    let x=10, y=32, rowH=0;
+    words.forEach((wd,i)=>{
+        const size = Math.round(13 + (wd[1]/max)*20);
+        ctx.font = '900 '+size+'px Noto Sans KR';
+        const w = ctx.measureText(wd[0]).width + 14;
+        if (x + w > canvas.width - 8) { x = 10; y += rowH + 12; rowH = 0; }
+        if (y > canvas.height - 6) return;
+        ctx.fillStyle = palette[i % palette.length];
+        ctx.fillText(wd[0], x, y);
+        x += w; rowH = Math.max(rowH, size);
+    });
+}
+
+window.switchTab = function(tabId, el) {
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    document.getElementById(tabId)?.classList.add('active');
+    let btn = el || null;
+    if (!btn && typeof window!=='undefined' && window.event && window.event.target) btn = window.event.target.closest ? window.event.target.closest('.tab-btn') : window.event.target;
+    if (!btn) btn = document.querySelector('.tab-btn[data-tab="'+tabId+'"]');
+    if (btn && btn.classList) btn.classList.add('active');
+    if (tabId==='tab-overview') drawWordCloud('reasonCloud', wordCloudTexts);
+};
+
+// ═══ 엑셀 ═══
+window.downloadExcel = function() {
+    const entries=Object.entries(dashboardData);
+    if(!entries.length){showToast('데이터가 없습니다.','error');return;}
+    const ALL=ALL_EPS();
+    const headers=['닉네임','참여시간','재입장'];
+    ALL.forEach(ep=>{headers.push(`${ep.title} 원인`,`${ep.title} 이유`,`${ep.title} 관점전환`)});
+    headers.push('평균공감%','최고공감%','기본완료수','심화완료수','카드수','성찰1','성찰2','완료');
+    const wsData=[headers];
+    entries.forEach(([name,data])=>{
+        const row=[name,data.joinedAt?new Date(data.joinedAt).toLocaleString('ko-KR'):'-',data.lastVisit?new Date(data.lastVisit).toLocaleString('ko-KR'):'-'];
+        ALL.forEach(ep=>{
+            const epD=data.episodes?.[ep.id];
+            row.push(CAUSE_OPTIONS.find(c=>c.id===epD?.cause)?.label||'-');
+            row.push(epD?.reason||'-');
+            row.push(epD?.perspectiveShifted?'전환':'유지');
+        });
+        const scores=data.empathyScores||[];
+        row.push(scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0);
+        row.push(scores.length?Math.max(...scores):0);
+        row.push(EPISODES.filter(e=>data.episodes?.[e.id]?.cause).length);
+        row.push(BONUS_EPISODES.filter(e=>data.episodes?.[e.id]?.cause).length);
+        row.push(data.collectedCards?.length||0);
+        row.push(data.reflection?.q1||'-');row.push(data.reflection?.q2||'-');
+        row.push(data.completedAt?'완료':'진행중');
+        wsData.push(row);
+    });
+    const ws=XLSX.utils.aoa_to_sheet(wsData),wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'참여결과');
+    XLSX.writeFile(wb,`SEL_갈등은왜생길까_${currentRoomCode}.xlsx`);
+    showToast('📥 엑셀 다운로드 완료!','success');
+};
+
+// ═══ PDF (dashboardData에서 직접 빌드) ═══
+window.downloadPDF = function() {
+    const entries=Object.entries(dashboardData);
+    if(!entries.length){showToast('데이터가 없습니다.','error');return;}
+    let pb='';
+    const total=entries.length,comp=entries.filter(([,d])=>d.completedAt).length;
+    pb+=`<div class="card"><h3>📊 참여 현황</h3><p>참여 ${total}명 / 완료 ${comp}명</p></div>`;
+    // 원인 분포
+    const cc={};CAUSE_OPTIONS.forEach(c=>cc[c.id]=0);
+    entries.forEach(([,d])=>{if(d.episodes)Object.values(d.episodes).forEach(ep=>{if(ep.cause)cc[ep.cause]++})});
+    pb+=`<div class="card"><h3>🔍 갈등 원인 분포</h3><table><tr><th>원인</th><th>선택 횟수</th></tr>`;
+    CAUSE_OPTIONS.forEach(c=>{pb+=`<tr><td>${c.label}</td><td>${cc[c.id]||0}</td></tr>`});pb+=`</table></div>`;
+    // 에피소드별 원인 선택 패턴
+    const ALLP=ALL_EPS();
+    pb+=`<div class="card"><h3>🧩 에피소드별 원인 선택 패턴</h3><table><tr><th>에피소드</th>`;
+    CAUSE_OPTIONS.forEach(c=>{pb+=`<th>${c.label}</th>`});pb+=`<th>응답</th></tr>`;
+    ALLP.forEach(ep=>{
+        const per={}; CAUSE_OPTIONS.forEach(c=>per[c.id]=0); let sum=0;
+        entries.forEach(([,d])=>{const e=d.episodes&&d.episodes[ep.id]; if(e&&e.cause&&per[e.cause]!==undefined){per[e.cause]++;sum++;}});
+        if(!sum) return;
+        pb+=`<tr><td>${esc(ep.title)}</td>`;
+        CAUSE_OPTIONS.forEach(c=>{pb+=`<td>${per[c.id]}</td>`});
+        pb+=`<td>${sum}명</td></tr>`;
+    });
+    pb+=`</table></div>`;
+    // 관점 전환
+    let sc=0,oc=0,sk=0;entries.forEach(([,d])=>{if(d.shiftResults)d.shiftResults.forEach(r=>{if(r.shifted)sc++;else if(r.first==='wantMore'||r.first==='unsure')oc++;else sk++})});
+    pb+=`<div class="card"><h3>🔄 관점 전환</h3><table><tr><th>유형</th><th>횟수</th></tr><tr><td>관점 전환됨</td><td>${sc}</td></tr><tr><td>처음부터 열린 마음</td><td>${oc}</td></tr><tr><td>자기 생각 유지</td><td>${sk}</td></tr></table></div>`;
+    // 학생 상세
+    pb+=`<div class="card"><h3>📋 학생별 상세</h3><table><tr><th>닉네임</th><th>참여시간</th>`;
+    ALLP.forEach(ep=>{pb+=`<th>${esc(ep.title)}</th>`});pb+=`<th>공감%</th><th>카드</th><th>성찰1</th><th>성찰2</th><th>완료</th></tr>`;
+    entries.forEach(([name,data])=>{
+        pb+=`<tr><td>${esc(name)}</td><td>${data.joinedAt?new Date(data.joinedAt).toLocaleString('ko-KR'):'-'}</td>`;
+        ALLP.forEach(ep=>{const epD=data.episodes?.[ep.id];pb+=`<td>${CAUSE_OPTIONS.find(c=>c.id===epD?.cause)?.label||'-'} ${epD?.perspectiveShifted?'🌟':''}</td>`});
+        const sc2=data.empathyScores||[];pb+=`<td>${sc2.length?Math.round(sc2.reduce((a,b)=>a+b,0)/sc2.length):0}%</td>`;
+        pb+=`<td>${data.collectedCards?.length||0}/${ALLP.length}</td>`;
+        pb+=`<td>${esc(data.reflection?.q1||'-')}</td><td>${esc(data.reflection?.q2||'-')}</td>`;
+        pb+=`<td>${data.completedAt?'✅':'⏳'}</td></tr>`;
+    });pb+=`</table></div>`;
+    // 학생 성찰 전문
+    const refsP=entries.filter(([,d])=>d.reflection);
+    if(refsP.length){
+        pb+=`<div class="card"><h3>💬 학생들의 성찰</h3><table><tr><th>닉네임</th><th>갈등은 왜 생길까</th><th>다음에 갈등이 생기면</th></tr>`;
+        refsP.forEach(([n,d])=>{pb+=`<tr><td>${esc(n)}</td><td>${esc(d.reflection.q1||'')}</td><td>${esc(d.reflection.q2||'')}</td></tr>`});
+        pb+=`</table></div>`;
+    }
+    try{
+        const pw=window.open('','_blank');if(pw){
+        pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>SEL 대시보드</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet"><style>*{font-family:'Noto Sans KR',sans-serif;margin:0;padding:0;box-sizing:border-box}body{padding:24px;font-size:13px;color:#1F2937;line-height:1.6}.print-header{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #7C3AED}h2{color:#7C3AED;font-size:20px}h3{color:#7C3AED;font-size:16px;margin:12px 0 8px}.card{border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin:12px 0;page-break-inside:avoid}table{width:100%;border-collapse:collapse;margin:8px 0}th,td{border:1px solid #E5E7EB;padding:6px 8px;text-align:left;font-size:11px}th{background:#F3F4F6;font-weight:700}.pg{background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;text-align:center}@media print{.pg{display:none}}</style></head><body><div class="pg">💡 PDF로 저장: 인쇄 대화상자에서 "PDF로 저장" 선택</div><div class="print-header"><h2>📊 갈등은 왜 생길까 - 대시보드</h2><p style="font-size:12px;color:#6B7280;">방: ${currentRoomCode} | ${new Date().toLocaleString('ko-KR')}</p></div>${pb}<scr`+`ipt>setTimeout(function(){window.print();},1000);</scr`+`ipt></body></html>`);
+        pw.document.close();showToast('📄 새 창에서 PDF 인쇄 화면이 열립니다.','success');return;}
+    }catch(e){}
+    try{showToast('📄 Ctrl+P로 PDF 저장해주세요.','info');setTimeout(()=>window.print(),500);}catch(e){showToast('📄 Ctrl+P (Mac: ⌘+P)를 눌러주세요.','info');}
+};
+
+// ═══ TTS ═══
+let isSpeaking=false;
+function sectionText(id) {
+    const el = document.getElementById(id);
+    if (!el) return '';
+    const it = el.innerText;                       // 숨은 탭에서는 ''가 반환됨
+    return (it && it.trim()) ? it : (el.textContent || '');
+}
+window.speakSection = function(id) {
+    if(isSpeaking){window.speechSynthesis.cancel();isSpeaking=false;}
+    const text = sectionText(id).replace(/\s+/g,' ').trim();
+    if(!text){showToast('읽을 내용이 없습니다.');return;}
+    const u=new SpeechSynthesisUtterance(text);u.lang='ko-KR';u.rate=0.9;u.onend=()=>{isSpeaking=false;};
+    window.speechSynthesis.speak(u);isSpeaking=true;
+};
+window.stopSpeaking = function() { window.speechSynthesis.cancel();isSpeaking=false; };
+window.showScriptPreview = function(id) {
+    const text = sectionText(id) || '내용 없음';
+    showConfirmModal(`<div style="text-align:left;font-size:14px;font-weight:400;max-height:300px;overflow-y:auto;line-height:1.8;">${esc(text).replace(/\n/g,'<br>')}</div>`, ()=>{});
+    document.getElementById('confirmOkBtn').textContent='닫기';
+    document.getElementById('confirmOkBtn').style.background='var(--primary)';
+};
+
+// ═══ 데이터 초기화 ═══
+window.confirmResetData = function() {
+    showConfirmModal('⚠️ 정말 모든 학생 데이터를 삭제하시겠습니까?<br><br>✅ 방 코드와 비밀번호는 그대로 유지되고,<br>학생 활동 기록만 삭제됩니다.<br><br>이 작업은 되돌릴 수 없습니다.',async()=>{
+        try {
+            await DB.deleteAllStudents(currentRoomCode);   // 방 문서(해시 비번·만료일)는 보존
+        } catch(e) { console.log('[reset]', e && e.message); }
+        dashboardData={}; renderDashboard({});
+        showToast('🗑️ 학생 데이터가 초기화되었습니다. 방은 그대로 사용할 수 있어요.','success');
+    });
+};
+
+function bootApp(){ showScreen('screen-start'); }
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootApp);
+else bootApp();
+</script>
+</body>
+</html>

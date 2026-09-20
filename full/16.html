@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>책임 있는 선택 연습하기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Noto Sans KR',sans-serif}
+:root{
+--primary:#7C3AED;--primary-light:#A78BFA;--primary-dark:#5B21B6;
+--gradient:linear-gradient(135deg,#7C3AED 0%,#A78BFA 50%,#C4B5FD 100%);
+--gradient-bg:linear-gradient(135deg,#EDE9FE 0%,#F5F3FF 50%,#FFFFFF 100%);
+--success:#10B981;--error:#EF4444;--warning:#F59E0B;
+--text:#1F2937;--text-light:#6B7280;--bg-card:rgba(255,255,255,0.95);
+}
+body{background:var(--gradient-bg);color:var(--text);font-weight:700;font-size:18px;line-height:1.7;min-height:100vh}
+h1,h2,h3{font-weight:900}
+.container{max-width:500px;margin:0 auto;padding:16px}
+@media(max-width:768px){.container{max-width:100%;padding:12px}body{font-size:16px}}
+@media(min-width:769px){.container{max-width:600px}}
+.screen{display:none}.screen.active{display:block;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes glow{0%,100%{box-shadow:0 0 8px rgba(124,58,237,0.3)}50%{box-shadow:0 0 20px rgba(124,58,237,0.6)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+.card{background:var(--bg-card);border-radius:20px;padding:24px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.btn{padding:16px 24px;border-radius:16px;font-size:17px;font-weight:900;font-family:'Noto Sans KR',sans-serif;border:none;cursor:pointer;min-height:52px;transition:all .2s;width:100%;max-width:400px;display:block;margin:8px auto}
+.btn-primary{background:var(--gradient);color:white;box-shadow:0 4px 15px rgba(124,58,237,0.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,0.4)}
+.btn-primary:active{transform:scale(0.98)}
+.btn-secondary{background:rgba(124,58,237,0.1);color:var(--primary);border:2px solid var(--primary-light)}
+.btn-small{padding:10px 16px;font-size:14px;min-height:40px;border-radius:12px;width:auto;display:inline-block}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none !important}
+.nav-buttons{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.nav-btn{background:rgba(124,58,237,0.08);color:var(--primary);border:none;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif}
+.nav-btn:hover{background:rgba(124,58,237,0.15)}
+input,textarea{min-height:48px;font-size:16px;font-family:'Noto Sans KR',sans-serif;font-weight:700;border:2px solid #E5E7EB;border-radius:12px;padding:12px 16px;width:100%;box-sizing:border-box;transition:border-color .2s}
+input:focus,textarea:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(124,58,237,0.1)}
+textarea{min-height:80px;resize:vertical}
+.privacy-notice{background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.15);border-radius:12px;padding:14px;font-size:13px;font-weight:400;color:var(--text-light);line-height:1.6;margin-top:16px}
+.badge{display:inline-block;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;background:rgba(124,58,237,0.1);color:var(--primary)}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(31,41,55,0.95);color:white;padding:14px 28px;border-radius:14px;font-size:15px;font-weight:700;z-index:10000;opacity:0;transition:all .3s;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9000;justify-content:center;align-items:center;padding:20px}
+.modal-content{background:white;border-radius:20px;padding:28px;max-width:380px;width:100%;text-align:center}
+.modal-icon{font-size:48px;margin-bottom:12px}
+.modal-message{font-size:16px;margin-bottom:20px;line-height:1.7}
+.modal-buttons{display:flex;gap:10px}
+.modal-buttons .btn{flex:1;margin:0}
+
+/* ═══ 선택지 ═══ */
+.choice-btn{padding:16px;border:2px solid #E5E7EB;border-radius:14px;background:white;cursor:pointer;transition:all .2s;text-align:left;display:block;width:100%;margin:8px 0;font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif}
+.choice-btn:hover{border-color:var(--primary-light);background:rgba(124,58,237,0.03)}
+.choice-btn.selected{border-color:var(--primary);background:rgba(124,58,237,0.08);box-shadow:0 0 0 3px rgba(124,58,237,0.15);transform:scale(1.02)}
+.choice-btn.selected::after{content:' ✓';color:var(--primary);font-weight:900}
+
+/* ═══ 채팅 스토리 ═══ */
+.chat-container{max-height:360px;overflow-y:auto;padding:12px;background:rgba(124,58,237,0.03);border-radius:16px;margin:12px 0}
+.chat-bubble{padding:12px 16px;border-radius:16px;margin:8px 0;max-width:88%;font-size:15px;font-weight:400;line-height:1.6;animation:fadeIn .3s}
+.chat-bubble.narrator{background:rgba(124,58,237,0.06);color:var(--text);margin-left:auto;margin-right:auto;max-width:95%;text-align:center;font-size:14px}
+.chat-bubble.character{background:white;border:2px solid #E5E7EB;margin-right:auto}
+.chat-bubble.thought{background:rgba(245,158,11,0.08);border:2px dashed var(--warning);font-style:italic;margin-left:20px}
+.chat-bubble.highlight{background:linear-gradient(135deg,#EDE9FE,#DBEAFE);border:2px solid var(--primary-light);text-align:center;margin:12px auto;padding:16px;font-weight:700}
+.chat-avatar{font-size:12px;font-weight:900;color:var(--primary);margin-bottom:4px}
+.chat-typing{display:flex;gap:4px;padding:12px;justify-content:center}
+.chat-typing span{width:8px;height:8px;background:var(--primary-light);border-radius:50%;animation:typing-dot 1s infinite}
+.chat-typing span:nth-child(2){animation-delay:.2s}
+.chat-typing span:nth-child(3){animation-delay:.4s}
+@keyframes typing-dot{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+
+/* ═══ 시나리오 헤더 ═══ */
+.scenario-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.scenario-num{width:36px;height:36px;border-radius:50%;background:var(--gradient);color:white;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;flex-shrink:0}
+.scenario-title{font-size:18px;font-weight:900}
+
+/* ═══ ⭐ NEW 1: STEP 진행 바 ═══ */
+.step-bar{display:flex;align-items:center;margin:12px 0 16px;background:rgba(124,58,237,0.04);border-radius:12px;padding:10px 12px;gap:4px}
+.step-item{flex:1;text-align:center;padding:6px 4px;border-radius:8px;font-size:11px;font-weight:900;color:var(--text-light);transition:all .3s;position:relative}
+.step-item.active{background:var(--gradient);color:white;transform:scale(1.05);box-shadow:0 2px 8px rgba(124,58,237,0.3)}
+.step-item.done{background:rgba(16,185,129,0.15);color:var(--success)}
+.step-arrow{color:var(--text-light);font-size:10px;flex-shrink:0}
+
+/* ═══ ⭐ NEW 2: 직감 체크 ═══ */
+.gut-check{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+.gut-emoji{width:72px;height:72px;border-radius:16px;border:2px solid #E5E7EB;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:13px;font-weight:900}
+.gut-emoji .emoji{font-size:28px;margin-bottom:2px}
+.gut-emoji:hover{border-color:var(--primary-light)}
+.gut-emoji.selected{border-color:var(--primary);background:rgba(124,58,237,0.08);box-shadow:0 0 0 3px rgba(124,58,237,0.15);transform:scale(1.08)}
+
+/* ═══ ⭐ NEW 3: 가이드 칩 ═══ */
+.guide-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.guide-chip{padding:6px 12px;border-radius:20px;background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.15);color:var(--primary);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Noto Sans KR',sans-serif}
+.guide-chip:hover{background:rgba(124,58,237,0.12);transform:scale(1.03)}
+.guide-chip:active{transform:scale(0.97)}
+
+/* ═══ ⭐ NEW 4: 상대방 시점 ═══ */
+.perspective-box{background:linear-gradient(135deg,#FEF3C7,#FFF7ED);border:2px solid rgba(245,158,11,0.3);border-radius:14px;padding:16px;margin:12px 0;cursor:pointer;transition:all .3s}
+.perspective-box summary{font-size:14px;font-weight:900;color:var(--warning);list-style:none;display:flex;align-items:center;gap:6px}
+.perspective-box summary::before{content:'▸';transition:transform .2s}
+.perspective-box[open] summary::before{transform:rotate(90deg)}
+.perspective-inner{margin-top:12px;padding:14px;background:white;border-radius:12px;font-size:14px;font-weight:400;line-height:1.8;color:var(--text);border-left:4px solid var(--warning)}
+
+/* ═══ ⭐ NEW 5: 나만의 선택지 ═══ */
+.custom-choice-toggle{margin:8px 0;padding:12px;border:2px dashed var(--primary-light);border-radius:14px;background:rgba(124,58,237,0.03);cursor:pointer;text-align:center;font-size:14px;font-weight:900;color:var(--primary);transition:all .2s}
+.custom-choice-toggle:hover{background:rgba(124,58,237,0.08)}
+.custom-choice-area{margin:8px 0;padding:16px;background:rgba(124,58,237,0.04);border:2px solid var(--primary-light);border-radius:14px;animation:fadeIn .3s}
+.value-select-grid{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.value-select-btn{padding:6px 12px;border-radius:20px;border:2px solid #E5E7EB;background:white;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Noto Sans KR',sans-serif}
+.value-select-btn.selected{border-color:var(--primary);background:rgba(124,58,237,0.1)}
+
+/* ═══ ⭐ NEW 6: 선택 카드 ═══ */
+.choice-cards{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.cs-card{display:flex;gap:10px;padding:12px;background:white;border-radius:12px;border:1px solid #E5E7EB;align-items:flex-start}
+.cs-num{width:28px;height:28px;border-radius:50%;background:var(--gradient);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0}
+.cs-body{flex:1;min-width:0}
+.cs-title{font-size:12px;color:var(--text-light);margin-bottom:2px}
+.cs-text{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cs-tags{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
+.cs-gut{font-size:11px;color:var(--text-light)}
+
+/* ═══ 가치 태그 ═══ */
+.value-tag{display:inline-block;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:700;margin:2px}
+.value-tag.purple{background:rgba(124,58,237,0.1);color:#7C3AED}
+.value-tag.green{background:rgba(16,185,129,0.1);color:#059669}
+.value-tag.blue{background:rgba(59,130,246,0.1);color:#2563EB}
+.value-tag.orange{background:rgba(245,158,11,0.1);color:#D97706}
+.value-tag.pink{background:rgba(236,72,153,0.1);color:#DB2777}
+.value-tag.teal{background:rgba(20,184,166,0.1);color:#0D9488}
+
+/* ═══ 예측/실제 비교 ═══ */
+.predict-box{background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:12px;padding:12px;margin:8px 0}
+.actual-box{background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:12px;margin:8px 0}
+.compare-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+
+/* ═══ 투표 바 ═══ */
+.vote-bar{display:flex;height:28px;border-radius:8px;overflow:hidden;margin:8px 0}
+.vote-segment{display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:900;min-width:24px;transition:width .5s}
+.vote-label{font-size:11px;color:var(--text-light)}
+
+/* ═══ 선택 헌장 ═══ */
+.charter-card{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:2px solid #F59E0B;border-radius:20px;padding:24px;margin:12px 0}
+.charter-title{font-size:18px;font-weight:900;text-align:center;color:#92400E;margin-bottom:16px}
+.charter-item{display:flex;gap:12px;margin:12px 0;padding:12px;background:white;border-radius:12px}
+.charter-num{width:28px;height:28px;border-radius:50%;background:var(--warning);color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0}
+.charter-text{font-size:14px;font-weight:400;line-height:1.6}
+.charter-stamp{text-align:center;margin-top:12px;font-size:13px;color:var(--text-light)}
+
+/* ═══ 유형 카드 ═══ */
+.type-card{text-align:center;padding:28px;background:linear-gradient(135deg,#EDE9FE,#DBEAFE);border-radius:20px;margin:12px 0;border:2px solid var(--primary-light)}
+.type-icon{font-size:56px;display:block;animation:pop .5s}
+.type-name{font-size:22px;font-weight:900;color:var(--primary-dark);margin:8px 0}
+.type-desc{font-size:14px;font-weight:400;color:var(--text);line-height:1.7}
+
+/* ═══ ⭐ NEW 7: 일관성 메시지 ═══ */
+.consistency-box{background:rgba(59,130,246,0.06);border:2px solid rgba(59,130,246,0.2);border-radius:14px;padding:16px;margin:12px 0}
+.consistency-title{font-size:15px;font-weight:900;color:#2563EB;margin-bottom:8px}
+.consistency-text{font-size:14px;font-weight:400;line-height:1.7}
+.consistency-strong{color:var(--success);font-weight:900}
+.consistency-grow{color:var(--warning);font-weight:900}
+
+/* ═══ 진행률 ═══ */
+.progress-container{margin:8px 0}
+.progress-bar{height:12px;background:#E5E7EB;border-radius:6px;overflow:hidden}
+.progress-fill{height:100%;background:var(--gradient);border-radius:6px;transition:width 1s}
+
+/* ═══ 탭 ═══ */
+.tab-buttons{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{flex:1;padding:10px 8px;border:none;border-radius:10px;font-size:12px;font-weight:900;cursor:pointer;background:rgba(124,58,237,0.08);color:var(--primary);font-family:'Noto Sans KR',sans-serif;min-width:60px}
+.tab-btn.active{background:var(--gradient);color:white}
+.tab-content{display:none}.tab-content.active{display:block}
+.data-table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px}
+.data-table th,.data-table td{border:1px solid #E5E7EB;padding:6px 8px;text-align:left}
+.data-table th{background:#F3F4F6;font-weight:900;font-size:11px}
+
+/* ═══ 인쇄 ═══ */
+@media print{body *{visibility:hidden}#dashboard-content,#dashboard-content *{visibility:visible}#dashboard-content{position:absolute;left:0;top:0;width:100%}.btn,.nav-buttons,.tab-buttons,#toast,.modal-overlay{display:none!important}.card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ═══ 시작 화면 ═══ -->
+<div class="screen active" id="screen-start">
+    <div class="card" style="text-align:center">
+        <div style="font-size:56px;margin-bottom:8px">⚖️</div>
+        <h1 style="font-size:24px">책임 있는 선택 연습하기</h1>
+        <p style="font-size:15px;color:var(--text-light);margin:8px 0">매일 마주하는 선택의 순간, 어떻게 결정할까요?</p>
+        <span class="badge">⏱️ 예상 소요시간: 약 7~10분</span>
+        <div style="margin-top:20px">
+            <button class="btn btn-primary" onclick="showScreen('screen-login')">👩‍🏫 방 만들기 / 입장하기</button>
+            <button class="btn btn-secondary" onclick="startSoloMode()" style="margin-top:8px">🌟 혼자 체험하기</button>
+        </div>
+        <div class="privacy-notice">🔐 <strong>안심하세요!</strong><br>방 코드는 입장할 때만 필요한 숫자일 뿐, 개인정보를 포함하지 않습니다. 닉네임에도 개인정보를 넣지 마세요.</div>
+    </div>
+</div>
+
+<!-- ═══ 로그인 ═══ -->
+<div class="screen" id="screen-login">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-start')">← 처음으로</button></div>
+    <div class="card" style="text-align:center">
+        <h2 style="font-size:20px;margin-bottom:16px">⚖️ 입장하기</h2>
+        <button class="btn btn-primary" onclick="showScreen('screen-create-room')" style="margin-bottom:10px">👩‍🏫 방 만들기 (교사용)</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-teacher-join')" style="margin-bottom:10px">🔑 교사로 접속하기</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-student-join')">🧒 학생으로 참여하기</button>
+    </div>
+    <div class="privacy-notice">🔐 닉네임에 개인정보를 포함하지 마세요.</div>
+</div></div>
+
+<!-- ═══ 방 만들기 ═══ -->
+<div class="screen" id="screen-create-room">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로가기</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="font-size:20px;margin-bottom:16px">👩‍🏫 방 만들기</h2>
+        <label style="font-size:14px">교사 닉네임</label>
+        <input id="create-teacher-name" placeholder="닉네임 입력" maxlength="10" style="margin:6px 0 14px">
+        <label style="font-size:14px">관리자 비밀번호 (숫자 4자리)</label>
+        <input id="create-password" type="password" placeholder="0000" maxlength="4" inputmode="numeric" style="margin:6px 0 14px">
+        <button class="btn btn-primary" onclick="createRoom()">방 만들기 →</button>
+    </div>
+</div></div>
+
+<!-- ═══ 방 생성 완료 ═══ -->
+<div class="screen" id="screen-room-created">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+    <div class="card" style="text-align:center">
+        <h2 style="font-size:20px;margin-bottom:12px">✅ 방이 만들어졌어요!</h2>
+        <p style="font-size:14px;color:var(--text-light)">학생들에게 이 코드를 알려주세요</p>
+        <div id="display-room-code" style="font-size:48px;font-weight:900;color:var(--primary);letter-spacing:8px;margin:16px 0;animation:glow 2s infinite"></div>
+        <button class="btn btn-small btn-secondary" onclick="copyRoomCode()" style="margin-bottom:16px">📋 코드 복사하기</button>
+        <button class="btn btn-primary" onclick="enterDashboard()">📊 대시보드 열기 →</button>
+        <p style="font-size:12px;color:var(--text-light);margin-top:8px">⚠️ 수업 후 데이터 초기화를 눌러주세요. 30일 후 자동 삭제됩니다.</p>
+    </div>
+</div></div>
+
+<!-- ═══ 교사 입장 ═══ -->
+<div class="screen" id="screen-teacher-join">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로가기</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="font-size:20px;margin-bottom:16px">🔑 교사로 접속</h2>
+        <label style="font-size:14px">방 코드 (6자리)</label>
+        <input id="teacher-room-code" placeholder="000000" maxlength="6" inputmode="numeric" style="margin:6px 0 14px">
+        <label style="font-size:14px">비밀번호</label>
+        <input id="teacher-password" type="password" placeholder="0000" maxlength="4" inputmode="numeric" style="margin:6px 0 14px">
+        <button class="btn btn-primary" onclick="joinAsTeacher()">접속하기 →</button>
+    </div>
+</div></div>
+
+<!-- ═══ 학생 입장 ═══ -->
+<div class="screen" id="screen-student-join">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로가기</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="font-size:20px;margin-bottom:16px">🧒 학생으로 참여</h2>
+        <label style="font-size:14px">방 코드 (6자리)</label>
+        <input id="student-room-code" placeholder="000000" maxlength="6" inputmode="numeric" style="margin:6px 0 14px">
+        <label style="font-size:14px">닉네임</label>
+        <input id="student-nickname" placeholder="닉네임 입력" maxlength="10" style="margin:6px 0 14px">
+        <button class="btn btn-primary" onclick="joinAsStudent()">입장하기 →</button>
+    </div>
+    <div class="privacy-notice">🔐 닉네임에 개인정보를 포함하지 마세요.</div>
+</div></div>
+
+<!-- ═══ 마음 열기 (스토리) ═══ -->
+<div class="screen" id="screen-story">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="font-size:18px;margin-bottom:8px">📖 마음 열기</h2>
+        <div id="story-chat" class="chat-container"></div>
+        <button class="btn btn-primary" id="story-next-btn" onclick="advanceStory()" style="margin-top:12px">다음 →</button>
+    </div>
+</div></div>
+
+<!-- ═══ 개념 소개 ═══ -->
+<div class="screen" id="screen-concept">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-story')">← 뒤로가기</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="font-size:20px;margin-bottom:12px">⚖️ 책임 있는 선택이란?</h2>
+        <div style="background:linear-gradient(135deg,#EDE9FE,#DBEAFE);border-radius:14px;padding:16px;margin:8px 0">
+            <p style="font-size:15px;font-weight:400;line-height:1.8">
+                <strong>완벽한 선택</strong>은 없어요.<br>
+                하지만 <strong>"왜 그렇게 했는지"</strong> 스스로 설명할 수 있다면,<br>
+                그것이 바로 <strong>책임 있는 선택</strong>이에요.
+            </p>
+        </div>
+        <div style="background:rgba(245,158,11,0.06);border-radius:12px;padding:14px;margin:12px 0;border-left:4px solid var(--warning)">
+            <p style="font-size:14px;font-weight:900;color:var(--warning);margin-bottom:6px">💡 STEP 문제해결 전략</p>
+            <p style="font-size:13px;font-weight:400;line-height:1.7">
+                <strong>S</strong>ay 문제 알기 → <strong>T</strong>hink 해결방안 생각하기 →<br>
+                <strong>E</strong>xplore 결과 예측하기 → <strong>P</strong>ick 선택하기
+            </p>
+        </div>
+        <div style="text-align:center;margin:16px 0">
+            <p style="font-size:14px;color:var(--text-light)">지금부터 5가지 상황에서 선택을 연습해요!</p>
+            <span style="font-size:14px">① 선택하기 → ② 영향 예측 → ③ 결과 확인 → ④ 우리 반 비교</span><br>
+            <span style="font-size:13px;color:var(--primary)">💡 상대방 입장도 들여다볼 수 있어요!</span>
+        </div>
+        <button class="btn btn-primary" onclick="startDilemmas()">선택 연습 시작! →</button>
+    </div>
+</div></div>
+
+<!-- ═══ 딜레마 (동적) ═══ -->
+<div class="screen" id="screen-dilemma">
+<div class="container">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="goBackDilemma()">← 뒤로가기</button>
+        <button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+        <button class="nav-btn" onclick="openCompass('screen-dilemma')" style="margin-left:auto">🧭 나침반</button>
+    </div>
+    <div id="dilemma-content"></div>
+</div></div>
+
+<!-- ═══ 가치 나침반 ═══ -->
+<div class="screen" id="screen-compass">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="compassBack()">← 뒤로가기</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="font-size:20px;text-align:center;margin-bottom:12px">🧭 나의 가치 나침반</h2>
+        <div id="compass-display"></div>
+        <div id="compass-tags" style="text-align:center;margin:12px 0"></div>
+    </div>
+</div></div>
+
+<!-- ═══ 선택 유형 결과 ═══ -->
+<div class="screen" id="screen-type-result">
+<div class="container">
+    <!-- ⭐ showScreen('screen-reflection') 직접 호출을 goToReflection() 으로 변경.
+         이 경로로 들어가면 updateReflectionUI() 가 실행되지 않아
+         '나에게 가장 중요한 가치는?' 아래 버튼이 하나도 없는 빈 화면이 됐다. -->
+    <div class="nav-buttons"><button class="nav-btn" onclick="goToReflection()">← 뒤로가기</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div id="type-result-content"></div>
+</div></div>
+
+<!-- ═══ 마음 기록 (선택 헌장) ═══ -->
+<div class="screen" id="screen-reflection">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-type-result')">← 뒤로가기</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="font-size:20px;margin-bottom:8px">📜 나의 선택 헌장</h2>
+        <p style="font-size:14px;color:var(--text-light);margin-bottom:12px">오늘 발견한 가치를 바탕으로 나만의 헌장을 만들어보세요!</p>
+        <div id="reflection-status"></div>
+        <div style="margin:12px 0">
+            <label style="font-size:14px">나에게 가장 중요한 가치는?</label>
+            <div id="reflection-values" style="margin:8px 0"></div>
+        </div>
+        <label style="font-size:14px">어려운 선택 앞에서 나의 기준</label>
+        <div class="guide-chips">
+            <span class="guide-chip" onclick="insertGuide('reflection-standard','나도 괜찮고 상대도 괜찮은 방법을 ')">나도 괜찮고 상대도...</span>
+            <span class="guide-chip" onclick="insertGuide('reflection-standard','정직하게 하는 것이 ')">정직하게...</span>
+            <span class="guide-chip" onclick="insertGuide('reflection-standard','나중에 후회하지 않으려면 ')">후회 안 하려면...</span>
+        </div>
+        <textarea id="reflection-standard" placeholder="예: 나도 괜찮고 상대도 괜찮은 방법을 먼저 생각한다" rows="2" oninput="checkReflection()"></textarea>
+        <label style="font-size:14px;margin-top:12px;display:block">앞으로 꼭 지키고 싶은 약속</label>
+        <div class="guide-chips">
+            <span class="guide-chip" onclick="insertGuide('reflection-promise','어려운 상황에서도 ')">어려운 상황에서도...</span>
+            <span class="guide-chip" onclick="insertGuide('reflection-promise','친구에게 솔직하게 ')">솔직하게...</span>
+        </div>
+        <textarea id="reflection-promise" placeholder="예: 어려운 상황에서도 솔직하게 내 생각을 말한다" rows="2" oninput="checkReflection()"></textarea>
+        <label style="font-size:14px;margin-top:12px;display:block">오늘 활동 소감</label>
+        <div class="guide-chips">
+            <span class="guide-chip" onclick="insertGuide('reflection-feeling','가장 어려웠던 선택은 ')">가장 어려웠던...</span>
+            <span class="guide-chip" onclick="insertGuide('reflection-feeling','새로 알게 된 것은 ')">새로 알게 된...</span>
+            <span class="guide-chip" onclick="insertGuide('reflection-feeling','다음에 비슷한 상황이 오면 ')">다음에는...</span>
+        </div>
+        <textarea id="reflection-feeling" placeholder="자유롭게 적어주세요" rows="2" oninput="checkReflection()"></textarea>
+        <button class="btn btn-primary" id="submit-reflection-btn" onclick="submitReflection()" style="margin-top:12px" disabled>📜 선택 헌장 완성! →</button>
+    </div>
+</div></div>
+
+<!-- ═══ 완료 ═══ -->
+<div class="screen" id="screen-complete">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="backToMain()">← 다시 탐험하기</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div id="complete-content"></div>
+</div></div>
+
+<!-- ═══ 교사 대시보드 ═══ -->
+<div class="screen" id="screen-dashboard">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button><button class="nav-btn" onclick="refreshDashboard()">🔄 새로고침</button><button class="nav-btn" onclick="stopSpeaking()">⏹️ 읽기 중지</button></div>
+    <div class="card" style="text-align:center;padding:16px">
+        <h2 style="font-size:18px">⚖️ 대시보드</h2>
+        <p style="font-size:13px;color:var(--text-light)">방 코드: <strong id="dash-room-code"></strong></p>
+    </div>
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('tab-overview', this)">📊 현황</button>
+        <button class="tab-btn" onclick="switchTab('tab-detail', this)">📋 상세</button>
+        <button class="tab-btn" onclick="switchTab('tab-export', this)">📥 내보내기</button>
+        <button class="tab-btn" onclick="switchTab('tab-tts', this)">🔊 TTS</button>
+    </div>
+    <div id="dashboard-content">
+        <div class="tab-content active" id="tab-overview"></div>
+        <div class="tab-content" id="tab-detail"></div>
+        <div class="tab-content" id="tab-export">
+            <div class="card" style="text-align:center">
+                <button class="btn btn-primary" onclick="downloadExcel()" style="margin-bottom:8px">📊 엑셀 다운로드</button>
+                <button class="btn btn-secondary" onclick="downloadPDF()">📄 PDF 다운로드</button>
+            </div>
+        </div>
+        <div class="tab-content" id="tab-tts"><div id="tts-sections"></div></div>
+    </div>
+    <div style="text-align:center;margin:16px 0">
+        <button class="btn btn-small" onclick="resetData()" style="background:rgba(239,68,68,0.1);color:var(--error);border:2px solid rgba(239,68,68,0.3)">🗑️ 데이터 초기화</button>
+        <p style="font-size:12px;color:var(--text-light);margin-top:8px">⚠️ 수업 후 초기화를 눌러주세요. 30일 후 자동 삭제됩니다.</p>
+    </div>
+</div></div>
+
+</div><!-- container -->
+
+<!-- ═══ 모달 & 토스트 ═══ -->
+<div id="confirmModal" class="modal-overlay" style="display:none">
+    <div class="modal-content">
+        <div class="modal-icon">⚠️</div>
+        <div class="modal-message" id="confirmMessage"></div>
+        <div class="modal-buttons">
+            <button class="btn btn-secondary" onclick="closeConfirmModal()">취소</button>
+            <button class="btn btn-primary" id="confirmOkBtn" style="background:var(--error)">확인</button>
+        </div>
+    </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import{getAuth,signInAnonymously,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import{getFirestore,doc,setDoc,getDoc,updateDoc,deleteDoc,onSnapshot,collection,getDocs}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s",authDomain:"emo-dex.firebaseapp.com",projectId:"emo-dex",storageBucket:"emo-dex.firebasestorage.app",messagingSenderId:"994736049700",appId:"1:994736049700:web:8233fa7b68cd6e0cccd2b1"};
+const APP_ID='sel-lesson-27';
+let app,auth,db,useFirebase=false,currentUser=null;
+try{app=initializeApp(firebaseConfig);auth=getAuth(app);db=getFirestore(app)}catch(e){console.log('[Firebase] Init fail:',e)}
+async function initAuth(){if(!auth)return null;return new Promise(r=>{const t=setTimeout(()=>r(null),5000);onAuthStateChanged(auth,u=>{if(u){currentUser=u;clearTimeout(t);r(u)}});signInAnonymously(auth).catch(()=>{clearTimeout(t);r(null)})})}
+const authReady=initAuth().then(u=>{useFirebase=!!u;console.log('[Auth]',useFirebase?'Firebase':'Local')});
+
+const localDB={};
+function getRoomRef(c){return doc(db,'artifacts',APP_ID,'public','data','rooms',c)}
+function getStudentRef(c,n){return doc(db,'artifacts',APP_ID,'public','data','rooms',c,'students',n)}
+function getStudentsCol(c){return collection(db,'artifacts',APP_ID,'public','data','rooms',c,'students')}
+
+const DB={
+    async saveRoom(c,d){if(useFirebase){try{await setDoc(getRoomRef(c),d);return}catch(e){}}localDB['r_'+c]=d},
+    async getRoom(c){if(useFirebase){try{const s=await getDoc(getRoomRef(c));return s.exists()?s.data():null}catch(e){}}return localDB['r_'+c]||null},
+    async saveStudent(c,n,d){if(useFirebase){try{await setDoc(getStudentRef(c,n),d,{merge:true});return}catch(e){}}if(!localDB['s_'+c])localDB['s_'+c]={};localDB['s_'+c][n]={...(localDB['s_'+c][n]||{}),...d}},
+    async getStudent(c,n){if(useFirebase){try{const s=await getDoc(getStudentRef(c,n));return s.exists()?s.data():null}catch(e){}}return localDB['s_'+c]?.[n]||null},
+    async getAllStudents(c){if(useFirebase){try{const s=await getDocs(getStudentsCol(c));const r={};s.forEach(d=>r[d.id]=d.data());return r}catch(e){}}return localDB['s_'+c]||{}},
+    async deleteRoom(c){if(useFirebase){try{const s=await getDocs(getStudentsCol(c));for(const d of s.docs)await deleteDoc(d.ref);await deleteDoc(getRoomRef(c))}catch(e){}}delete localDB['r_'+c];delete localDB['s_'+c]},
+    // ⭐ FIX: 학생 기록만 삭제하고 방 문서(해시 비밀번호·만료일)는 보존 → 초기화 후에도 교사가 같은 비밀번호로 재입장 가능
+    async deleteAllStudents(c){if(useFirebase){try{const s=await getDocs(getStudentsCol(c));for(const d of s.docs)await deleteDoc(d.ref)}catch(e){}}delete localDB['s_'+c]},
+    onStudentsChange(c,cb){if(useFirebase){try{return onSnapshot(getStudentsCol(c),s=>{const r={};s.forEach(d=>r[d.id]=d.data());cb(r)})}catch(e){}}cb(localDB['s_'+c]||{});return null}
+};
+
+// ═══ 유틸리티 ═══
+function showToast(m,t='info'){const el=document.getElementById('toast');el.textContent=m;el.style.background=t==='error'?'rgba(239,68,68,0.95)':t==='success'?'rgba(16,185,129,0.95)':'rgba(31,41,55,0.95)';el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3000)}
+// ⭐ FIX: 사용자 입력(닉네임·자유서술)을 innerHTML에 넣을 때 반드시 이스케이프
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+window.showScreen=function(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const t=document.getElementById(id);if(t){t.classList.add('active');window.scrollTo(0,0)}};
+async function simpleHash(s){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(d)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+let confirmCallback=null;
+window.showConfirmModal=function(msg,onConfirm){document.getElementById('confirmMessage').innerHTML=msg;document.getElementById('confirmModal').style.display='flex';confirmCallback=onConfirm;document.getElementById('confirmOkBtn').onclick=()=>{const cb=confirmCallback;closeConfirmModal();if(cb)cb()}};
+window.closeConfirmModal=function(){document.getElementById('confirmModal').style.display='none';confirmCallback=null;document.getElementById('confirmOkBtn').textContent='확인';document.getElementById('confirmOkBtn').style.background='var(--error)'};
+// ⭐ NEW 3: 가이드 칩 삽입
+window.insertGuide=function(targetId,text){const ta=document.getElementById(targetId);if(!ta)return;if(ta.value&&!ta.value.endsWith(' '))ta.value+=' ';ta.value+=text;ta.focus();ta.dispatchEvent(new Event('input'))};
+
+// ═══ 상태 ═══
+let currentRoomCode='',currentNickname='',isTeacher=false,isSoloMode=false;
+let unsubscribe=null,dashboardData={};
+let currentDilemmaIndex=0,dilemmaAnswers={},collectedValues=new Set(),valueCounts={};
+let reflectionDone=false,currentStepPhase='S';
+// ⭐ 보너스 라운드 / 재도전 / 스토리 재생 토큰 / 나침반 복귀 지점
+let activeSet=null,isBonusRound=false,retryMode=false,storyToken=0,compassReturn='screen-dilemma';
+let reflectionData={standard:'',promise:'',feeling:'',value:''};
+let draftTimer=null;
+
+// ═══ 스토리 데이터 ═══
+const STORY_LINES=[
+    {type:'narrator',text:'학급 회의 시간이다.'},
+    {type:'character',name:'선생님',text:'"우리 반에서 바꾸고 싶은 점이 있으면 적어보자."'},
+    {type:'narrator',text:'종이를 받아 든 아이들이 각자 생각에 잠겼다.'},
+    {type:'narrator',text:'어떤 아이는 바로 연필을 움직이지만, <strong>하늘이</strong>는 종이를 앞에 두고 한참을 바라보기만 했다.'},
+    {type:'thought',text:'체육 시간 순서를 바꾸고 싶은데... 얼굴이 살짝 빨개지는 걸 느끼며 연필을 쥔 손이 떨렸다.'},
+    {type:'character',name:'옆자리 친구',text:'"넌 뭐 쓸 거야?"'},
+    {type:'character',name:'하늘이',text:'"아직 생각 중이야." 목 안에 뭔가 걸린 것처럼 말이 잘 나오지 않았다.'},
+    {type:'thought',text:'사실은 생각이 없는 게 아니라, 너무 많아서 정하지 못하는 거다. 심장이 한 번 크게 뛴 것 같았다.'},
+    {type:'narrator',text:'내 생각을 쓰자니 친구들이 뭐라고 할지 걱정되고, 눈치를 보자니 답답했다.'},
+    {type:'narrator',text:'결국 하늘이는 종이를 접어 가방에 넣었다.'},
+    {type:'thought',text:'그냥 안 내는 게 낫겠지...'},
+    {type:'character',name:'선생님',text:'"의견이 없는 것도 선택이지만, 말해보고 싶은 마음이 있다면 적어도 괜찮아."'},
+    {type:'narrator',text:'그 말을 들은 하늘이는 다시 종이를 꺼냈다. 손이 떨렸지만, 지우개로 몇 번 고친 끝에 짧게 한 줄을 적었다.'},
+    {type:'highlight',text:'완벽하지 않아도, 처음으로 자기 생각을 글로 남긴 순간이었다. ✨'},
+    {type:'highlight',text:'하늘이처럼 우리도 매일 선택의 순간을 만나요.<br>오늘은 <strong>"책임 있는 선택"</strong>을 연습해봐요!'}
+];
+let storyIndex=0;
+
+// ═══ 딜레마 데이터 (⭐ NEW: otherPerspective 추가) ═══
+const DILEMMAS=[
+{
+    id:'test_answer',emoji:'📝',title:'시험 답을 보여줄까?',otherName:'수진이',
+    storyLines:[
+        {type:'narrator',text:'수학 시험이 시작되고 10분이 지났다. 연필을 쥔 손에 땀이 배었다.'},
+        {type:'narrator',text:'옆자리 <strong>수진이</strong>가 조용히 속삭였다.'},
+        {type:'character',name:'수진이',text:'"야... 12번 답 좀 보여줘. 제발, 나 이번에 또 못 보면 엄마한테 혼나." 눈이 빨개져 있었다.'},
+        {type:'narrator',text:'심장이 쿵쿵 뛰기 시작했다. 수진이가 정말 걱정되면서도, 뭔가 찜찜한 기분이 동시에 올라왔다.'}
+    ],
+    choices:[
+        {text:'🅰️ "안 돼, 미안해. 시험은 스스로 봐야 해."',values:['honesty','courage'],
+         impact:{me:'정직하게 행동해서 마음이 편하다',other:'수진이는 실망하지만 스스로 실력을 키울 기회를 얻는다',long:'서로 정직한 관계가 유지된다'},
+         otherPerspective:'거절당했을 때 얼굴이 확 달아올랐어. 창피하기도 하고 서운하기도 했지... 근데 집에 가서 곰곰이 생각해보니, 내가 잘못 부탁한 거였나 봐. 다음엔 스스로 공부해봐야지.'},
+        {text:'🅱️ "12번만... 딱 하나만 보여줄게."',values:['friendship'],
+         impact:{me:'친구를 도운 것 같지만 찝찝한 마음이 남는다',other:'수진이는 당장 고마워하지만 실력이 늘지 않는다',long:'다음에도 비슷한 부탁이 올 수 있다'},
+         otherPerspective:'답을 보여줬을 때 순간 고마웠어. 근데 시험지를 제출하고 나니까 찝찝한 기분이 들었어. "이게 진짜 내 실력인가..." 하는 생각이 자꾸 들었거든.'},
+        {text:'🅲️ "시험 끝나고 내가 수학 알려줄게. 지금은 안 돼."',values:['care','responsibility'],
+         impact:{me:'거절하면서도 대안을 제시해 마음이 덜 무겁다',other:'수진이가 당장 실망하지만 진짜 도움을 받을 수 있다',long:'함께 공부하며 깊은 우정이 만들어질 수 있다'},
+         otherPerspective:'처음엔 "뭐야, 그냥 보여주면 되잖아" 했는데, 같이 공부하자는 말에 마음이 좀 풀렸어. 누가 내 편이 되어주는 느낌이었달까.'}
+    ],
+    resultStory:'시험이 끝나고, 하늘이는 수진이에게 다가갔다. 어떤 선택을 했든, 그 순간 하늘이는 자기 마음에 솔직했다.'
+},
+{
+    id:'tell_teacher',emoji:'🤫',title:'친구의 비밀, 말할까?',otherName:'준서',
+    storyLines:[
+        {type:'narrator',text:'쉬는 시간, <strong>준서</strong>가 얼굴이 하얗게 질린 채 다가왔다.'},
+        {type:'character',name:'준서',text:'"나 큰일났어... 아까 교실에서 실수로 선생님 화분을 깼는데, 아무도 못 봤거든." 목소리가 떨렸다.'},
+        {type:'narrator',text:'눈을 어디에 둬야 할지 몰랐다. 준서가 불안한 눈으로 나를 바라보고 있었다.'},
+        {type:'character',name:'준서',text:'"제발 아무한테도 말하지 마... 부탁이야."'}
+    ],
+    choices:[
+        {text:'🅰️ "준서야, 선생님한테 솔직히 말하는 게 맞아."',values:['honesty','courage'],
+         impact:{me:'정직하게 말해서 속이 시원하다',other:'준서는 혼나지만 거짓말이 커지기 전에 해결된다',long:'교실에서 정직한 분위기가 생긴다'},
+         otherPerspective:'속이 터졌지만... 사실 혼자 끙끙 앓고 있었는데 누가 용기를 줘서 한편으론 후련했어. 혼나긴 했지만 거짓말이 더 커지기 전에 끝나서 다행이야.'},
+        {text:'🅱️ "알겠어... 비밀 지킬게."',values:['friendship'],
+         impact:{me:'갈등을 피해서 편하지만 마음이 찝찝하다',other:'준서는 안도하지만 죄책감을 혼자 짊어진다',long:'준서가 스스로 말할 수도, 영영 숨길 수도 있다'},
+         otherPerspective:'아무도 안 말해줘서 당장은 안심했는데, 밤에 자려고 누우면 자꾸 그 생각이 나. "언제 들킬까" 하는 불안이 점점 커져.'},
+        {text:'🅲️ "내가 같이 가줄게. 선생님한테 같이 말하자."',values:['care','responsibility'],
+         impact:{me:'직접 고자질하는 것보다 부담이 적다',other:'준서가 스스로 용기 낼 기회를 얻는다',long:'준서도 책임감을 배우고 나도 친구를 도운 셈이 된다'},
+         otherPerspective:'직접 말하라고 했을 때 처음엔 화가 났어. "넌 쉽게 말하지" 했거든. 근데 옆에서 같이 가주겠다고 했을 때... 그 마음이 고마웠어.'}
+    ],
+    resultStory:'점심시간이 되고 나서도 하늘이는 준서의 표정이 계속 눈에 밟혔다. 어떤 선택이든, 친구를 생각하는 마음은 진짜였다.'
+},
+{
+    id:'promise_conflict',emoji:'🎂',title:'약속이 겹쳤어!',otherName:'친구',
+    storyLines:[
+        {type:'narrator',text:'토요일 아침, 숟가락을 들다가 멈췄다. 밥맛이 없어졌다.'},
+        {type:'character',name:'엄마',text:'"이번 주말에 할머니 생신이란다. 오랜만에 다 같이 가자."'},
+        {type:'narrator',text:'그런데 이미 친구와 약속이 있었다. 한 달 전부터 기다린 놀이공원 약속이었다.'},
+        {type:'thought',text:'둘 다 중요한데... 어떻게 하지? 가슴이 꽉 막힌 느낌이었다.'}
+    ],
+    choices:[
+        {text:'🅰️ "약속을 지킬게요. 할머니한텐 전화드릴게요."',values:['honesty','responsibility'],
+         impact:{me:'약속을 지켜서 뿌듯하지만 할머니 생각에 마음이 아프다',other:'친구는 기뻐하지만 할머니가 서운해하실 수 있다',long:'약속을 지키는 사람으로 신뢰를 얻는다'},
+         otherPerspective:'약속 지켜줘서 기뻤어! 근데 나중에 할머니 생신이었다고 듣고... 좀 미안했어. 나라면 솔직히 말해줬으면 좋겠어.'},
+        {text:'🅱️ "할머니 생신이 더 중요해요. 친구한테 솔직히 말할게요."',values:['care','courage'],
+         impact:{me:'가족을 챙겨서 따뜻하지만 친구에게 미안하다',other:'할머니는 기뻐하시고 친구는 이해하거나 실망할 수 있다',long:'가족의 소중함을 느끼고 솔직함을 연습한다'},
+         otherPerspective:'약속 취소 연락을 받았을 때 실망했어. 근데 이유를 듣고 나니까 "그럴 수 있지" 싶더라. 가족이 먼저인 건 당연하니까.'},
+        {text:'🅲️ "오전에 할머니 뵙고, 오후에 친구 만나면 안 될까요?"',values:['responsibility','care'],
+         impact:{me:'둘 다 챙기려 바쁘지만 양쪽 모두를 생각한 선택이다',other:'친구도 할머니도 모두 볼 수 있다',long:'시간 관리와 양쪽 배려를 배운다'},
+         otherPerspective:'잠깐이라도 와줘서 고마웠어. 바쁜 거 알면서도 시간 내준 게 느껴졌거든. 진짜 나를 생각해주는 친구구나 싶었어.'}
+    ],
+    resultStory:'어떤 선택을 하든, 모두를 완벽하게 만족시킬 수는 없었다. 하지만 하늘이는 자기가 왜 그 선택을 했는지 설명할 수 있었다.'
+},
+{
+    id:'minority_opinion',emoji:'🗣️',title:'나만 다른 생각일 때',otherName:'반 친구들',
+    storyLines:[
+        {type:'narrator',text:'학급 회의에서 소풍 장소를 정하고 있었다.'},
+        {type:'narrator',text:'대부분이 놀이공원을 원했다. 한 명, 두 명, 세 명... 계속 손이 올라갔다.'},
+        {type:'thought',text:'나는 자연체험학습이 좋은데... 갑자기 팔이 무거워졌다. 목소리가 나오려다 멈췄다.'},
+        {type:'character',name:'회장',text:'"다른 의견 있는 사람?" 교실이 조용해졌다.'}
+    ],
+    choices:[
+        {text:'🅰️ 손을 들고 "저는 자연체험학습이 좋다고 생각해요!"',values:['courage','honesty'],
+         impact:{me:'떨리지만 내 생각을 당당하게 말해서 후회가 없다',other:'친구들이 새로운 의견에 관심을 가질 수 있다',long:'다양한 의견이 나와 더 좋은 결정이 가능하다'},
+         otherPerspective:'솔직히 처음엔 "왜 갑자기 딴소리야?" 했는데, 들어보니까 괜찮은 생각이더라. 우리만 생각하던 거랑 다른 시각을 줘서 새로웠어.'},
+        {text:'🅱️ 조용히 다수 의견에 따른다.',values:['friendship'],
+         impact:{me:'갈등을 피할 수 있지만 아쉬움이 남는다',other:'친구들은 모르지만 내 생각이 반영되지 않는다',long:'매번 남의 의견만 따르면 점점 내 목소리를 내기 어려워진다'},
+         otherPerspective:'나중에 알았는데 다른 생각이 있었다면서? 말해줬으면 좋았을 텐데. 의견이 다양해야 더 좋은 결정을 내릴 수 있으니까.'},
+        {text:'🅲️ "놀이공원도 좋은데, 자연체험학습이랑 비교해보면 어떨까요?"',values:['responsibility','courage'],
+         impact:{me:'부드럽게 말해서 부담이 적고 내 의견도 전달된다',other:'친구들이 두 곳을 비교해볼 기회를 얻는다',long:'서로 다른 의견을 존중하며 대화하는 문화가 만들어진다'},
+         otherPerspective:'비교해보자는 제안이 좋았어. 덕분에 우리가 놓쳤던 부분을 발견할 수 있었거든. 다른 의견도 소중하다는 걸 배웠어.'}
+    ],
+    resultStory:'회의가 끝난 후, 몇몇 친구들이 다가와서 말했다. "네 의견도 괜찮았어." 작은 용기가 교실의 공기를 바꿨다.'
+},
+{
+    id:'bully_witness',emoji:'😢',title:'놀림을 보았을 때',otherName:'민호',
+    storyLines:[
+        {type:'narrator',text:'쉬는 시간, 복도에서 <strong>재현이</strong>가 <strong>민호</strong>를 놀리고 있었다.'},
+        {type:'character',name:'재현이',text:'"야, 또 혼자야? 친구도 없냐?" 큰 소리로 웃으며 말했다.'},
+        {type:'narrator',text:'민호는 귀가 빨갛고, 주먹을 꽉 쥐고 있었지만 아무 말도 하지 못했다.'},
+        {type:'narrator',text:'발걸음이 멈췄다. 가슴이 답답해졌다. 모른 척 지나갈 수도 있었지만, 민호의 떨리는 손이 눈에 들어왔다.'}
+    ],
+    choices:[
+        {text:'🅰️ "재현아, 그런 말은 하면 안 돼." 직접 말한다.',values:['courage','care'],
+         impact:{me:'무서웠지만 옳은 일을 했다는 뿌듯함이 크다',other:'민호에게 큰 위안이 되고 재현이도 자기 행동을 돌아볼 수 있다',long:'용기 있는 행동이 교실 분위기를 바꿀 수 있다'},
+         otherPerspective:'누가 나서줄 줄 몰랐어. 솔직히 눈물이 날 뻔했어. 혼자가 아니라는 게... 그게 제일 큰 힘이 됐어.'},
+        {text:'🅱️ 민호에게 다가가서 "같이 교실 가자" 말한다.',values:['care','friendship'],
+         impact:{me:'직접 대면하지 않아 부담이 적고 민호를 도울 수 있다',other:'민호가 혼자가 아니라는 걸 느끼며 마음이 따뜻해진다',long:'민호에게 든든한 친구가 생기지만 놀리는 행동은 계속될 수 있다'},
+         otherPerspective:'옆에 와서 말 걸어줬을 때, 세상에 나 편이 있다는 걸 느꼈어. 놀리는 건 계속됐지만, 적어도 쉬는 시간이 무섭지 않아졌어.'},
+        {text:'🅲️ 선생님께 상황을 알린다.',values:['responsibility','care'],
+         impact:{me:'어른의 도움을 요청해 안전하다',other:'선생님이 적절히 개입해 민호를 보호할 수 있다',long:'어른의 도움이 필요한 상황에서 적절히 대처하는 방법을 배운다'},
+         otherPerspective:'선생님이 와서 상황을 정리해줬을 때 안심이 됐어. 근데 "누가 말했지?" 하는 생각에 좀 복잡했어. 그래도 멈춰서 다행이야.'}
+    ],
+    resultStory:'그날 하교길, 민호가 조용히 다가와 말했다. "고마워." 딱 두 글자였지만, 하늘이는 그 무게를 느낄 수 있었다.'
+}
+];
+
+// ═══ ⭐ 보너스 상황 (기본 5가지를 마친 뒤 더 도전할 수 있는 추가 딜레마) ═══
+const EXTRA_DILEMMAS=[
+{
+    id:'group_project',emoji:'🧩',title:'모둠 과제, 혼자 다 할까?',otherName:'지호',
+    storyLines:[
+        {type:'narrator',text:'모둠 과제 발표가 이틀 남았다. 우리 모둠은 네 명인데, 자료 조사는 나 혼자 하고 있었다.'},
+        {type:'character',name:'지호',text:'"미안, 나 학원 때문에 못 했어. 네가 잘하니까 그냥 네가 하면 안 돼?"'},
+        {type:'thought',text:'내가 하면 빨리 끝나긴 한다. 그런데 왜 나만... 어깨가 무거워지는 느낌이었다.'},
+        {type:'narrator',text:'남은 시간은 이틀. 연필로 책상을 툭툭 두드리며 한참을 생각했다.'}
+    ],
+    choices:[
+        {text:'🅰️ "내가 다 할게." 혼자 밤늦게까지 끝낸다.',values:['responsibility'],
+         impact:{me:'과제는 끝나지만 억울한 마음이 남는다',other:'지호는 편하지만 배울 기회를 놓친다',long:'다음에도 혼자 떠맡게 될 수 있다'},
+         otherPerspective:'고맙긴 했는데... 발표할 때 내가 아무것도 모르니까 얼굴이 화끈했어. 사실 나도 뭔가 하고 싶었거든.'},
+        {text:'🅱️ "나도 힘들어. 각자 맡은 건 각자 하자."',values:['honesty','courage'],
+         impact:{me:'솔직하게 말해서 속은 후련하지만 잠깐 어색해진다',other:'지호는 당황하지만 자기 몫을 다시 생각해본다',long:'모둠 안에 역할을 나누는 기준이 생긴다'},
+         otherPerspective:'처음엔 좀 서운했어. 근데 곰곰이 생각해보니 내가 미룬 게 맞더라. 말해줘서 오히려 정신이 들었어.'},
+        {text:'🅲️ "지금 남은 걸 같이 나눠보자. 네가 할 수 있는 건 뭐야?"',values:['care','responsibility'],
+         impact:{me:'조율하느라 시간이 걸리지만 혼자 짊어지지 않는다',other:'지호가 할 수 있는 만큼 참여하게 된다',long:'모둠이 함께 해내는 경험이 쌓인다'},
+         otherPerspective:'"네가 할 수 있는 건 뭐야?"라고 물어봐 준 게 좋았어. 못 한다고만 생각했는데, 작은 거라도 맡으니까 나도 우리 모둠 사람 같았어.'}
+    ],
+    resultStory:'발표가 끝나고 모둠원들이 서로를 쳐다봤다. 완벽하진 않았지만, 하늘이는 자기가 왜 그렇게 했는지 말할 수 있었다.'
+},
+{
+    id:'clean_duty',emoji:'🧹',title:'청소 당번인데 아무도 없을 때',otherName:'우리 반',
+    storyLines:[
+        {type:'narrator',text:'하교 시간, 교실에 남은 건 나 혼자였다.'},
+        {type:'narrator',text:'오늘 청소 당번은 네 명인데, 셋은 이미 가방을 메고 나가버렸다.'},
+        {type:'thought',text:'나도 그냥 갈까? 아무도 안 볼 텐데... 빗자루를 든 손이 멈췄다.'},
+        {type:'narrator',text:'창밖에서 친구들이 웃으며 뛰어가는 소리가 들려왔다.'}
+    ],
+    choices:[
+        {text:'🅰️ 내가 맡은 몫만 하고 나머지는 두고 간다.',values:['honesty'],
+         impact:{me:'내 약속은 지켰지만 교실을 보니 마음이 개운하지 않다',other:'다음 날 반 친구들이 어질러진 교실에서 하루를 시작한다',long:'각자 몫만 챙기는 분위기가 굳어질 수 있다'},
+         otherPerspective:'아침에 교실이 반만 치워져 있어서 좀 이상했어. 누구 잘못인지는 모르겠지만, 기분 좋게 시작하긴 어려웠어.'},
+        {text:'🅱️ 혼자서 교실 전체를 다 치우고 간다.',values:['responsibility','care'],
+         impact:{me:'늦게 가서 힘들지만 깨끗해진 교실을 보면 뿌듯하다',other:'반 친구들은 깨끗한 교실에서 하루를 시작한다',long:'혼자 참으면 같은 일이 반복될 수 있다'},
+         otherPerspective:'다음 날 교실이 반짝반짝했어. 누가 했는지 몰랐는데, 나중에 알고 나서 좀 미안했어.'},
+        {text:'🅲️ 오늘은 할 수 있는 만큼만 하고, 내일 아침 당번 친구들에게 이야기한다.',values:['courage','responsibility'],
+         impact:{me:'말을 꺼내는 게 떨리지만 혼자 참지 않아도 된다',other:'당번 친구들이 자기 몫을 다시 생각해본다',long:'우리 반에 약속을 지키는 기준이 생긴다'},
+         otherPerspective:'솔직히 뜨끔했어. 그냥 넘어갔으면 계속 안 했을 텐데, 말해줘서 다음부터는 챙기게 됐어.'}
+    ],
+    resultStory:'다음 날 아침 교실 문을 열었을 때의 공기는, 어제 하늘이가 한 선택과 이어져 있었다.'
+},
+{
+    id:'lost_item',emoji:'👛',title:'주운 물건, 어떻게 할까?',otherName:'주인',
+    storyLines:[
+        {type:'narrator',text:'운동장 구석에서 반짝이는 것을 발견했다. 새 게임 카드 한 묶음이었다.'},
+        {type:'narrator',text:'주변을 둘러봐도 아무도 없었다. 심장이 조금 빨라졌다.'},
+        {type:'thought',text:'내가 계속 갖고 싶었던 카드다. 손바닥에 땀이 배었다.'},
+        {type:'narrator',text:'주머니에 넣을 수도, 교무실에 가져다줄 수도 있었다.'}
+    ],
+    choices:[
+        {text:'🅰️ 바로 교무실 분실물함에 가져다준다.',values:['honesty','responsibility'],
+         impact:{me:'아쉬움이 남지만 마음이 가볍다',other:'잃어버린 친구가 카드를 되찾는다',long:'분실물을 믿고 맡길 수 있는 반이 된다'},
+         otherPerspective:'없어진 걸 알고 눈물이 핑 돌았는데, 분실물함에 있다는 말을 듣고 심장이 다시 뛰었어. 누군지 몰라도 정말 고마웠어.'},
+        {text:'🅱️ 주인이 나타날 때까지 내가 가지고 있는다.',values:['care'],
+         impact:{me:'도와주려는 마음이지만 오해를 살까 불안하다',other:'주인은 한동안 카드를 찾지 못해 애가 탄다',long:'좋은 마음도 방법이 다르면 오해가 될 수 있다'},
+         otherPerspective:'며칠 동안 계속 찾아다녔어. 결국 돌려받긴 했지만, 그동안 마음이 너무 조마조마했어.'},
+        {text:'🅲️ 반 친구들에게 "이거 누구 거야?" 물어보고, 못 찾으면 선생님께 드린다.',values:['responsibility','friendship'],
+         impact:{me:'조금 번거롭지만 스스로 떳떳하다',other:'주인이 빨리 찾을 가능성이 커진다',long:'서로의 물건을 챙겨주는 분위기가 만들어진다'},
+         otherPerspective:'교실에서 "이거 누구 거야?" 하는 소리를 듣자마자 손을 번쩍 들었어. 그렇게 빨리 찾을 줄은 몰랐어!'}
+    ],
+    resultStory:'며칠 뒤, 하늘이는 그 카드를 다시 떠올렸다. 손에 남은 건 없었지만, 마음에 남은 건 있었다.'
+},
+{
+    id:'group_chat',emoji:'💬',title:'단톡방에서 험담이 시작됐어',otherName:'서연이',
+    storyLines:[
+        {type:'narrator',text:'저녁 아홉 시, 반 단톡방에 알림이 계속 울렸다.'},
+        {type:'character',name:'친구들',text:'"오늘 서연이 발표하는 거 봤어? ㅋㅋ 진짜 웃겼어"'},
+        {type:'narrator',text:'대화창이 빠르게 올라갔다. 그 방에는 서연이도 함께 있었다.'},
+        {type:'thought',text:'뭐라고 해야 하지... 화면 위에서 손가락이 멈췄다.'}
+    ],
+    choices:[
+        {text:'🅰️ "이런 얘기는 그만하자."라고 단톡방에 쓴다.',values:['courage','care'],
+         impact:{me:'심장이 뛰지만 할 말을 했다는 안도감이 든다',other:'서연이는 자기 편이 있다는 걸 알게 된다',long:'단톡방에서 지켜야 할 기준이 생긴다'},
+         otherPerspective:'알림이 울릴 때마다 무서웠어. 그런데 누가 "그만하자"라고 써준 순간, 눈물이 나면서도 숨이 쉬어졌어.'},
+        {text:'🅱️ 아무 말도 하지 않고 알림을 끈다.',values:['friendship'],
+         impact:{me:'당장은 편하지만 마음 한쪽이 무겁다',other:'서연이는 아무도 나서지 않았다고 느낀다',long:'말리지 않으면 비슷한 일이 반복될 수 있다'},
+         otherPerspective:'다들 조용한 게 제일 무서웠어. 아무도 나를 이상하게 안 봤을 수도 있는데, 그땐 온 세상이 나를 비웃는 것 같았어.'},
+        {text:'🅲️ 서연이에게 따로 메시지를 보내고, 다음 날 선생님께 알린다.',values:['care','responsibility'],
+         impact:{me:'직접 맞서지 않아도 도울 방법을 찾았다',other:'서연이는 혼자가 아니라고 느끼고 어른의 도움도 받는다',long:'힘든 일을 어른과 나누는 방법을 배운다'},
+         otherPerspective:'"괜찮아?"라는 메시지 하나에 한참 울었어. 다음 날 선생님이 조용히 불러줬을 때, 이제 혼자가 아니구나 싶었어.'}
+    ],
+    resultStory:'다음 날 아침, 서연이가 교실 문 앞에서 잠깐 하늘이를 바라봤다. 아무 말도 없었지만, 그 눈빛이 오래 남았다.'
+}
+];
+const ALL_DILEMMAS=DILEMMAS.concat(EXTRA_DILEMMAS);
+function curSet(){return activeSet||DILEMMAS}
+function findDilemma(id){return ALL_DILEMMAS.find(d=>d.id===id)||null}
+function coreDone(ans){const a=ans||dilemmaAnswers;return DILEMMAS.filter(d=>a[d.id]).length}
+function bonusDone(ans){const a=ans||dilemmaAnswers;return EXTRA_DILEMMAS.filter(d=>a[d.id]).length}
+
+// ═══ 선택 유형 ═══
+const CHOICE_TYPES=[
+    {name:'정의로운 수호자 🛡️',emoji:'🛡️',desc:'정직과 용기를 중시해요. 옳다고 생각하면 어려워도 말할 수 있는 사람이에요.',primary:['honesty','courage']},
+    {name:'따뜻한 연결자 💝',emoji:'💝',desc:'배려와 우정을 소중히 여겨요. 사람들 사이에서 다리가 되어주는 사람이에요.',primary:['care','friendship']},
+    {name:'든든한 책임자 ⚖️',emoji:'⚖️',desc:'책임감이 강하고 신뢰를 쌓는 사람이에요. 약속을 소중히 여기죠.',primary:['responsibility','honesty']},
+    {name:'균형잡힌 탐험가 🌈',emoji:'🌈',desc:'다양한 가치를 고르게 중시해요. 상황에 따라 유연하게 판단하는 사람이에요.',primary:['care','responsibility']}
+];
+
+const VALUE_MAP={
+    honesty:{emoji:'💎',label:'정직',color:'purple'},
+    courage:{emoji:'🦁',label:'용기',color:'orange'},
+    care:{emoji:'💗',label:'배려',color:'pink'},
+    friendship:{emoji:'🤝',label:'우정',color:'green'},
+    responsibility:{emoji:'⚖️',label:'책임',color:'blue'},
+};
+
+// ═══ 방 관리 ═══
+async function copyToClipboard(text){try{await navigator.clipboard.writeText(text);showToast('✅ 복사됨!','success')}catch(e){const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0;left:-9999px';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');showToast('✅ 복사됨!','success')}catch(e2){showToast('📋 코드: '+text,'info')}document.body.removeChild(ta)}}
+window.copyRoomCode=function(){copyToClipboard(document.getElementById('display-room-code').textContent)};
+
+window.createRoom=async function(){await authReady;const n=document.getElementById('create-teacher-name').value.trim(),p=document.getElementById('create-password').value.trim();if(!n){showToast('닉네임을 입력해주세요.','error');return}if(!/^\d{4}$/.test(p)){showToast('비밀번호는 숫자 4자리로 입력해주세요.','error');return}const c=String(Math.floor(Math.random()*900000+100000)),h=await simpleHash(p),ex=new Date();ex.setDate(ex.getDate()+30);await DB.saveRoom(c,{teacherName:n,password:h,createdAt:new Date().toISOString(),expiresAt:ex.toISOString()});currentRoomCode=c;isTeacher=true;isSoloMode=false;document.getElementById('display-room-code').textContent=c;showScreen('screen-room-created')};
+
+window.enterDashboard=function(){document.getElementById('dash-room-code').textContent=currentRoomCode;showScreen('screen-dashboard');startDashboardListener()};
+
+window.joinAsTeacher=async function(){await authReady;const c=document.getElementById('teacher-room-code').value.trim(),p=document.getElementById('teacher-password').value.trim();if(!c||!p){showToast('방 코드와 비밀번호를 입력해주세요.','error');return}const r=await DB.getRoom(c);if(!r){showToast('존재하지 않는 방입니다.','error');return}if(r.expiresAt&&new Date(r.expiresAt)<new Date()){await DB.deleteRoom(c);showToast('만료된 방입니다.','error');return}const h=await simpleHash(p);if(r.password!==h){showToast('비밀번호가 틀렸습니다.','error');return}currentRoomCode=c;isTeacher=true;isSoloMode=false;document.getElementById('dash-room-code').textContent=c;showScreen('screen-dashboard');startDashboardListener()};
+
+window.joinAsStudent=async function(){await authReady;const c=document.getElementById('student-room-code').value.trim(),n=document.getElementById('student-nickname').value.trim();if(!c||!n){showToast('방 코드와 닉네임을 입력해주세요.','error');return}const r=await DB.getRoom(c);if(!r){showToast('존재하지 않는 방입니다.','error');return}if(r.expiresAt&&new Date(r.expiresAt)<new Date()){await DB.deleteRoom(c);showToast('만료된 방입니다.','error');return}
+    const existing=await DB.getStudent(c,n);
+    if(existing){const eCore=DILEMMAS.filter(d=>(existing.answers||{})[d.id]).length,eBonus=EXTRA_DILEMMAS.filter(d=>(existing.answers||{})[d.id]).length;
+        showConfirmModal(`<strong>${esc(n)}</strong>님, 이전에 참여한 기록이 있어요!<br><br>⚖️ 완료: ${eCore}/${DILEMMAS.length}${eBonus?` (보너스 ${eBonus}/${EXTRA_DILEMMAS.length})`:''}<br>🧭 가치: ${(existing.collectedValues||[]).length}개<br>📜 선택 헌장: ${existing.reflectionDone?'작성 완료':'아직'}<br><br>이어서 할까요?`,async()=>{currentRoomCode=c;currentNickname=n;isTeacher=false;isSoloMode=false;restoreStudentData(existing);await DB.saveStudent(c,n,{lastVisit:new Date().toISOString()});showToast(`🎉 ${n}님, 다시 오셨군요!`,'success');resumeStudent()});document.getElementById('confirmOkBtn').textContent='이어하기';document.getElementById('confirmOkBtn').style.background='var(--primary)';return}
+    currentRoomCode=c;currentNickname=n;isTeacher=false;isSoloMode=false;dilemmaAnswers={};collectedValues=new Set();valueCounts={};reflectionDone=false;activeSet=DILEMMAS;isBonusRound=false;retryMode=false;reflectionData={standard:'',promise:'',feeling:'',value:''};
+    await DB.saveStudent(c,n,{joinedAt:new Date().toISOString(),answers:{},collectedValues:[],reflectionDone:false});initStory();showScreen('screen-story')};
+
+window.startSoloMode=function(){isSoloMode=true;isTeacher=false;currentNickname='탐험가';dilemmaAnswers={};collectedValues=new Set();valueCounts={};reflectionDone=false;activeSet=DILEMMAS;isBonusRound=false;retryMode=false;reflectionData={standard:'',promise:'',feeling:'',value:''};initStory();showScreen('screen-story')};
+
+// ⭐ FIX: 재입장 복원 — 메모리 변수 + DOM(textarea 값·가치 선택 하이라이트)까지 함께 복원
+function restoreStudentData(d){
+    dilemmaAnswers=d.answers||{};
+    collectedValues=new Set(d.collectedValues||[]);
+    // 가치 횟수는 실제 응답에서 다시 계산 (collectedValues는 중복 없는 목록이라 횟수를 알 수 없음)
+    valueCounts={};Object.values(dilemmaAnswers).forEach(a=>(a.values||[]).forEach(v=>{valueCounts[v]=(valueCounts[v]||0)+1;collectedValues.add(v)}));
+    reflectionDone=!!d.reflectionDone;
+    reflectionData={standard:d.reflectionStandard||'',promise:d.reflectionPromise||'',feeling:d.reflectionFeeling||'',value:d.reflectionValue||''};
+    activeSet=DILEMMAS;isBonusRound=false;retryMode=false;
+    setTimeout(()=>{const a=document.getElementById('reflection-standard'),b=document.getElementById('reflection-promise'),c=document.getElementById('reflection-feeling');
+        if(a)a.value=reflectionData.standard;if(b)b.value=reflectionData.promise;if(c)c.value=reflectionData.feeling;
+        const btn=document.getElementById('submit-reflection-btn');if(btn)btn.disabled=!(reflectionData.standard&&reflectionData.promise&&reflectionData.feeling)},100)}
+
+// ⭐ FIX: 재입장 후 중단 지점으로 정확히 복귀 (예전에는 빈 나침반 화면이 떴다)
+function resumeStudent(){
+    const firstUnanswered=DILEMMAS.findIndex(d=>!dilemmaAnswers[d.id]);
+    if(firstUnanswered>=0){activeSet=DILEMMAS;isBonusRound=false;currentDilemmaIndex=firstUnanswered;renderDilemma();showScreen('screen-dilemma');return}
+    if(reflectionDone){renderCompass();renderComplete();showScreen('screen-complete');return}
+    analyzeChoiceType();showScreen('screen-type-result')}
+
+// ═══ 스토리 ═══
+function initStory(){storyIndex=0;const c=document.getElementById('story-chat');if(c)c.innerHTML='';document.getElementById('story-next-btn').textContent='다음 →'}
+window.advanceStory=function(){const c=document.getElementById('story-chat');if(storyIndex>=STORY_LINES.length){showScreen('screen-concept');return}const line=STORY_LINES[storyIndex];const b=document.createElement('div');b.className='chat-bubble '+line.type;if(line.name)b.innerHTML=`<div class="chat-avatar">${line.name}</div>${line.text}`;else b.innerHTML=line.text;c.appendChild(b);c.scrollTop=c.scrollHeight;storyIndex++;if(storyIndex>=STORY_LINES.length)document.getElementById('story-next-btn').textContent='선택 연습 시작! →'};
+
+window.startDilemmas=function(){activeSet=DILEMMAS;isBonusRound=false;retryMode=false;currentDilemmaIndex=0;renderDilemma();showScreen('screen-dilemma')};
+
+// ═══ 딜레마 렌더링 (⭐ STEP 진행바 + 직감 체크 통합) ═══
+function renderDilemma(){
+    const set=curSet();const d=set[currentDilemmaIndex];
+    // 이미 답한 딜레마면 결과로 (재도전 모드에서는 다시 선택할 수 있게 한다)
+    if(dilemmaAnswers[d.id]&&!retryMode){showDilemmaComplete(d,dilemmaAnswers[d.id]);return}
+    currentStepPhase='S';
+    const container=document.getElementById('dilemma-content');
+    container.innerHTML=`<div class="card"><div class="scenario-header"><div class="scenario-num">${currentDilemmaIndex+1}</div><div class="scenario-title">${d.emoji} ${d.title}</div></div>${renderStepBar('S')}<div id="dilemma-chat" class="chat-container"></div><button class="btn btn-primary" id="dilemma-story-next" onclick="advanceDilemmaStory()">다음 →</button></div>`;
+    // 채팅 스토리 재생 (⭐ FIX: 화면을 떠나면 예약된 타이머가 사라진 DOM에 쓰지 않도록 토큰으로 차단)
+    const myToken=++storyToken;
+    let idx=0;const chat=document.getElementById('dilemma-chat');
+    function appendLine(line){const b=document.createElement('div');b.className='chat-bubble '+line.type;if(line.name)b.innerHTML=`<div class="chat-avatar">${line.name}</div>${line.text}`;else b.innerHTML=line.text;chat.appendChild(b);chat.scrollTop=chat.scrollHeight}
+    function finishStory(){const btn=document.getElementById('dilemma-story-next');if(!btn)return;btn.textContent='💭 처음 드는 마음은? →';btn.onclick=()=>showGutCheck()}
+    function next(){if(myToken!==storyToken)return;
+        if(idx>=d.storyLines.length){finishStory();return}
+        const line=d.storyLines[idx];const typing=document.createElement('div');typing.className='chat-typing';typing.innerHTML='<span></span><span></span><span></span>';chat.appendChild(typing);chat.scrollTop=chat.scrollHeight;
+        setTimeout(()=>{typing.remove();if(myToken!==storyToken)return;appendLine(line);idx++;setTimeout(next,400)},500)}
+    // ⭐ FIX: '다음 →' 버튼이 아무 동작도 하지 않던 문제 → 남은 이야기를 즉시 펼쳐준다
+    window.advanceDilemmaStory=function(){if(myToken!==storyToken)return;storyToken++;
+        chat.querySelectorAll('.chat-typing').forEach(t=>t.remove());
+        while(idx<d.storyLines.length){appendLine(d.storyLines[idx]);idx++}
+        finishStory()};
+    next()}
+
+// ═══ ⭐ NEW 1: STEP 진행 바 렌더링 ═══
+function renderStepBar(active){
+    const steps=[{key:'S',label:'S 알기'},{key:'T',label:'T 생각'},{key:'E',label:'E 예측'},{key:'P',label:'P 선택'}];
+    const order=['S','T','E','P'];const ai=order.indexOf(active);
+    return `<div class="step-bar">${steps.map((s,i)=>`${i>0?'<span class="step-arrow">→</span>':''}<div class="step-item ${i<ai?'done':i===ai?'active':''}">${s.label}</div>`).join('')}</div>`}
+
+// ═══ ⭐ NEW 2: 직감 체크 ═══
+let selectedGutFeeling='';
+window.advanceDilemmaStory=window.advanceDilemmaStory||function(){};
+function showGutCheck(){
+    currentStepPhase='T';
+    const d=curSet()[currentDilemmaIndex];
+    let html=`<div class="card"><div class="scenario-header"><div class="scenario-num">${currentDilemmaIndex+1}</div><div class="scenario-title">${d.emoji} ${d.title}</div></div>${renderStepBar('T')}`;
+    html+=`<h3 style="font-size:16px;text-align:center;margin-bottom:8px">💭 이 상황을 읽고 처음 드는 마음은?</h3>`;
+    html+=`<div class="gut-check">`;
+    [{e:'😰',l:'불안'},{e:'🤔',l:'고민'},{e:'😤',l:'답답'},{e:'💪',l:'해보자'}].forEach(g=>{
+        html+=`<div class="gut-emoji" onclick="selectGut(this,'${g.e}')" data-emoji="${g.e}"><span class="emoji">${g.e}</span>${g.l}</div>`});
+    html+=`</div><button class="btn btn-primary" id="gut-next-btn" onclick="showDilemmaChoices()" disabled style="margin-top:12px">선택지 보기 →</button></div>`;
+    document.getElementById('dilemma-content').innerHTML=html;selectedGutFeeling=''}
+window.selectGut=function(el,emoji){selectedGutFeeling=emoji;document.querySelectorAll('.gut-emoji').forEach(e=>e.classList.remove('selected'));el.classList.add('selected');document.getElementById('gut-next-btn').disabled=false};
+
+// ═══ 선택지 화면 (⭐ 나만의 선택지 추가) ═══
+let selectedChoiceIdx=-1;let customChoiceMode=false;
+window.showDilemmaChoices=function(){
+    currentStepPhase='T';const d=curSet()[currentDilemmaIndex];
+    let html=`<div class="card"><div class="scenario-header"><div class="scenario-num">${currentDilemmaIndex+1}</div><div class="scenario-title">${d.emoji} ${d.title}</div></div>${renderStepBar('T')}`;
+    html+=`<div style="font-size:13px;color:var(--text-light);margin-bottom:8px">직감: ${selectedGutFeeling}</div>`;
+    html+=`<p style="font-size:15px;color:var(--text-light);margin-bottom:12px">나라면 어떻게 하겠어요?</p><div id="choice-area">`;
+    d.choices.forEach((c,i)=>{html+=`<button class="choice-btn" id="choice-${i}" onclick="selectChoice(${i})">${c.text}</button>`});
+    html+=`</div>`;
+    // ⭐ NEW 4: 나만의 4번째 선택지
+    html+=`<div class="custom-choice-toggle" id="custom-toggle" onclick="toggleCustomChoice()">✏️ 나라면 다른 방법이 있어!</div>`;
+    html+=`<div class="custom-choice-area" id="custom-area" style="display:none">
+        <label style="font-size:14px">나의 아이디어</label>
+        <div class="guide-chips"><span class="guide-chip" onclick="insertGuide('custom-text','나라면 ')">나라면...</span><span class="guide-chip" onclick="insertGuide('custom-text','두 사람 모두 ')">두 사람 모두...</span></div>
+        <textarea id="custom-text" placeholder="내가 생각하는 다른 방법을 적어주세요" rows="2" oninput="checkCustomSubmit()"></textarea>
+        <label style="font-size:13px;margin-top:8px;display:block">이 선택에 담긴 가치는? (1~2개 선택)</label>
+        <div class="value-select-grid" id="custom-values">${Object.entries(VALUE_MAP).map(([k,v])=>`<button class="value-select-btn" onclick="toggleCustomValue(this,'${k}')" data-v="${k}">${v.emoji} ${v.label}</button>`).join('')}</div>
+        <button class="btn btn-primary btn-small" id="custom-submit-btn" onclick="submitCustomChoice()" style="margin-top:12px" disabled>이 선택으로 하기! →</button></div>`;
+    html+=`<div id="reason-area" style="display:none;margin-top:16px">
+        <label style="font-size:14px;display:block;margin-bottom:6px">왜 그렇게 선택했나요?</label>
+        <div class="guide-chips"><span class="guide-chip" onclick="insertGuide('choice-reason','나도 괜찮고 상대도 괜찮은 ')">나도 괜찮고...</span><span class="guide-chip" onclick="insertGuide('choice-reason','정직하게 하는 게 ')">정직하게...</span><span class="guide-chip" onclick="insertGuide('choice-reason','나중에 후회 안 하려면 ')">후회 안 하려면...</span></div>
+        <textarea id="choice-reason" placeholder="내 생각을 자유롭게 적어주세요" rows="2" oninput="checkSubmit()"></textarea>
+        <button class="btn btn-primary" id="submit-choice-btn" onclick="submitChoice()" style="margin-top:12px" disabled>선택 확정하기 →</button></div></div>`;
+    document.getElementById('dilemma-content').innerHTML=html;selectedChoiceIdx=-1;customChoiceMode=false};
+
+window.selectChoice=function(i){selectedChoiceIdx=i;customChoiceMode=false;document.querySelectorAll('.choice-btn').forEach((b,j)=>b.classList.toggle('selected',j===i));document.getElementById('reason-area').style.display='block';document.getElementById('custom-area').style.display='none';document.getElementById('custom-toggle').style.display='block';checkSubmit()};
+window.checkSubmit=function(){const r=document.getElementById('choice-reason')?.value.trim();const b=document.getElementById('submit-choice-btn');if(b)b.disabled=!(selectedChoiceIdx>=0&&r&&r.length>0)};
+
+// ⭐ NEW 4: 나만의 선택지
+let customValues=new Set();
+window.toggleCustomChoice=function(){const a=document.getElementById('custom-area');const t=document.getElementById('custom-toggle');if(a.style.display==='none'){a.style.display='block';t.style.display='none';document.getElementById('reason-area').style.display='none';selectedChoiceIdx=-1;customChoiceMode=true;document.querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('selected'));customValues.clear();document.querySelectorAll('.value-select-btn').forEach(b=>b.classList.remove('selected'))}};
+window.toggleCustomValue=function(el,v){if(customValues.has(v)){customValues.delete(v);el.classList.remove('selected')}else{if(customValues.size>=2){showToast('가치는 최대 2개까지!','error');return}customValues.add(v);el.classList.add('selected')}checkCustomSubmit()};
+window.checkCustomSubmit=function(){const t=document.getElementById('custom-text')?.value.trim();document.getElementById('custom-submit-btn').disabled=!(t&&t.length>0&&customValues.size>0)};
+window.submitCustomChoice=function(){const text=document.getElementById('custom-text').value.trim();selectedChoiceIdx=99;// custom marker
+    document.getElementById('custom-area').style.display='none';document.getElementById('reason-area').style.display='block';document.getElementById('choice-reason').value='(나만의 선택: '+text+')';checkSubmit()};
+
+// ═══ 선택 확정 → 예측 ═══
+window.submitChoice=async function(){const d=curSet()[currentDilemmaIndex];const reason=document.getElementById('choice-reason').value.trim();
+    let choiceValues,choiceText,choiceIndex;
+    if(selectedChoiceIdx===99){// custom
+        choiceValues=Array.from(customValues);choiceText='✏️ '+document.getElementById('custom-text').value.trim();choiceIndex=99;
+    }else{
+        const choice=d.choices[selectedChoiceIdx];choiceValues=(choice.values||[]).slice();choiceText=choice.text;choiceIndex=selectedChoiceIdx;
+    }
+    // ⭐ FIX: 같은 상황을 다시 선택하면 이전 가치 집계를 먼저 되돌린다 (중복 집계 방지)
+    const prev=dilemmaAnswers[d.id];
+    if(prev)(prev.values||[]).forEach(v=>{valueCounts[v]=Math.max((valueCounts[v]||0)-1,0);if(!valueCounts[v])collectedValues.delete(v)});
+    choiceValues.forEach(v=>{collectedValues.add(v);valueCounts[v]=(valueCounts[v]||0)+1});
+    dilemmaAnswers[d.id]={choiceIndex,choiceText,reason,values:choiceValues,gutFeeling:selectedGutFeeling,answeredAt:new Date().toISOString()};
+    if(!isSoloMode)await DB.saveStudent(currentRoomCode,currentNickname,{answers:dilemmaAnswers,collectedValues:Array.from(collectedValues),completedCount:coreDone(),bonusCount:bonusDone()});
+    showToast('🧭 가치 발견: '+choiceValues.map(v=>VALUE_MAP[v]?.emoji+VALUE_MAP[v]?.label).join(', '),'success');
+    if(choiceIndex===99){showDilemmaComplete(d,dilemmaAnswers[d.id])}else{showPredictPhase(d,choiceIndex,reason)}
+    selectedChoiceIdx=-1};
+
+// ═══ 영향 예측 (STEP E단계) ═══
+function showPredictPhase(d,idx){
+    currentStepPhase='E';const c=d.choices[idx];
+    let html=`<div class="card"><div class="scenario-header"><div class="scenario-num">${currentDilemmaIndex+1}</div><div class="scenario-title">${d.emoji} ${d.title}</div></div>${renderStepBar('E')}`;
+    html+=`<div style="background:rgba(124,58,237,0.06);border-radius:12px;padding:12px;margin-bottom:12px;font-size:14px"><span style="color:var(--text-light)">나의 선택:</span> ${c.text}</div>`;
+    html+=`<h3 style="font-size:16px;margin-bottom:8px">🔮 이 선택의 결과를 예측해보세요!</h3>`;
+    html+=`<div class="predict-box"><p style="font-size:13px;font-weight:900;color:var(--warning);margin-bottom:6px">🙋 나에게 어떤 영향이 있을까?</p><textarea id="predict-me" placeholder="내 기분이나 상황이 어떻게 될까?" rows="1" style="min-height:40px;font-size:14px"></textarea></div>`;
+    html+=`<div class="predict-box"><p style="font-size:13px;font-weight:900;color:var(--warning);margin-bottom:6px">👥 ${d.otherName}에게는?</p><textarea id="predict-other" placeholder="${d.otherName}은(는) 어떤 기분이 들까?" rows="1" style="min-height:40px;font-size:14px"></textarea></div>`;
+    html+=`<button class="btn btn-primary" onclick="revealImpact()">예측 완료! 결과 확인 →</button></div>`;
+    document.getElementById('dilemma-content').innerHTML=html}
+
+// ═══ 결과 공개 (⭐ 상대방 시점 + 우리 반 현황) ═══
+window.revealImpact=async function(){
+    currentStepPhase='P';const d=curSet()[currentDilemmaIndex];const ans=dilemmaAnswers[d.id];const c=d.choices[ans.choiceIndex];
+    const predictMe=document.getElementById('predict-me')?.value.trim()||'(미입력)';const predictOther=document.getElementById('predict-other')?.value.trim()||'(미입력)';
+    dilemmaAnswers[d.id].predictMe=predictMe;dilemmaAnswers[d.id].predictOther=predictOther;
+    if(!isSoloMode)await DB.saveStudent(currentRoomCode,currentNickname,{answers:dilemmaAnswers});
+    let classCounts=d.choices.map(()=>0),totalVotes=0;
+    if(!isSoloMode){const all=await DB.getAllStudents(currentRoomCode);Object.values(all).forEach(s=>{const a=s.answers?.[d.id];if(a&&a.choiceIndex>=0&&a.choiceIndex<d.choices.length){classCounts[a.choiceIndex]++;totalVotes++}})}
+    let html=`<div class="card"><div class="scenario-header"><div class="scenario-num" style="background:var(--success)">${currentDilemmaIndex+1}</div><div class="scenario-title">${d.emoji} ${d.title}</div></div>${renderStepBar('P')}`;
+    // 예측 vs 실제
+    html+=`<h3 style="font-size:16px;margin-bottom:8px">🔍 내 예측 vs 실제 영향</h3>`;
+    html+=`<div class="compare-row"><div class="predict-box" style="margin:0"><p style="font-size:11px;font-weight:900;color:var(--warning)">🔮 내 예측 (나)</p><p style="font-size:13px;font-weight:400">${esc(predictMe)}</p></div><div class="actual-box" style="margin:0"><p style="font-size:11px;font-weight:900;color:var(--success)">✅ 실제</p><p style="font-size:13px;font-weight:400">${c.impact.me}</p></div></div>`;
+    html+=`<div class="compare-row"><div class="predict-box" style="margin:0"><p style="font-size:11px;font-weight:900;color:var(--warning)">🔮 내 예측 (${d.otherName})</p><p style="font-size:13px;font-weight:400">${esc(predictOther)}</p></div><div class="actual-box" style="margin:0"><p style="font-size:11px;font-weight:900;color:var(--success)">✅ 실제</p><p style="font-size:13px;font-weight:400">${c.impact.other}</p></div></div>`;
+    html+=`<div class="actual-box"><p style="font-size:11px;font-weight:900;color:var(--success)">🔮 장기적 영향</p><p style="font-size:13px;font-weight:400">${c.impact.long}</p></div>`;
+    // ⭐ NEW 1: 상대방 시점
+    html+=`<details class="perspective-box"><summary>👤 ${d.otherName} 입장에서 보기</summary><div class="perspective-inner">"${c.otherPerspective}"</div></details>`;
+    // 우리 반 현황
+    if(!isSoloMode&&totalVotes>1){html+=`<div style="margin-top:12px"><h3 style="font-size:15px;margin-bottom:8px">📊 우리 반은 어떻게 선택했을까?</h3><div class="vote-bar">`;
+        const colors=['var(--primary)','var(--success)','var(--warning)'];d.choices.forEach((ch,ci)=>{const pct=Math.round(classCounts[ci]/totalVotes*100);if(pct>0)html+=`<div class="vote-segment" style="width:${pct}%;background:${colors[ci%colors.length]}">${pct}%</div>`});
+        html+=`</div><div class="vote-label">`;d.choices.forEach((ch,ci)=>html+=`<span>${ch.text.substring(0,10)}... ${classCounts[ci]}명</span> `);
+        html+=`</div><p style="font-size:12px;color:var(--text-light);margin-top:4px">💡 같은 상황에서도 사람마다 다른 선택을 해요!</p></div>`}
+    // 다른 선택
+    html+=`<div style="margin:12px 0"><p style="font-size:13px;font-weight:900;color:var(--text-light);margin-bottom:6px">🔄 다른 선택을 했다면?</p>`;
+    d.choices.forEach((ch,ci)=>{if(ci!==ans.choiceIndex){html+=`<details style="margin:6px 0"><summary style="cursor:pointer;font-size:14px;padding:8px;background:rgba(245,158,11,0.06);border-radius:10px;border:1px dashed var(--warning)">${ch.text}</summary><div style="padding:10px;font-size:13px;font-weight:400;background:#FFFBEB;border-radius:0 0 10px 10px"><p><strong>나:</strong> ${ch.impact.me}</p><p><strong>${d.otherName}:</strong> ${ch.impact.other}</p><p><strong>장기:</strong> ${ch.impact.long}</p><details class="perspective-box" style="margin:6px 0;border-width:1px"><summary style="font-size:12px">👤 ${d.otherName}의 마음</summary><div class="perspective-inner" style="font-size:13px">"${ch.otherPerspective}"</div></details></div></details>`}});
+    html+=`</div>`;
+    html+=`<button class="btn btn-primary" onclick="showResultStory()">결과 이야기 보기 →</button></div>`;
+    document.getElementById('dilemma-content').innerHTML=html};
+
+window.showResultStory=function(){const d=curSet()[currentDilemmaIndex];showDilemmaComplete(d,dilemmaAnswers[d.id])};
+
+function showDilemmaComplete(d,ans){const set=curSet();const isLast=currentDilemmaIndex>=set.length-1;const allDone=!retryMode&&set.every(x=>dilemmaAnswers[x.id]);
+    let html=`<div class="card"><div class="scenario-header"><div class="scenario-num" style="background:var(--success)">${currentDilemmaIndex+1}</div><div class="scenario-title">${d.emoji} ${d.title} <span style="color:var(--success);font-size:13px">✅</span></div></div>`;
+    html+=`<div style="background:linear-gradient(135deg,#ECFDF5,#D1FAE5);border-radius:14px;padding:16px;margin:8px 0;border-left:4px solid var(--success)"><p style="font-size:15px;font-weight:400;line-height:1.8">${d.resultStory}</p></div>`;
+    html+=`<div style="text-align:center;padding:12px;background:linear-gradient(135deg,#EDE9FE,#DBEAFE);border-radius:12px;margin:12px 0"><p style="font-size:14px;font-weight:900;color:var(--primary-dark)">💡 어떤 선택이든, "왜 그렇게 했는지" 설명할 수 있다면 그것이 책임 있는 선택이에요.</p></div>`;
+    const finishLabel=isBonusRound?'보너스 완료! 결과 보기 →':'나의 선택 유형 확인하기 →';
+    const nextBtn=isLast||allDone?`<button class="btn btn-primary" onclick="finishDilemmas()">${finishLabel}</button>`:`<button class="btn btn-primary" onclick="nextDilemma()">다음 상황 →</button>`;
+    html+=nextBtn+`</div>`;document.getElementById('dilemma-content').innerHTML=html}
+
+window.nextDilemma=function(){currentDilemmaIndex++;if(currentDilemmaIndex>=curSet().length){finishDilemmas();return}renderDilemma();window.scrollTo(0,0)};
+window.goBackDilemma=function(){if(currentDilemmaIndex>0){currentDilemmaIndex--;renderDilemma()}else if(isBonusRound){renderComplete();showScreen('screen-complete')}else showScreen('screen-concept')};
+
+// ═══ 유형 분석 (⭐ NEW 7: 일관성 메시지) ═══
+window.finishDilemmas=function(){retryMode=false;
+    if(isBonusRound){isBonusRound=false;activeSet=DILEMMAS;renderCompass();renderComplete();showScreen('screen-complete');showToast('🔥 보너스 상황까지 완료했어요!','success');return}
+    analyzeChoiceType();showScreen('screen-type-result')};
+
+function analyzeChoiceType(){
+    const sorted=Object.entries(valueCounts).sort((a,b)=>b[1]-a[1]);
+    const top2=sorted.slice(0,2).map(x=>x[0]);
+    let bestType=CHOICE_TYPES[3],bestScore=0;
+    CHOICE_TYPES.forEach(type=>{let score=0;type.primary.forEach(v=>{if(top2.includes(v))score+=2;if(valueCounts[v])score+=valueCounts[v]});if(score>bestScore){bestScore=score;bestType=type}});
+    let html=`<div class="type-card"><span class="type-icon">${bestType.emoji}</span><div class="type-name">${bestType.name}</div><div class="type-desc">${bestType.desc}</div></div>`;
+    // ⭐ NEW 7: 일관성 분석
+    html+=buildConsistencyMessage(sorted);
+    // 가치 분포
+    html+=`<div class="card"><h3 style="font-size:16px;margin-bottom:12px">🧭 나의 가치 분포</h3>`;
+    Object.entries(VALUE_MAP).forEach(([k,v])=>{const cnt=valueCounts[k]||0;const maxCnt=Math.max(...Object.values(valueCounts),1);const w=Math.max(Math.round(cnt/maxCnt*100),4);
+        html+=`<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>${v.emoji} ${v.label}</span><span>${cnt}회</span></div><div style="height:10px;background:#E5E7EB;border-radius:5px;overflow:hidden"><div style="height:100%;width:${w}%;background:var(--gradient);border-radius:5px;transition:width 1s"></div></div></div>`});
+    html+=`<div style="margin-top:12px;text-align:center"><p style="font-size:13px;color:var(--text-light)">가장 많이 나온 가치: <strong>${sorted.slice(0,2).map(x=>VALUE_MAP[x[0]]?.emoji+' '+VALUE_MAP[x[0]]?.label).join(', ')}</strong></p></div></div>`;
+    // 직감 분포
+    const guts={};ALL_DILEMMAS.forEach(d=>{const a=dilemmaAnswers[d.id];if(a?.gutFeeling)guts[a.gutFeeling]=(guts[a.gutFeeling]||0)+1});
+    if(Object.keys(guts).length>0){html+=`<div class="card"><h3 style="font-size:16px;margin-bottom:8px">😊 직감 반응 분포</h3><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">`;
+        Object.entries(guts).forEach(([e,c])=>html+=`<div style="text-align:center"><div style="font-size:28px">${e}</div><div style="font-size:13px">${c}회</div></div>`);
+        html+=`</div></div>`}
+    html+=`<button class="btn btn-primary" onclick="goToReflection()">📜 선택 헌장 만들기 →</button>`;
+    document.getElementById('type-result-content').innerHTML=html}
+
+// ⭐ NEW 7: 일관성 메시지 빌드
+function buildConsistencyMessage(sorted){
+    if(sorted.length<2)return '';
+    const topVal=sorted[0][0],topCnt=sorted[0][1];
+    const botVal=sorted[sorted.length-1][0],botCnt=sorted[sorted.length-1][1];
+    // 가치별로 어떤 딜레마에서 나왔는지 추적
+    const valueByDilemma={};ALL_DILEMMAS.forEach(d=>{const a=dilemmaAnswers[d.id];if(a)(a.values||[]).forEach(v=>{if(!valueByDilemma[v])valueByDilemma[v]=[];valueByDilemma[v].push(d.emoji+' '+d.title)})});
+    const topDilemmas=valueByDilemma[topVal]||[];
+    let msg=`<div class="consistency-box"><div class="consistency-title">🔎 선택 패턴 분석</div><div class="consistency-text">`;
+    msg+=`<span class="consistency-strong">${VALUE_MAP[topVal]?.emoji} ${VALUE_MAP[topVal]?.label}</span> 가치가 ${topCnt}번으로 가장 많이 나타났어요. `;
+    if(topDilemmas.length>1)msg+=`특히 ${topDilemmas.slice(0,2).join(', ')} 상황에서 일관되게 이 가치를 선택했네요! `;
+    if(topCnt-botCnt>=2){msg+=`<br><br>반면 <span class="consistency-grow">${VALUE_MAP[botVal]?.emoji} ${VALUE_MAP[botVal]?.label}</span> 가치가 걸린 상황에서는 다른 가치를 우선했어요. `
+    msg+=`이건 나쁜 게 아니에요! 상황에 따라 우선순위가 달라지는 건 자연스러운 거예요. 💡`}else{msg+=`<br><br>다양한 가치를 골고루 선택한 <span class="consistency-strong">균형 잡힌 판단</span>을 보여줬어요!`}
+    msg+=`</div></div>`;return msg}
+
+// ═══ 성찰 ═══
+window.goToReflection=function(){renderCompass();updateReflectionUI();showScreen('screen-reflection')};
+// ⭐ FIX: 나침반을 열 때 항상 다시 그린다 (예전에는 활동 중간에 열면 빈 화면이었다)
+window.openCompass=function(from){compassReturn=from||'screen-dilemma';renderCompass();showScreen('screen-compass')};
+window.compassBack=function(){showScreen(compassReturn||'screen-dilemma')};
+
+function renderCompass(){const all=Object.keys(VALUE_MAP);const total=all.length;const coll=collectedValues.size;const pct=Math.round(coll/total*100);
+    let msg=coll===0?'🌱 탐험을 시작해보세요!':pct<50?'🔥 좋은 시작!':pct<100?'⭐ 거의 다!':'🎊 모든 가치 발견!';
+    let html='<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:20px 0">';
+    all.forEach(v=>{const info=VALUE_MAP[v];const active=collectedValues.has(v);const cnt=valueCounts[v]||0;
+        html+=`<div style="text-align:center;width:80px;padding:12px 8px;border-radius:14px;${active?'background:rgba(124,58,237,0.06);border:2px solid var(--primary-light)':'background:#F9FAFB;border:2px solid #E5E7EB;opacity:0.4'};transition:all .3s"><div style="font-size:32px;${active?'animation:pop .5s':'filter:grayscale(1)'}">${info.emoji}</div><div style="font-size:12px;font-weight:900;margin-top:4px">${active?info.label:'???'}</div>${active?`<div style="font-size:10px;color:var(--primary)">${cnt}회</div>`:''}</div>`});
+    html+=`</div><div class="progress-container"><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div><p style="text-align:center;font-size:14px;margin-top:8px">${coll}/${total} 가치 발견 (${pct}%) ${msg}</p>`;
+    document.getElementById('compass-display').innerHTML=html;
+    document.getElementById('compass-tags').innerHTML=all.map(v=>{const info=VALUE_MAP[v];return collectedValues.has(v)?`<span class="value-tag ${info.color}">${info.emoji} ${info.label}</span>`:`<span class="value-tag" style="opacity:0.3;background:#f3f4f6;color:#9ca3af">???</span>`}).join('')}
+
+function updateReflectionUI(){const area=document.getElementById('reflection-status');if(!area)return;
+    if(reflectionDone){area.innerHTML=`<div style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:12px;background:rgba(16,185,129,0.1);color:var(--success);border:2px solid rgba(16,185,129,0.3);font-size:14px;font-weight:900;margin-bottom:8px">✅ 헌장 작성 완료!</div><p style="font-size:13px;color:var(--text-light)">수정해서 다시 제출할 수 있어요.</p>`;
+        const btn=document.getElementById('submit-reflection-btn');if(btn){btn.textContent='📝 수정하기';btn.disabled=false}}
+    else{area.innerHTML='';const btn=document.getElementById('submit-reflection-btn');if(btn)btn.textContent='📜 선택 헌장 완성! →'}
+    const va=document.getElementById('reflection-values');if(va){va.innerHTML=Array.from(collectedValues).map(v=>{const info=VALUE_MAP[v];return`<button class="choice-btn" data-value="${v}" style="display:inline-block;width:auto;padding:10px 16px;margin:4px" onclick="selectRV(this,'${v}')">${info.emoji} ${info.label} (${valueCounts[v]||0}회)</button>`}).join('')||'<p style="font-size:13px;color:var(--text-light)">먼저 선택 연습을 해주세요!</p>';
+        // ⭐ FIX: 재입장 시 이전에 고른 가치 하이라이트 복원
+        if(reflectionData.value){const sel=va.querySelector(`[data-value="${reflectionData.value}"]`);if(sel)sel.classList.add('selected')}}
+    if(typeof checkReflection==='function'&&!reflectionDone)checkReflection()}
+window.selectRV=function(btn,v){document.getElementById('reflection-values').querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');btn.dataset.value=v;reflectionData.value=v;saveReflectionDraft()};
+window.checkReflection=function(){const s=document.getElementById('reflection-standard').value.trim(),p=document.getElementById('reflection-promise').value.trim(),f=document.getElementById('reflection-feeling').value.trim();document.getElementById('submit-reflection-btn').disabled=!(s&&p&&f);reflectionData.standard=s;reflectionData.promise=p;reflectionData.feeling=f;saveReflectionDraft()};
+// ⭐ FIX: 제출 전에도 입력 즉시 저장 (중간에 나가도 유실되지 않음)
+function saveReflectionDraft(){if(isSoloMode||!currentRoomCode||!currentNickname)return;if(draftTimer)clearTimeout(draftTimer);
+    draftTimer=setTimeout(()=>{DB.saveStudent(currentRoomCode,currentNickname,{reflectionStandard:reflectionData.standard,reflectionPromise:reflectionData.promise,reflectionFeeling:reflectionData.feeling,reflectionValue:reflectionData.value,draftSavedAt:new Date().toISOString()})},800)}
+
+window.submitReflection=async function(){const vBtn=document.querySelector('#reflection-values .choice-btn.selected');const standard=document.getElementById('reflection-standard').value.trim(),promise=document.getElementById('reflection-promise').value.trim(),feeling=document.getElementById('reflection-feeling').value.trim();
+    if(!standard||!promise||!feeling){showToast('모든 칸을 채워주세요.','error');return}
+    reflectionDone=true;const topV=vBtn?vBtn.dataset.value:'';
+    reflectionData={standard,promise,feeling,value:topV};
+    const data={reflectionValue:topV,reflectionStandard:standard,reflectionPromise:promise,reflectionFeeling:feeling,reflectionDone:true,completedAt:new Date().toISOString()};
+    if(!isSoloMode)await DB.saveStudent(currentRoomCode,currentNickname,data);
+    showToast('✨ 선택 헌장 완성!','success');renderCompass();renderComplete();showScreen('screen-complete')};
+
+// ═══ 완료 화면 (⭐ NEW 6: 선택 카드) ═══
+function renderComplete(){
+    const standard=reflectionData.standard,promise=reflectionData.promise,topValue=reflectionData.value;
+    const valInfo=VALUE_MAP[topValue];const completed=coreDone();const bonus=bonusDone();const valTotal=Object.keys(VALUE_MAP).length;const valCount=collectedValues.size;
+    let html=`<div class="card" style="text-align:center"><div style="font-size:56px;margin-bottom:8px">🎉</div><h2 style="font-size:22px">멋지게 해냈어요!</h2><p style="font-size:14px;color:var(--text-light)">⚖️ ${completed}/${DILEMMAS.length} 상황 완료 · 🧭 ${valCount}/${valTotal} 가치 발견${bonus?` · 🔥 보너스 ${bonus}/${EXTRA_DILEMMAS.length}`:''}</p></div>`;
+    // ⭐ NEW 6: 5개 선택 요약 카드
+    html+=`<div class="card"><h3 style="font-size:16px;margin-bottom:12px">📋 나의 5가지 선택</h3><div class="choice-cards">`;
+    html+=renderChoiceCards(DILEMMAS,0);
+    html+=`</div></div>`;
+    // ⭐ 보너스 선택 요약
+    if(bonus>0){html+=`<div class="card"><h3 style="font-size:16px;margin-bottom:12px">🔥 보너스 선택</h3><div class="choice-cards">`;
+        html+=renderChoiceCards(EXTRA_DILEMMAS,DILEMMAS.length,true);html+=`</div></div>`}
+    // 헌장
+    html+=`<div class="charter-card"><div class="charter-title">📜 ${esc(currentNickname)}의 선택 헌장</div>`;
+    html+=`<div class="charter-item"><div class="charter-num">1</div><div><p style="font-size:12px;color:var(--text-light);margin-bottom:2px">나에게 가장 중요한 가치</p><p class="charter-text">${valInfo?valInfo.emoji+' '+valInfo.label:'선택한 가치'}</p></div></div>`;
+    html+=`<div class="charter-item"><div class="charter-num">2</div><div><p style="font-size:12px;color:var(--text-light);margin-bottom:2px">어려운 선택 앞에서 나의 기준</p><p class="charter-text">${esc(standard)}</p></div></div>`;
+    html+=`<div class="charter-item"><div class="charter-num">3</div><div><p style="font-size:12px;color:var(--text-light);margin-bottom:2px">앞으로 꼭 지키고 싶은 약속</p><p class="charter-text">${esc(promise)}</p></div></div>`;
+    html+=`<div class="charter-stamp">📅 ${new Date().toLocaleDateString('ko-KR')} 작성</div></div>`;
+    html+=`<div style="text-align:center;padding:16px;background:rgba(124,58,237,0.06);border-radius:14px;margin:12px 0"><p style="font-size:15px;font-weight:900;color:var(--primary-dark)">💡 기억하세요!</p><p style="font-size:14px;font-weight:400;margin-top:6px">책임 있는 선택은 완벽한 선택이 아니에요.<br>"왜 그렇게 했는지" 스스로 설명할 수 있다면,<br>그것이 바로 <strong>책임 있는 선택</strong>이에요.</p></div>`;
+    html+=`<div style="text-align:center"><button class="btn btn-primary" onclick="openCompass('screen-complete')">🧭 가치 나침반 보기</button>`;
+    if(bonus<EXTRA_DILEMMAS.length)html+=`<button class="btn btn-primary" onclick="startBonusRound()" style="background:linear-gradient(135deg,#F59E0B,#FBBF24);box-shadow:0 4px 15px rgba(245,158,11,0.3)">🔥 보너스 상황 도전! (${EXTRA_DILEMMAS.length-bonus}개 남음)</button>`;
+    html+=`<button class="btn btn-secondary" onclick="backToMain()">🔄 다른 선택도 해보기</button>`;
+    // ⭐ showScreen 직접 호출 → goToReflection(). 이어하기로 완료 화면에 바로 온 학생은
+    //    updateReflectionUI() 가 한 번도 돌지 않아 가치 선택 버튼이 비어 있었고,
+    //    그대로 다시 제출하면 이전에 고른 '중요 가치'가 빈 값으로 덮어써졌다.
+    html+=`<button class="btn btn-secondary" onclick="goToReflection()">📝 선택 헌장 수정하기</button>`;
+    if(isSoloMode)html+=`<button class="btn btn-secondary" onclick="downloadSoloResult()">📄 내 결과 저장하기</button>`;
+    html+=`</div>`;
+    if(!isSoloMode)html+=`<p style="font-size:12px;color:var(--text-light);text-align:center;margin-top:8px">✅ 같은 닉네임으로 다시 들어오면 이어할 수 있어요!</p>`;
+    document.getElementById('complete-content').innerHTML=html}
+
+function renderChoiceCards(set,offset,skipEmpty){let html='';
+    set.forEach((d,i)=>{const ans=dilemmaAnswers[d.id];
+        if(ans){const raw=(ans.choiceText||'').replace(/^[🅰🅱🅲️✏️\s]+/,'');const shortText=raw.substring(0,30);
+            html+=`<div class="cs-card"><div class="cs-num">${offset+i+1}</div><div class="cs-body"><div class="cs-title">${d.emoji} ${d.title}</div><div class="cs-text">${esc(shortText)}${raw.length>30?'...':''}</div><div class="cs-tags">${(ans.values||[]).map(v=>`<span class="value-tag ${VALUE_MAP[v]?.color||''}" style="font-size:10px;padding:2px 6px">${VALUE_MAP[v]?.emoji||''}</span>`).join('')}${ans.gutFeeling?`<span class="cs-gut">직감 ${ans.gutFeeling}</span>`:''}</div></div></div>`}
+        else if(!skipEmpty){html+=`<div class="cs-card" style="opacity:0.4"><div class="cs-num">${offset+i+1}</div><div class="cs-body"><div class="cs-title">${d.emoji} ${d.title}</div><div class="cs-text">아직 미완료</div></div></div>`}});
+    return html}
+
+// ⭐ 보너스 라운드 시작 (기존 화면 재사용, 새 화면 신설 없음)
+window.startBonusRound=function(){activeSet=EXTRA_DILEMMAS;isBonusRound=true;retryMode=false;
+    const first=EXTRA_DILEMMAS.findIndex(d=>!dilemmaAnswers[d.id]);currentDilemmaIndex=first>=0?first:0;
+    renderDilemma();showScreen('screen-dilemma');showToast('🔥 보너스 상황에 도전해요!','success')};
+
+// ⭐ 혼자 체험 결과 저장 (txt 다운로드)
+window.downloadSoloResult=function(){
+    let t=`책임 있는 선택 연습하기 - 나의 기록\n작성일: ${new Date().toLocaleString('ko-KR')}\n닉네임: ${currentNickname}\n\n`;
+    t+=`■ 나의 선택\n`;
+    ALL_DILEMMAS.forEach((d,i)=>{const a=dilemmaAnswers[d.id];if(!a)return;
+        t+=`\n${i+1}. ${d.emoji} ${d.title}\n  - 처음 드는 마음: ${a.gutFeeling||'-'}\n  - 나의 선택: ${a.choiceText||'-'}\n  - 이유: ${a.reason||'-'}\n  - 예측(나): ${a.predictMe||'-'}\n  - 예측(${d.otherName}): ${a.predictOther||'-'}\n`});
+    t+=`\n■ 나의 가치 나침반\n`;
+    Object.entries(VALUE_MAP).forEach(([k,v])=>{t+=`  ${v.label}: ${valueCounts[k]||0}회\n`});
+    t+=`\n■ 나의 선택 헌장\n  1) 가장 중요한 가치: ${VALUE_MAP[reflectionData.value]?.label||'-'}\n  2) 나의 기준: ${reflectionData.standard||'-'}\n  3) 나의 약속: ${reflectionData.promise||'-'}\n  4) 오늘의 소감: ${reflectionData.feeling||'-'}\n`;
+    try{const blob=new Blob([t],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`책임있는선택_${currentNickname}_${new Date().toISOString().slice(0,10)}.txt`;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('📄 결과를 저장했어요!','success')}
+    catch(e){showConfirmModal('아래 내용을 길게 눌러 복사해 주세요.<br><br><textarea readonly rows="8" style="font-size:12px;font-weight:400">'+esc(t)+'</textarea>',null)}};
+
+// ⭐ FIX: 예전에는 이미 답한 상황이 곧바로 결과 화면으로 넘어가 '다른 선택'을 할 수 없었다 → 재도전 모드 추가
+window.backToMain=function(){
+    const firstUnanswered=DILEMMAS.findIndex(d=>!dilemmaAnswers[d.id]);
+    activeSet=DILEMMAS;isBonusRound=false;
+    if(firstUnanswered>=0){retryMode=false;currentDilemmaIndex=firstUnanswered;renderDilemma();showScreen('screen-dilemma');return}
+    showConfirmModal('5가지 상황을 처음부터 <strong>다시 선택</strong>해볼까요?<br><br>이전 선택은 새 선택으로 바뀌어요.',()=>{
+        retryMode=true;currentDilemmaIndex=0;renderDilemma();showScreen('screen-dilemma');showToast('📖 다른 선택을 해볼 수 있어요!','success')});
+    document.getElementById('confirmOkBtn').textContent='다시 선택하기';document.getElementById('confirmOkBtn').style.background='var(--primary)'};
+window.confirmGoHome=function(){const comp=coreDone()+bonusDone();showConfirmModal(comp>0?`처음 화면으로 돌아갈까요?<br><br>⚖️ ${comp}개 상황 완료<br>`+(isSoloMode?'⚠️ 혼자 체험은 나가면 기록이 사라져요!':'✅ 같은 닉네임으로 이어할 수 있어요!'):'처음 화면으로 돌아갈까요?',()=>{if(unsubscribe){unsubscribe();unsubscribe=null}storyToken++;activeSet=DILEMMAS;isBonusRound=false;retryMode=false;showScreen('screen-start')})};
+
+// ═══ 대시보드 (⭐ 직감 분포 + 나만의 선택 표시) ═══
+function startDashboardListener(){if(unsubscribe){unsubscribe();unsubscribe=null}unsubscribe=DB.onStudentsChange(currentRoomCode,d=>{dashboardData=d;renderDashboard()});DB.getAllStudents(currentRoomCode).then(d=>{dashboardData=d;renderDashboard()})}
+window.refreshDashboard=function(){DB.getAllStudents(currentRoomCode).then(d=>{dashboardData=d;renderDashboard()})};
+
+const VOTE_COLORS=['var(--primary)','var(--success)','var(--warning)'];
+function tallyDilemma(d,entries){const counts=d.choices.map(()=>0);let custom=0;
+    entries.forEach(([,data])=>{const a=data.answers?.[d.id];if(a){if(a.choiceIndex===99)custom++;else if(a.choiceIndex>=0&&a.choiceIndex<d.choices.length)counts[a.choiceIndex]++}});
+    return{counts,custom}}
+function renderDistribution(set,entries){let ov='';
+    set.forEach(d=>{const{counts,custom}=tallyDilemma(d,entries);
+        ov+=`<div style="margin-bottom:14px"><p style="font-size:14px;font-weight:900">${d.emoji} ${d.title}</p>`;
+        const tv=Math.max(counts.reduce((a,b)=>a+b,0)+custom,1);ov+=`<div class="vote-bar">`;
+        counts.forEach((cnt,ci)=>{const pct=Math.round(cnt/tv*100);if(pct>0)ov+=`<div class="vote-segment" style="width:${pct}%;background:${VOTE_COLORS[ci%VOTE_COLORS.length]}">${pct}%</div>`});
+        if(custom>0){const pct=Math.round(custom/tv*100);ov+=`<div class="vote-segment" style="width:${pct}%;background:var(--primary-dark)">${pct}%</div>`}
+        ov+=`</div><div style="font-size:11px;color:var(--text-light)">`;d.choices.forEach((c,ci)=>ov+=`${c.text.substring(0,12)}...${counts[ci]}명 `);if(custom>0)ov+=`✏️나만의:${custom}명`;ov+=`</div></div>`});
+    return ov}
+
+function renderDashboard(){const entries=Object.entries(dashboardData);const total=entries.length;const completed=entries.filter(([,d])=>d.completedAt).length;
+    let ov=`<div class="card"><h3>📊 참여 현황</h3><div class="progress-container"><div class="progress-bar"><div class="progress-fill" style="width:${total?Math.round(completed/total*100):0}%"></div></div></div><p style="text-align:center;font-size:14px;margin-top:8px">참여 ${total}명 / 완료 ${completed}명</p></div>`;
+    if(total>0){
+        ov+='<div class="card"><h3>⚖️ 상황별 선택 분포</h3>';
+        ov+=renderDistribution(DILEMMAS,entries);
+        // 가치 분포
+        const vc={};entries.forEach(([,d])=>(d.collectedValues||[]).forEach(v=>vc[v]=(vc[v]||0)+1));
+        ov+='<div style="margin-top:12px"><p style="font-weight:900;margin-bottom:8px">🧭 가치 분포</p>';
+        Object.entries(VALUE_MAP).forEach(([k,v])=>ov+=`<span class="value-tag ${v.color}">${v.emoji} ${v.label}: ${vc[k]||0}명</span> `);ov+='</div>';
+        // ⭐ 직감 분포
+        const gc={};entries.forEach(([,d])=>{ALL_DILEMMAS.forEach(dl=>{const a=d.answers?.[dl.id];if(a?.gutFeeling)gc[a.gutFeeling]=(gc[a.gutFeeling]||0)+1})});
+        if(Object.keys(gc).length>0){ov+='<div style="margin-top:12px"><p style="font-weight:900;margin-bottom:8px">😊 직감 반응 분포</p><div style="display:flex;gap:16px;flex-wrap:wrap">';
+            Object.entries(gc).sort((a,b)=>b[1]-a[1]).forEach(([e,c])=>ov+=`<span style="font-size:14px">${e} ${c}회</span>`);ov+='</div></div>'}
+        ov+='</div>';
+        // ⭐ 보너스 상황 분포 (참여가 있을 때만)
+        const bonusUsed=EXTRA_DILEMMAS.filter(d=>entries.some(([,s])=>s.answers?.[d.id]));
+        if(bonusUsed.length)ov+='<div class="card"><h3>🔥 보너스 상황 선택 분포</h3>'+renderDistribution(bonusUsed,entries)+'</div>';
+        // ⭐ NEW: 상황별 선택 이유 모아보기 (책 본문의 "이유 텍스트" 활용)
+        let reasonHtml='';
+        ALL_DILEMMAS.forEach(d=>{const rs=[];entries.forEach(([n,s])=>{const a=s.answers?.[d.id];if(a&&a.reason)rs.push({n,text:a.reason,choice:a.choiceText||''})});
+            if(!rs.length)return;
+            reasonHtml+=`<details style="margin:8px 0"><summary style="cursor:pointer;font-size:14px;font-weight:900;padding:8px;background:rgba(124,58,237,0.06);border-radius:10px">${d.emoji} ${d.title} <span style="font-weight:400;font-size:12px;color:var(--text-light)">(${rs.length}명)</span></summary><div style="padding:8px 4px">`;
+            rs.forEach(r=>reasonHtml+=`<div style="padding:8px;margin:6px 0;background:#F9FAFB;border-radius:10px;font-size:13px"><strong>${esc(r.n)}</strong> <span style="font-size:11px;color:var(--text-light)">${esc(r.choice.substring(0,14))}</span><br><span style="font-weight:400">${esc(r.text)}</span></div>`);
+            reasonHtml+=`</div></details>`});
+        if(reasonHtml)ov+='<div class="card"><h3>📝 선택 이유 모아보기</h3><p style="font-size:12px;color:var(--text-light);margin-bottom:6px">상황을 눌러 우리 반 학생들의 이유를 펼쳐보세요.</p>'+reasonHtml+'</div>';
+        // 소감 워드클라우드
+        const fl=entries.map(([,d])=>d.reflectionFeeling).filter(Boolean);
+        if(fl.length>0){ov+='<div class="card"><h3>💬 소감 키워드</h3><div style="text-align:center">';const ws={};fl.forEach(f=>f.replace(/[.,!?]/g,'').split(/\s+/).forEach(w=>{if(w.length>=2)ws[w]=(ws[w]||0)+1}));const sw=Object.entries(ws).sort((a,b)=>b[1]-a[1]).slice(0,20);const mx=sw[0]?.[1]||1;sw.forEach(([w,c])=>{const sz=12+Math.round(c/mx*16);ov+=`<span style="display:inline-block;margin:4px;font-size:${sz}px;color:var(--primary)">${esc(w)}</span> `});ov+='</div></div>'}
+        // 나만의 선택 모음
+        const customs=[];entries.forEach(([n,d])=>{ALL_DILEMMAS.forEach(dl=>{const a=d.answers?.[dl.id];if(a?.choiceIndex===99)customs.push({nick:n,dilemma:dl.emoji+' '+dl.title,text:(a.choiceText||'').replace('✏️ ','')})})});
+        if(customs.length>0){ov+='<div class="card"><h3>🌟 나만의 창의적 선택</h3>';customs.forEach(c=>ov+=`<div style="padding:8px;margin:6px 0;background:rgba(124,58,237,0.04);border-radius:10px;font-size:13px"><strong>${esc(c.nick)}</strong> (${c.dilemma}): <span style="font-weight:400">${esc(c.text)}</span></div>`);ov+='</div>'}
+    }
+    document.getElementById('tab-overview').innerHTML=ov;
+    // 상세
+    let dt='<div class="card"><h3>📋 학생별 상세</h3>';
+    if(!total)dt+='<p style="text-align:center;color:var(--text-light)">아직 참여 없음</p>';
+    else{dt+='<table class="data-table"><tr><th>닉네임</th><th>완료</th><th>보너스</th><th>가치</th><th>선택기준</th><th>약속</th></tr>';
+        entries.forEach(([n,d])=>{const ans=d.answers||{};const cd=DILEMMAS.filter(x=>ans[x.id]).length,bd=EXTRA_DILEMMAS.filter(x=>ans[x.id]).length;
+            dt+=`<tr><td>${esc(n)}</td><td>${cd}/${DILEMMAS.length}</td><td>${bd?bd+'/'+EXTRA_DILEMMAS.length:'-'}</td><td>${(d.collectedValues||[]).map(v=>VALUE_MAP[v]?.emoji||'').join('')}</td><td style="font-size:12px;font-weight:400">${esc((d.reflectionStandard||'-').substring(0,20))}</td><td style="font-size:12px;font-weight:400">${esc((d.reflectionPromise||'-').substring(0,20))}</td></tr>`});
+        dt+='</table>';
+        dt+='<h3 style="margin-top:16px">🗂️ 학생별 응답 펼쳐보기</h3>';
+        entries.forEach(([n,d])=>{const ans=d.answers||{};
+            dt+=`<details style="margin:6px 0"><summary style="cursor:pointer;font-size:14px;font-weight:900;padding:8px;background:rgba(124,58,237,0.06);border-radius:10px">${esc(n)}</summary><div style="padding:8px 4px;font-size:13px;font-weight:400">`;
+            ALL_DILEMMAS.forEach(dl=>{const a=ans[dl.id];if(!a)return;
+                dt+=`<div style="padding:8px;margin:6px 0;background:#F9FAFB;border-radius:10px"><strong>${dl.emoji} ${dl.title}</strong><br>직감: ${a.gutFeeling||'-'} / 선택: ${esc(a.choiceText||'-')}<br>이유: ${esc(a.reason||'-')}<br>예측(나): ${esc(a.predictMe||'-')}<br>예측(${dl.otherName}): ${esc(a.predictOther||'-')}</div>`});
+            dt+=`<div style="padding:8px;margin:6px 0;background:rgba(245,158,11,0.06);border-radius:10px">📜 기준: ${esc(d.reflectionStandard||'-')}<br>🤝 약속: ${esc(d.reflectionPromise||'-')}<br>💬 소감: ${esc(d.reflectionFeeling||'-')}</div>`;
+            dt+=`</div></details>`})}
+    dt+='</div>';document.getElementById('tab-detail').innerHTML=dt;
+    // TTS (⭐ 스크립트 미리보기 추가)
+    let tts='<h3 style="margin-bottom:12px">🔊 읽어주기</h3>';
+    if(total>0){tts+='<div class="card" style="padding:14px"><p style="font-size:14px;font-weight:900;margin-bottom:6px">📊 전체 현황</p><button class="btn btn-small btn-primary" onclick="speakOverview()" style="margin:4px">▶️ 재생</button><button class="btn btn-small btn-secondary" onclick="stopSpeaking()" style="margin:4px">⏹️ 정지</button><button class="btn btn-small btn-secondary" onclick="previewScript(\'overview\')" style="margin:4px">📝 스크립트</button></div>';
+        tts+='<div class="card" style="padding:14px"><p style="font-size:14px;font-weight:900;margin-bottom:6px">💬 소감</p><button class="btn btn-small btn-primary" onclick="speakFeelings()" style="margin:4px">▶️ 재생</button><button class="btn btn-small btn-secondary" onclick="stopSpeaking()" style="margin:4px">⏹️ 정지</button><button class="btn btn-small btn-secondary" onclick="previewScript(\'feelings\')" style="margin:4px">📝 스크립트</button></div>';
+        tts+='<div class="card" style="padding:14px"><p style="font-size:14px;font-weight:900;margin-bottom:6px">📝 선택 이유</p><button class="btn btn-small btn-primary" onclick="speakReasons()" style="margin:4px">▶️ 재생</button><button class="btn btn-small btn-secondary" onclick="stopSpeaking()" style="margin:4px">⏹️ 정지</button><button class="btn btn-small btn-secondary" onclick="previewScript(\'reasons\')" style="margin:4px">📝 스크립트</button></div>'}
+    else tts+='<p style="color:var(--text-light)">데이터 없음</p>';
+    document.getElementById('tts-sections').innerHTML=tts}
+
+// ⭐ FIX: 암묵적 전역 event에 의존하지 않도록 클릭된 버튼을 직접 넘겨받는다 (기존 인덱스 방식도 fallback 유지)
+window.switchTab=function(id,btn){const tabs=['tab-overview','tab-detail','tab-export','tab-tts'];
+    if(btn&&btn.classList){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+    else document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',tabs[i]===id));
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.toggle('active',t.id===id))};
+
+// ═══ 내보내기 ═══
+window.downloadExcel=function(){const e=Object.entries(dashboardData);if(!e.length){showToast('데이터 없음','error');return}
+    const h=['닉네임','참여시간','완료시간','기본완료수','보너스완료수'];ALL_DILEMMAS.forEach((d,i)=>{const tag=i<DILEMMAS.length?`상황${i+1}`:`보너스${i-DILEMMAS.length+1}`;h.push(`${tag} 선택`,`${tag} 직감`,`${tag} 이유`,`${tag} 예측(나)`,`${tag} 예측(상대)`)});h.push('가치','중요가치','선택기준','약속','소감');
+    const rows=[h];e.forEach(([n,d])=>{const ans=d.answers||{};const r=[n,d.joinedAt?new Date(d.joinedAt).toLocaleString('ko-KR'):'-',d.completedAt?new Date(d.completedAt).toLocaleString('ko-KR'):'-',DILEMMAS.filter(x=>ans[x.id]).length,EXTRA_DILEMMAS.filter(x=>ans[x.id]).length];
+        ALL_DILEMMAS.forEach(dl=>{const a=ans[dl.id];r.push(a?a.choiceText:'-');r.push(a?.gutFeeling||'-');r.push(a?a.reason:'-');r.push(a?.predictMe||'-');r.push(a?.predictOther||'-')});
+        r.push((d.collectedValues||[]).map(v=>VALUE_MAP[v]?.label||'').join(', '),d.reflectionValue?VALUE_MAP[d.reflectionValue]?.label:'-',d.reflectionStandard||'-',d.reflectionPromise||'-',d.reflectionFeeling||'-');rows.push(r)});
+    const ws=XLSX.utils.aoa_to_sheet(rows);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'참여결과');XLSX.writeFile(wb,`SEL_${APP_ID}_${currentRoomCode}.xlsx`);showToast('📊 엑셀 다운로드!','success')};
+
+window.downloadPDF=function(){const e=Object.entries(dashboardData);if(!e.length){showToast('데이터 없음','error');return}
+    let pb='';const t=e.length,c=e.filter(([,d])=>d.completedAt).length;pb+=`<div class="card"><h3>참여 현황</h3><p>참여 ${t}명 / 완료 ${c}명</p></div>`;
+    pb+='<div class="card"><h3>상황별 선택 분포</h3><table><tr><th>상황</th><th>🅰️</th><th>🅱️</th><th>🅲️</th><th>✏️ 나만의</th></tr>';
+    ALL_DILEMMAS.forEach((d,i)=>{const{counts,custom}=tallyDilemma(d,e);const tag=i<DILEMMAS.length?'':'[보너스] ';
+        if(counts.reduce((a,b)=>a+b,0)+custom===0&&i>=DILEMMAS.length)return;
+        pb+=`<tr><td>${tag}${d.emoji} ${d.title}</td><td>${counts[0]||0}</td><td>${counts[1]||0}</td><td>${counts[2]||0}</td><td>${custom}</td></tr>`});pb+='</table></div>';
+    // 상황별 선택 이유 (책 본문: 이유 텍스트 활용)
+    pb+='<div class="card"><h3>상황별 선택 이유</h3>';
+    ALL_DILEMMAS.forEach(d=>{const rs=[];e.forEach(([n,s])=>{const a=s.answers?.[d.id];if(a&&a.reason)rs.push(`<tr><td>${esc(n)}</td><td>${esc(a.choiceText||'-')}</td><td>${esc(a.reason)}</td></tr>`)});
+        if(!rs.length)return;pb+=`<h3 style="font-size:14px">${d.emoji} ${d.title}</h3><table><tr><th>닉네임</th><th>선택</th><th>이유</th></tr>${rs.join('')}</table>`});
+    pb+='</div>';
+    pb+='<div class="card"><h3>학생별 기록</h3><table><tr><th>닉네임</th><th>완료</th><th>보너스</th><th>직감</th><th>가치</th><th>기준</th><th>약속</th><th>소감</th></tr>';
+    e.forEach(([n,d])=>{const ans=d.answers||{};const guts=ALL_DILEMMAS.map(dl=>ans[dl.id]?.gutFeeling||'').filter(Boolean).join('');
+        pb+=`<tr><td>${esc(n)}</td><td>${DILEMMAS.filter(x=>ans[x.id]).length}/${DILEMMAS.length}</td><td>${EXTRA_DILEMMAS.filter(x=>ans[x.id]).length}/${EXTRA_DILEMMAS.length}</td><td>${guts}</td><td>${(d.collectedValues||[]).map(v=>VALUE_MAP[v]?.label||'').join(',')}</td><td>${esc(d.reflectionStandard||'-')}</td><td>${esc(d.reflectionPromise||'-')}</td><td>${esc(d.reflectionFeeling||'-')}</td></tr>`});pb+='</table></div>';
+    try{const w=window.open('','_blank');if(w){w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>SEL 대시보드</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet"><style>*{font-family:'Noto Sans KR',sans-serif;margin:0;padding:0;box-sizing:border-box}body{padding:24px;font-size:14px;color:#1F2937;line-height:1.6}.print-header{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #7C3AED}.print-header h2{color:#7C3AED}.card{border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin:12px 0;page-break-inside:avoid}table{width:100%;border-collapse:collapse;margin:8px 0}th,td{border:1px solid #E5E7EB;padding:8px;font-size:12px;text-align:left}th{background:#F3F4F6;font-weight:700}h3{color:#7C3AED;font-size:16px;margin-bottom:8px}.g{background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px;margin-bottom:16px;text-align:center;font-size:13px}@media print{.g{display:none}}</style></head><body><div class="g">💡 PDF로 저장: 인쇄에서 "PDF로 저장" 선택</div><div class="print-header"><h2>⚖️ 책임 있는 선택 - 대시보드</h2><p style="font-size:12px;color:#6B7280">방: ${currentRoomCode} | ${new Date().toLocaleString('ko-KR')}</p></div>${pb}<scr`+`ipt>setTimeout(function(){window.print()},1000)</scr`+`ipt></body></html>`);w.document.close();showToast('📄 새 창에서 인쇄','success');return}}catch(e){}
+    try{showToast('📄 Ctrl+P로 인쇄','info');setTimeout(()=>window.print(),500)}catch(e){}};
+
+// ═══ TTS ═══
+let isSpeaking=false;
+// ⭐ TTS 스크립트를 한 곳에서 만들어 재생·미리보기가 항상 같은 내용을 쓰게 한다
+function buildScript(kind){const e=Object.entries(dashboardData);
+    if(kind==='overview'){let t=`참여 ${e.length}명, 완료 ${e.filter(([,d])=>d.completedAt).length}명. `;
+        ALL_DILEMMAS.forEach((d,i)=>{const{counts,custom}=tallyDilemma(d,e);if(counts.reduce((a,b)=>a+b,0)+custom===0)return;
+            t+=`${i<DILEMMAS.length?'상황'+(i+1):'보너스 상황'} ${d.title}: `+counts.map((c,ci)=>`${ci+1}번 ${c}명`).join(', ')+(custom?`, 나만의 선택 ${custom}명`:'')+'. '});
+        return t}
+    if(kind==='feelings'){const f=e.map(([n,d])=>d.reflectionFeeling?`${n}: ${d.reflectionFeeling}`:null).filter(Boolean);return f.length?'소감입니다. '+f.join('. '):''}
+    if(kind==='reasons'){let t='';ALL_DILEMMAS.forEach(d=>{const rs=[];e.forEach(([n,s])=>{const a=s.answers?.[d.id];if(a&&a.reason)rs.push(`${n}: ${a.reason}`)});if(rs.length)t+=`${d.title}. `+rs.join('. ')+'. '});return t}
+    return ''}
+window.previewScript=function(kind){const t=buildScript(kind);if(!t){showToast('읽을 내용이 없습니다.','error');return}
+    showConfirmModal(`<div style="text-align:left;font-size:13px;font-weight:400;max-height:280px;overflow-y:auto;line-height:1.7">${esc(t)}</div>`,null);
+    document.getElementById('confirmOkBtn').textContent='닫기';document.getElementById('confirmOkBtn').style.background='var(--primary)'};
+window.speakOverview=function(){const t=buildScript('overview');if(!t){showToast('읽을 내용이 없습니다.','error');return}speak(t)};
+window.speakFeelings=function(){const t=buildScript('feelings');if(!t){showToast('소감 없음','error');return}speak(t)};
+window.speakReasons=function(){const t=buildScript('reasons');if(!t){showToast('이유가 아직 없습니다.','error');return}speak('선택 이유입니다. '+t)};
+function speak(t){if(isSpeaking)window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ko-KR';u.rate=0.9;u.onend=()=>isSpeaking=false;window.speechSynthesis.speak(u);isSpeaking=true}
+window.stopSpeaking=function(){window.speechSynthesis.cancel();isSpeaking=false};
+// ⭐ FIX: 예전에는 방 문서까지 지워서 초기화 후 교사가 같은 비밀번호로 재입장할 수 없었다
+//        → 학생 기록만 삭제하고 방(비밀번호·만료일)은 유지, 리스너도 정리 후 재연결
+window.resetData=function(){showConfirmModal('⚠️ 이 방의 <strong>학생 응답</strong>을 모두 삭제할까요?<br>되돌릴 수 없습니다.<br><br>방과 비밀번호는 그대로 유지되어<br>바로 다음 수업에 다시 쓸 수 있어요.',async()=>{
+    if(unsubscribe){unsubscribe();unsubscribe=null}
+    await DB.deleteAllStudents(currentRoomCode);
+    dashboardData={};renderDashboard();
+    startDashboardListener();
+    showToast('🗑️ 학생 응답을 초기화했어요','success')})};
+</script>
+</body>
+</html>

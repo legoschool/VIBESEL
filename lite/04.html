@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>화가 날 때, 멈추는 연습</title>
+<style>
+:root{--main:#7C3AED;--bg:#F5F3FF;--text:#1F2937;--dim:#6B7280;--hot:#EF4444;--warm:#F59E0B;--cool:#10B981}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;padding:16px}
+.wrap{max-width:560px;margin:0 auto}
+.screen{display:none}.screen.on{display:block}
+.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:0 2px 12px rgba(124,58,237,.08)}
+h1{font-size:25px;color:var(--main);text-align:center;margin-bottom:6px}
+h2{font-size:20px;color:var(--main);margin-bottom:10px}
+h3{font-size:16px;margin:14px 0 8px}
+p.sub{text-align:center;color:var(--dim);font-size:15px;margin-bottom:12px}
+.btn{display:block;width:100%;padding:14px;margin:8px 0;border:none;border-radius:12px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer}
+.btn-main{background:var(--main);color:#fff}
+.btn-sub{background:#EDE9FE;color:var(--main)}
+.btn-stop{background:var(--cool);color:#fff}
+.btn-line{background:#fff;color:var(--dim);border:1px solid #E5E7EB;font-size:14px;padding:9px;width:auto;display:inline-block;margin-right:6px}
+input,textarea{width:100%;padding:12px;border:1px solid #DDD6FE;border-radius:10px;font-size:15px;font-family:inherit;margin:6px 0 12px}
+textarea{min-height:62px;resize:vertical}
+label{font-size:15px;font-weight:700}
+.gauge{height:20px;border-radius:999px;background:#F3F4F6;overflow:hidden;margin:10px 0 4px}
+.gauge i{display:block;height:100%;border-radius:999px;transition:width .5s;font-style:normal}
+.temp{font-size:14px;font-weight:700;text-align:right}
+.story{background:#FAFAFA;border-left:4px solid var(--main);border-radius:10px;padding:14px;font-size:15px;margin:10px 0}
+.emotion{font-size:15px;font-weight:700;color:var(--hot);margin:8px 0}
+.choice{display:block;width:100%;text-align:left;padding:13px;margin:7px 0;border:2px solid #E5E7EB;border-radius:12px;background:#fff;font-size:15px;font-family:inherit;cursor:pointer;line-height:1.5}
+.choice:hover{border-color:var(--main);background:#FAF9FF}
+.choice small{display:block;font-size:13px;color:var(--dim)}
+.guide{background:#ECFDF5;border:1px solid #A7F3D0;border-radius:12px;padding:14px;font-size:15px;margin:10px 0}
+.boom{background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:14px;font-size:15px;margin:10px 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{padding:9px 13px;border-radius:999px;border:2px solid #E5E7EB;background:#fff;font-size:14px;font-family:inherit;cursor:pointer;font-weight:700}
+.chip.on{border-color:var(--main);background:#F5F3FF;color:var(--main)}
+.note{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:12px;font-size:14px;margin-top:12px}
+.stat{display:flex;justify-content:space-around;text-align:center;margin:12px 0}
+.stat b{display:block;font-size:30px;color:var(--main)}
+.stat span{font-size:13px;color:var(--dim)}
+.bar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:14px}
+.bar i{display:block;height:16px;background:var(--main);border-radius:4px;font-style:normal}
+.row{border-bottom:1px solid #F3F4F6;padding:10px 0;font-size:14px}
+.row b{color:var(--main)}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--text);color:#fff;padding:11px 20px;border-radius:999px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+.top{margin-bottom:10px}
+.step{font-size:13px;color:var(--dim);text-align:right}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 1. 시작 -->
+  <section class="screen on" id="s-start">
+    <div class="card">
+      <h1 id="t-title"></h1>
+      <p class="sub" id="t-sub"></p>
+      <p class="sub" id="t-meta"></p>
+      <button class="btn btn-main" onclick="go('teacher')">방 만들기 (선생님)</button>
+      <button class="btn btn-sub" onclick="go('student')">방 코드로 참여하기 (학생)</button>
+      <button class="btn btn-sub" onclick="solo()">혼자 해보기</button>
+      <div class="note">화를 참는 연습이 아니라, 터지기 전에 멈추는 연습입니다.</div>
+      <p class="sub" id="db-state" style="font-size:13px;margin:10px 0 0">저장소 확인 중</p>
+    </div>
+  </section>
+
+  <!-- 2. 방 입장 -->
+  <section class="screen" id="s-join">
+    <div class="card">
+      <h2 id="join-title"></h2>
+      <div id="join-teacher" style="display:none">
+        <p class="sub">아래 방 코드를 칠판에 적어 주세요.</p>
+        <h1 id="new-code" style="font-size:44px;letter-spacing:6px"></h1>
+        <button class="btn btn-main" onclick="openDash()">대시보드 열기</button>
+        <p class="sub" style="margin-top:18px">지난 시간에 만든 방을 다시 열려면</p>
+        <input id="in-dash" inputmode="numeric" maxlength="6" placeholder="예: 482913">
+        <button class="btn btn-sub" onclick="reopenDash()">그 방 대시보드 열기</button>
+      </div>
+      <div id="join-student" style="display:none">
+        <label>방 코드 (6자리)</label>
+        <input id="in-code" inputmode="numeric" maxlength="6" placeholder="예: 482913">
+        <label>닉네임 (실명 말고)</label>
+        <input id="in-nick" maxlength="10" placeholder="예: 파랑새7">
+        <button class="btn btn-main" onclick="joinRoom()">들어가기</button>
+      </div>
+      <button class="btn btn-line" onclick="home()">처음으로</button>
+    </div>
+  </section>
+
+  <!-- 3. 인물 고르기 -->
+  <section class="screen" id="s-pick">
+    <div class="top"><button class="btn btn-line" onclick="home()">처음으로</button><span id="who" style="font-size:14px;color:#6B7280"></span></div>
+    <div class="card">
+      <h2>누구의 하루를 따라가 볼까요</h2>
+      <p class="sub">하루 동안 화가 어떻게 쌓이는지 지켜보고, 터지기 전에 멈춰 보세요.</p>
+      <div id="hero-list"></div>
+    </div>
+  </section>
+
+  <!-- 4. 에피소드 -->
+  <section class="screen" id="s-play">
+    <div class="top"><button class="btn btn-line" onclick="go('pick')">인물 다시 고르기</button><span class="step" id="step-label"></span></div>
+    <div class="card">
+      <div class="gauge"><i id="gauge-fill" style="width:0%"></i></div>
+      <div class="temp" id="temp-label">화 온도 0도</div>
+      <h3 id="ep-title"></h3>
+      <div class="story" id="ep-story"></div>
+      <div class="emotion" id="ep-emotion"></div>
+      <div id="ep-actions"></div>
+    </div>
+  </section>
+
+  <!-- 5. 브레이크 -->
+  <section class="screen" id="s-brake">
+    <div class="card">
+      <h2 id="brake-head">브레이크 걸기</h2>
+      <div id="brake-body"></div>
+    </div>
+  </section>
+
+  <!-- 6. 나의 브레이크 -->
+  <section class="screen" id="s-mine">
+    <div class="card">
+      <h2>나의 브레이크 정하기</h2>
+      <h3>나는 이럴 때 화가 나요</h3>
+      <div class="chips" id="anger-chips"></div>
+      <h3>그때 걸 브레이크</h3>
+      <div class="chips" id="mybrake-chips"></div>
+      <h3>내 브레이크를 한 문장으로</h3>
+      <textarea id="my-one" placeholder="예: 놀림을 받아 욱할 때는 자리에서 일어나 물 한 모금 마시고 오기"></textarea>
+      <button class="btn btn-main" onclick="submitMine()">내 브레이크 내기</button>
+      <button class="btn btn-line" onclick="go('pick')">다른 인물도 보기</button>
+    </div>
+  </section>
+
+  <!-- 7. 완료 -->
+  <section class="screen" id="s-done">
+    <div class="card" style="text-align:center">
+      <h2 id="done-title"></h2>
+      <div id="done-body" style="text-align:left"></div>
+      <button class="btn btn-sub" onclick="copyMine()">내 브레이크 복사하기</button>
+      <button class="btn btn-line" onclick="go('pick')">다른 인물도 보기</button>
+      <button class="btn btn-line" onclick="home()">처음으로</button>
+    </div>
+  </section>
+
+  <!-- 8. 교사 대시보드 -->
+  <section class="screen" id="s-dash">
+    <div class="card">
+      <h2>교사 대시보드</h2>
+      <p class="sub">방 코드 <b id="dash-code"></b></p>
+      <div class="stat"><div><b id="n-join">0</b><span>참여</span></div><div><b id="n-done">0</b><span>브레이크 제출</span></div></div>
+      <h3>우리 반이 화나는 순간</h3><div id="dash-anger"></div>
+      <h3>많이 고른 브레이크</h3><div id="dash-brake"></div>
+      <h3>제출한 브레이크</h3><div id="dash-rows"></div>
+      <button class="btn btn-sub" onclick="copyAll()">전체 결과 복사하기</button>
+      <button class="btn btn-line" onclick="home()">처음으로</button>
+    </div>
+  </section>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+/* ═══════════════════════════════════════════════
+   여기만 고치면 우리 반 앱이 됩니다
+   ═══════════════════════════════════════════════ */
+const CONFIG = {
+  제목: '화가 날 때, 멈추는 연습',
+  부제: '화는 한 번에 터지지 않습니다. 하루 동안 조금씩 쌓입니다',
+  학년: '초등 4학년',
+  소요시간: '15~20분',
+  폭발온도: 90,   // 화 온도가 이 값에 닿으면 터집니다
+  마무리말: '내 브레이크를 정했어요'
+};
+
+/* 인물의 하루(에피소드), 브레이크 목록, 화가 나는 상황.
+   story 와 emotion 문구를 우리 반 상황으로 바꿔 쓰면 됩니다.
+   tempAdd 는 그 장면에서 화 온도가 얼마나 오르는지입니다. */
+const EPISODES = [
+    {
+        id: 1, tempAdd: 15,
+        title: '🌅 아침 — 늦잠의 시작',
+        story: `민준이는 어젯밤 게임을 하다 늦게 잠들었어요. 아침에 알람이 울렸지만 꾸벅꾸벅... 눈을 떴더니 이미 8시 10분!<br><br>"아, 안돼! 지각이다!"<br><br>허겁지겁 일어나 세수도 제대로 못하고 옷을 입었어요. 아침밥도 못 먹고 현관문을 나서는데, 오늘따라 신발 끈이 자꾸 풀려요.`,
+        emotion: '짜증이 나기 시작해요 😤'
+    },
+    {
+        id: 2, tempAdd: 20,
+        title: '🚌 등교길 — 겹치는 불운',
+        story: `헐레벌떡 뛰어가는데 버스가 코앞에서 떠나버렸어요. 다음 버스까지 10분을 기다려야 해요.<br><br>비까지 부슬부슬 내리기 시작했는데... 우산이 없어요. 겨우 학교에 도착하니 머리카락이 축축해졌고, 지각이에요.<br><br>교실 문을 열자마자 친구들이 쳐다봐요.<br>선생님이 말씀하세요. "민준아, 또 지각이구나."`,
+        emotion: '화가 올라오기 시작해요 😠'
+    },
+    {
+        id: 3, tempAdd: 20,
+        title: '📚 수업 시간 — 억울한 순간',
+        story: `수학 시간, 짝꿍 현서가 민준이의 지우개를 물어보지도 않고 가져다 썼어요.<br><br>"야, 그거 내 거잖아!"<br><br>현서는 "잠깐 빌린 건데 뭐" 하며 돌려줬지만, 지우개가 까맣게 더러워져 있었어요. 게다가 선생님은 민준이가 떠든다고 주의만 주셨어요.<br><br><em>"나는 항의한 건데... 왜 나만 혼나?"</em>`,
+        emotion: '억울하고 분한 마음이 커져요 😡'
+    },
+    {
+        id: 4, tempAdd: 20,
+        title: '🍽️ 점심시간 — 무시당한 기분',
+        story: `점심 급식에 민준이가 제일 싫어하는 반찬만 나왔어요. 그래도 참고 먹으려는데...<br><br>친구들이 축구할 사람을 모으고 있었어요. 민준이가 "나도 낄래!" 했는데 은서가 말했어요.<br><br>"어... 이미 인원 다 찼는데?"<br><br>그런데 바로 뒤에 온 태윤이는 들어갔어요. 민준이만 빼고.`,
+        emotion: '서럽고 화가 치밀어 올라요 🔥'
+    },
+    {
+        id: 5, tempAdd: 15,
+        title: '⏰ 방과 후 — 마지막 한 방',
+        story: `하교 시간, 민준이는 교실 뒤에서 가방을 챙기고 있었어요. 그때 지나가던 승우가 장난으로 민준이 가방을 톡 쳤어요.<br><br>가방이 바닥에 떨어지며 필통이 열려서 연필과 지우개가 와르르 쏟아졌어요.<br><br>승우: "앗, 미안~ 일부러 그런 거 아니야!"<br><br>민준이의 손이 부르르 떨려요. 이가 꽉 물려요. 뭔가 터질 것 같은 순간...`,
+        emotion: '💥 감정이 폭발 직전이에요!'
+    }
+];
+
+const EPISODES_SEOYEON = [
+    {
+        id: 1, tempAdd: 15,
+        title: '🎒 아침 — 사라진 준비물',
+        story: `서연이는 어제 밤늦게까지 모둠 발표 자료를 만들었어요. 색종이로 오린 글자, 직접 그린 그림까지 정성껏 담은 봉투를 책상 위에 올려두고 잤죠.<br><br>그런데 아침에 보니 봉투가 없어요.<br><br>"엄마! 내 봉투 못 봤어?"<br>"어젯밤에 책상 정리했는데... 어디 뒀더라?"<br><br>겨우 찾았지만 봉투는 반쯤 구겨져 있었어요.`,
+        emotion: '속상하고 조금 짜증이 나요 😔'
+    },
+    {
+        id: 2, tempAdd: 20,
+        title: '🧩 1교시 — 지나쳐진 내 의견',
+        story: `모둠 회의 시간. 서연이가 손을 들고 말했어요.<br><br>"우리 발표를 퀴즈처럼 만들면 어때?"<br><br>아무도 대답하지 않았어요. 잠시 뒤 지호가 똑같은 말을 했어요.<br><br>"야, 퀴즈처럼 하면 재밌겠다!"<br>"오, 지호 아이디어 좋다!"<br><br>모두가 지호를 보며 고개를 끄덕였어요.`,
+        emotion: '내 말이 없어진 것 같아 화가 올라와요 😠'
+    },
+    {
+        id: 3, tempAdd: 20,
+        title: '💬 쉬는 시간 — 등 뒤에서 들린 말',
+        story: `물을 마시러 가는 길, 사물함 뒤에서 목소리가 들려왔어요.<br><br>"서연이는 왜 자꾸 자기 마음대로 하려고 해?"<br><br>서연이는 걸음을 멈췄어요. 심장이 쿵쾅거려요.<br><br>고개를 돌리자 말하던 친구가 얼른 입을 다물고 딴 데를 봐요.<br><br><em>"나는 그냥 잘하고 싶었을 뿐인데..."</em>`,
+        emotion: '억울하고 서러운 마음이 커져요 😢'
+    },
+    {
+        id: 4, tempAdd: 20,
+        title: '🎨 미술 시간 — 망가진 작품',
+        story: `발표 포스터에 마지막 색을 칠하고 있는데, 옆자리 친구가 팔을 휙 움직이다 물통을 쓰러뜨렸어요.<br><br>파란 물이 포스터 한가운데로 주르륵.<br><br>"어? 아 미안. 근데 어차피 거기 다시 칠하면 되잖아."<br><br>서연이가 세 시간 걸려 그린 부분이었어요. 손끝이 떨려요.`,
+        emotion: '화가 확 치밀어 올라요 🔥'
+    },
+    {
+        id: 5, tempAdd: 15,
+        title: '📱 하교 전 — 단톡방의 웃음',
+        story: `가방을 메고 나오는데 휴대폰이 울려요. 모둠 단톡방이에요.<br><br>누군가 서연이의 젖은 포스터 사진을 올렸어요.<br>그 아래로 웃음 이모티콘이 우르르 달렸어요. 😂😂😂<br><br>서연이는 화면을 꽉 쥐었어요. 얼굴이 확 달아오르고, 목이 뻐근해져요.<br><br>지금 당장 뭐라도 쓰고 싶은 순간...`,
+        emotion: '💥 감정이 폭발 직전이에요!'
+    }
+];
+
+const EPISODES_DOYUN = [
+    {
+        id: 1, tempAdd: 15,
+        title: '🌤️ 아침 조회 — 갑자기 바뀐 순서',
+        story: `오늘은 운동회 연습 날이에요. 도윤이는 일주일 내내 이어달리기 마지막 주자를 연습했어요.<br><br>그런데 아침 조회에서 선생님이 말씀하셨어요.<br><br>"오늘은 순서를 조금 바꿔볼게. 도윤이는 두 번째로 뛰자."<br><br>"네? 왜요?"<br>"이유는 이따 설명할게. 일단 준비하자."`,
+        emotion: '이유를 몰라서 답답하고 서운해요 😕'
+    },
+    {
+        id: 2, tempAdd: 20,
+        title: '🏃 이어달리기 — 놓쳐버린 바통',
+        story: `연습이 시작됐어요. 앞 주자가 달려오고, 도윤이가 손을 뻗었어요.<br><br>탁— 바통이 손끝을 스치더니 바닥에 떨어졌어요.<br><br>"아! 도윤이 뭐 해!"<br>"야, 손 좀 제대로 벌려야지!"<br><br>여기저기서 소리가 들려요. 도윤이는 얼른 바통을 주워 뛰었지만, 이미 한참 뒤처졌어요.`,
+        emotion: '창피하고 화가 나기 시작해요 😠'
+    },
+    {
+        id: 3, tempAdd: 20,
+        title: '🥤 물 마시는 줄 — 새치기',
+        story: `쉬는 시간, 목이 타서 정수기 줄에 섰어요. 앞에 다섯 명. 겨우 두 명 남았을 때—<br><br>친구 셋이 웃으며 슬쩍 앞으로 끼어들었어요.<br><br>"우리 잠깐만~"<br><br>도윤이가 "야, 줄 서야지" 했더니 한 명이 말했어요.<br>"에이, 뭘 그런 걸로 그래."<br><br>결국 도윤이는 또 뒤로 밀렸어요.`,
+        emotion: '억울하고 분한 마음이 커져요 😡'
+    },
+    {
+        id: 4, tempAdd: 20,
+        title: '📣 응원 연습 — 나만 지적받는 기분',
+        story: `응원 연습 시간. 다 같이 구호를 외치는데 선생님이 말씀하셨어요.<br><br>"도윤아, 동작이 자꾸 늦어. 다시!"<br><br>다시 했지만 또 "도윤아, 팔!" 하는 소리가 들렸어요. 옆 친구들도 비슷하게 하는 것 같은데 이름은 도윤이만 불려요.<br><br>뒤에서 누가 킥킥 웃는 소리가 들렸어요.`,
+        emotion: '서럽고 화가 치밀어 올라요 🔥'
+    },
+    {
+        id: 5, tempAdd: 15,
+        title: '🧹 정리 시간 — 혼자 남은 운동장',
+        story: `연습이 끝나고 정리 시간. 콘과 바통을 챙기는 사이, 친구들이 하나둘 사라졌어요.<br><br>"우리 먼저 간다~"<br><br>정신을 차려보니 넓은 운동장에 도윤이 혼자예요. 콘 스무 개를 혼자 옮기고 있는데, 저 멀리서 웃음소리가 들려요.<br><br>도윤이의 손에 힘이 꽉 들어가요. 콘을 던져버리고 싶은 순간...`,
+        emotion: '💥 감정이 폭발 직전이에요!'
+    }
+];
+
+const SCENARIOS = [
+    {
+        id: 'minjun', name: '민준이의 하루', avatar: '👦', hero: '민준이',
+        label: '🚴 민준이의 하루', sub: '늦잠으로 시작된 하루',
+        episodes: EPISODES,
+        explode: '민준이는 결국 승우에게 소리를 질러버렸어요.<br>"야!! 일부러 그런 거지?!"<br><br>승우는 깜짝 놀라 울어버렸고,<br>민준이도 금방 후회했어요...'
+    },
+    {
+        id: 'seoyeon', name: '서연이의 하루', avatar: '👧', hero: '서연이',
+        label: '🎨 서연이의 하루', sub: '모둠 발표를 준비하는 날',
+        episodes: EPISODES_SEOYEON,
+        explode: '서연이는 단톡방에 화를 그대로 쏟아냈어요.<br>"너희 진짜 최악이야!!"<br><br>화면은 순식간에 조용해졌고,<br>서연이의 마음도 더 무거워졌어요...'
+    },
+    {
+        id: 'doyun', name: '도윤이의 하루', avatar: '🧒', hero: '도윤이',
+        label: '🏃 도윤이의 하루', sub: '운동회 연습이 있던 날',
+        episodes: EPISODES_DOYUN,
+        explode: '도윤이는 들고 있던 콘을 바닥에 힘껏 내던졌어요.<br>"나만 하냐고!!"<br><br>지나가던 선생님이 놀라서 돌아봤고,<br>도윤이도 곧 마음이 무거워졌어요...'
+    }
+];
+
+const BRAKES = [
+    { id:'breath', icon:'🌬️', name:'숨 고르기', desc:'천천히 숨을 들이쉬고 내쉬어요', practice:'breathing' },
+    { id:'count', icon:'🔢', name:'숫자 세기', desc:'마음속으로 10까지 천천히 세요', practice:'counting' },
+    { id:'palm', icon:'✋', name:'손바닥 느끼기', desc:'두 손을 책상에 대고 온기를 느껴요', practice:'palm' },
+    { id:'walk', icon:'🚶', name:'그 자리 떠나기', desc:'잠깐 다른 곳으로 이동해요', practice:'walk' },
+    { id:'squeeze', icon:'💪', name:'주먹 쥐고 풀기', desc:'꽉 쥐었다가 천천히 펴요', practice:'squeeze' },
+    { id:'word', icon:'💬', name:'마음 말하기', desc:'"나 지금 화났어"라고 속으로 말해요', practice:'word' },
+    { id:'water', icon:'💧', name:'물 한 모금', desc:'차가운 물을 아주 천천히 한 모금', practice:'timer', sec:8,
+      guide:'컵이나 물병을 들고 <strong>아주 천천히</strong> 한 모금 마셔요.<br>물이 목을 지나가는 시원한 느낌에만 집중해요.<br><br><strong>8초</strong> 동안 해볼게요.',
+      done:'입 안이 시원해지면서 마음도 한 박자 느려졌나요?' },
+    { id:'shoulder', icon:'🫳', name:'어깨 툭 떨구기', desc:'어깨를 올렸다가 툭 떨어뜨려요', practice:'timer', sec:6,
+      guide:'어깨를 귀 가까이까지 <strong>쓱</strong> 올려보세요.<br>그리고 "후—" 하면서 <strong>툭</strong> 떨어뜨려요.<br><br><strong>6초</strong> 동안 두 번 반복해요.',
+      done:'어깨가 조금 가벼워졌나요? 힘이 빠진 만큼 마음도 내려와요.' },
+    { id:'ground', icon:'👀', name:'다섯 가지 찾기', desc:'눈에 보이는 물건 5개를 찾아요', practice:'tap', taps:5,
+      guide:'고개를 들고 천천히 주변을 둘러보세요.<br>눈에 보이는 물건을 <strong>하나씩</strong> 찾을 때마다 버튼을 눌러요.<br>화난 생각에서 잠깐 눈을 떼는 연습이에요.',
+      tapLabel:'하나 찾았어요 👆', done:'주변을 둘러보는 동안 화가 조금 멀어졌나요?' },
+    { id:'cloud', icon:'☁️', name:'생각 구름 보내기', desc:'화난 생각을 구름에 태워 보내요', practice:'timer', sec:10,
+      guide:'지금 머릿속에 떠오른 화난 생각을<br>하얀 <strong>구름</strong> 위에 살짝 올려놓아요.<br>바람이 불면 구름은 천천히 흘러가요.<br><br><strong>10초</strong> 동안 지켜볼게요.',
+      done:'구름이 조금 멀어졌나요? 생각은 지나가는 거예요.' },
+    { id:'later', icon:'⏭️', name:'1분 뒤 나 만나기', desc:'조금 뒤의 내 모습을 상상해요', practice:'reflect',
+      guide:'지금 소리를 지르면 <strong>1분 뒤의 나</strong>는 어떤 기분일까요?<br>반대로 지금 멈추면, 1분 뒤의 나는 어떨까요?<br>잠깐 그 모습을 떠올려봐요.',
+      prompt:'1분 뒤의 나에게 한마디 적어볼까요?', placeholder:'예: 참길 잘했어. 지금은 마음이 괜찮아졌어.' },
+    { id:'help', icon:'🙋', name:'도와줘 신호 보내기', desc:'믿을 만한 어른에게 도움을 청해요', practice:'reflect',
+      guide:'혼자 참기가 너무 힘들 때는<br><strong>도와달라고 말하는 것</strong>도 훌륭한 브레이크예요.<br>선생님, 부모님, 상담 선생님 누구든 좋아요.',
+      prompt:'내가 도움을 청할 수 있는 사람은 누구인가요?', placeholder:'예: 담임 선생님, 엄마, 옆 반 친구' }
+];
+
+const ANGER_TYPES = [
+    { id:'unfair',  icon:'⚖️', label:'억울할 때' },
+    { id:'ignored', icon:'🙈', label:'무시당했다고 느낄 때' },
+    { id:'tease',   icon:'😾', label:'놀리거나 장난칠 때' },
+    { id:'promise', icon:'🤝', label:'약속을 어겼을 때' },
+    { id:'stuff',   icon:'📦', label:'내 물건을 함부로 할 때' },
+    { id:'blocked', icon:'🚧', label:'마음대로 잘 안 될 때' },
+    { id:'nag',     icon:'📢', label:'자꾸 지적받을 때' },
+    { id:'left',    icon:'🚪', label:'끼워주지 않을 때' }
+];
+
+/* ═══════════════════════════════════════════════
+   여기부터는 고치지 않아도 됩니다
+   ═══════════════════════════════════════════════ */
+
+const EMO_DEX = {
+  apiKey:"AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s", authDomain:"emo-dex.firebaseapp.com",
+  projectId:"emo-dex", storageBucket:"emo-dex.firebasestorage.app",
+  messagingSenderId:"994736049700", appId:"1:994736049700:web:8233fa7b68cd6e0cccd2b1"
+};
+const injected  = (typeof __firebase_config !== 'undefined' && __firebase_config) ? __firebase_config : null;
+const fbConfig  = injected ? (typeof injected === 'string' ? JSON.parse(injected) : injected) : EMO_DEX;
+const APP_ID    = (typeof __app_id !== 'undefined' && __app_id) ? __app_id : 'sel-lesson-08-lite';
+const AUTH_TOKEN= (typeof __initial_auth_token !== 'undefined') ? __initial_auth_token : null;
+
+let db = null, online = false, 저장소 = '';
+const memory = {};
+
+async function initDB(){
+  try{
+    const app = initializeApp(fbConfig);
+    const auth = getAuth(app);
+    db = getFirestore(app);
+    await Promise.race([
+      AUTH_TOKEN ? signInWithCustomToken(auth, AUTH_TOKEN) : signInAnonymously(auth),
+      new Promise(function(_, rej){ setTimeout(function(){ rej('timeout'); }, 6000); })
+    ]);
+    online = true;
+  }catch(e){ online = false; }
+  저장소 = online ? (injected ? '캔버스 내장' : 'emo-dex') : '이 기기에만 (다른 기기와 수합 안 됨)';
+  console.log('[DB] ' + 저장소);
+  var el = document.getElementById('db-state');
+  if (el) el.textContent = '저장소: ' + 저장소;
+}
+const ready = initDB();
+
+function studentDoc(code, nick){ return doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students', nick); }
+function studentCol(code){ return collection(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students'); }
+
+async function save(code, nick, data){
+  await ready;
+  if (online){ try { await setDoc(studentDoc(code, nick), data, {merge:true}); return; } catch(e){} }
+  memory[code] = memory[code] || {};
+  memory[code][nick] = Object.assign({}, memory[code][nick], data);
+}
+
+/* 상태 */
+var 방코드 = '', 닉네임 = '', 학생들 = {}, 내브레이크 = null;
+var 인물 = null, 에피 = 0, 온도 = 0, 건브레이크 = null;
+var 고른화 = [], 고른브 = [];
+
+function $(id){ return document.getElementById(id); }
+function esc(v){ return String(v==null?'':v).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function toast(msg){ var t = $('toast'); t.textContent = msg; t.classList.add('on'); setTimeout(function(){ t.classList.remove('on'); }, 1600); }
+
+function go(name){
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); });
+  if (name === 'teacher' || name === 'student'){
+    $('s-join').classList.add('on');
+    $('join-title').textContent = (name === 'teacher') ? '방 만들기' : '방 코드로 참여하기';
+    $('join-teacher').style.display = (name === 'teacher') ? 'block' : 'none';
+    $('join-student').style.display = (name === 'student') ? 'block' : 'none';
+    if (name === 'teacher'){ 방코드 = String(Math.floor(Math.random()*900000+100000)); $('new-code').textContent = 방코드; }
+    window.scrollTo(0,0); return;
+  }
+  var map = { start:'s-start', pick:'s-pick', play:'s-play', brake:'s-brake', mine:'s-mine', done:'s-done', dash:'s-dash' };
+  $(map[name]).classList.add('on');
+  window.scrollTo(0,0);
+}
+function home(){ go('start'); }
+function solo(){ 방코드 = ''; 닉네임 = '나'; $('who').textContent = '혼자 해보기'; go('pick'); }
+
+async function joinRoom(){
+  var c = $('in-code').value.trim(), n = $('in-nick').value.trim();
+  if (!/^[0-9]{6}$/.test(c)) { toast('방 코드 6자리를 숫자로 입력해 주세요'); return; }
+  if (!n) { toast('닉네임을 입력해 주세요'); return; }
+  방코드 = c; 닉네임 = n;
+  await save(c, n, { nick:n, joinedAt: Date.now() });
+  $('who').textContent = 방코드 + '번 방 · ' + 닉네임;
+  go('pick');
+}
+
+/* 인물 고르기 */
+function drawHeroes(){
+  $('hero-list').innerHTML = SCENARIOS.map(function(s, i){
+    return '<button class="choice" onclick="openHero(' + i + ')">' + s.avatar + ' ' + esc(s.name) +
+      '<small>' + esc(s.sub) + '</small></button>';
+  }).join('');
+}
+function openHero(i){
+  인물 = SCENARIOS[i]; 에피 = 0; 온도 = 0; 건브레이크 = null;
+  drawEp();
+  go('play');
+}
+function 게이지(){
+  var pct = Math.min(100, Math.round(온도 / CONFIG.폭발온도 * 100));
+  var color = 온도 >= CONFIG.폭발온도*0.75 ? 'var(--hot)' : (온도 >= CONFIG.폭발온도*0.4 ? 'var(--warm)' : 'var(--cool)');
+  $('gauge-fill').style.width = pct + '%';
+  $('gauge-fill').style.background = color;
+  $('temp-label').textContent = '화 온도 ' + 온도 + '도';
+  $('temp-label').style.color = color;
+}
+function drawEp(){
+  var eps = 인물.episodes, e = eps[에피];
+  온도 += e.tempAdd;
+  $('step-label').textContent = (에피+1) + ' / ' + eps.length;
+  $('ep-title').textContent = e.title;
+  $('ep-story').innerHTML = e.story;
+  $('ep-emotion').textContent = e.emotion || '';
+  게이지();
+  var 마지막 = (에피 + 1 >= eps.length);
+  $('ep-actions').innerHTML =
+    '<button class="btn btn-stop" onclick="go(\'brake\'); drawBrakes();">여기서 브레이크 걸기</button>' +
+    (마지막 ? '<button class="btn btn-line" onclick="explode()">멈추지 않고 끝까지 보기</button>'
+            : '<button class="btn btn-line" onclick="nextEp()">멈추지 않고 계속 보기</button>');
+}
+function nextEp(){ 에피++; drawEp(); window.scrollTo(0,0); }
+
+function explode(){
+  $('ep-actions').innerHTML =
+    '<div class="boom"><b>' + esc(인물.hero) + '는 결국...</b><br><br>' + 인물.explode + '</div>' +
+    '<div class="guide">화는 한 번에 터진 게 아니라 하루 동안 ' + 온도 + '도까지 쌓였습니다. ' +
+    '앞의 어느 장면에서든 브레이크를 걸 수 있었어요.</div>' +
+    '<button class="btn btn-main" onclick="go(\'mine\')">나의 브레이크 정하기</button>' +
+    '<button class="btn btn-line" onclick="openHero(' + SCENARIOS.indexOf(인물) + ')">처음부터 다시 보기</button>';
+  window.scrollTo(0, document.body.scrollHeight);
+}
+
+/* 브레이크 */
+function drawBrakes(){
+  $('brake-head').textContent = '어떤 브레이크를 걸까요';
+  $('brake-body').innerHTML =
+    '<p class="sub">화 온도 ' + 온도 + '도. 지금 멈출 수 있습니다.</p>' +
+    BRAKES.map(function(b, i){
+      return '<button class="choice" onclick="doBrake(' + i + ')">' + b.icon + ' ' + esc(b.name) +
+        '<small>' + esc(b.desc) + '</small></button>';
+    }).join('') +
+    '<button class="btn btn-line" onclick="go(\'play\')">돌아가서 더 보기</button>';
+}
+function doBrake(i){
+  var b = BRAKES[i];
+  건브레이크 = b;
+  $('brake-head').textContent = b.icon + ' ' + b.name;
+  $('brake-body').innerHTML =
+    '<div class="guide">' + (b.guide || esc(b.desc)) + '</div>' +
+    (b.prompt ? '<label>' + esc(b.prompt) + '</label><textarea id="brake-write" placeholder="' + esc(b.placeholder || '') + '"></textarea>' : '') +
+    '<button class="btn btn-main" onclick="finishBrake()">해 봤어요</button>' +
+    '<button class="btn btn-line" onclick="drawBrakes()">다른 브레이크 고르기</button>';
+  window.scrollTo(0,0);
+}
+function finishBrake(){
+  var b = 건브레이크;
+  var w = $('brake-write') ? $('brake-write').value.trim() : '';
+  온도 = Math.max(0, 온도 - 35);
+  $('brake-head').textContent = '멈췄습니다';
+  $('brake-body').innerHTML =
+    '<div class="guide"><b>' + b.icon + ' ' + esc(b.name) + '</b><br>' +
+    esc(b.done || '멈추기를 해냈어요. 화 온도가 내려갔습니다.') + '</div>' +
+    (w ? '<div class="story">' + esc(w) + '</div>' : '') +
+    '<div class="gauge"><i style="width:' + Math.min(100, Math.round(온도/CONFIG.폭발온도*100)) + '%;background:var(--cool)"></i></div>' +
+    '<div class="temp" style="color:var(--cool)">화 온도 ' + 온도 + '도</div>' +
+    '<button class="btn btn-main" onclick="go(\'mine\')">나의 브레이크 정하기</button>' +
+    '<button class="btn btn-line" onclick="go(\'play\')">이야기 더 보기</button>';
+  if (방코드) save(방코드, 닉네임, { triedBrake: b.name });
+  window.scrollTo(0,0);
+}
+
+/* 나의 브레이크 */
+function 다중칩(host, items, 담는배열, 라벨){
+  $(host).innerHTML = '';
+  items.forEach(function(it){
+    var b = document.createElement('button');
+    b.className = 'chip';
+    b.textContent = 라벨(it);
+    b.onclick = function(){
+      var i = 담는배열.indexOf(it.id);
+      if (i >= 0) { 담는배열.splice(i,1); b.classList.remove('on'); }
+      else { 담는배열.push(it.id); b.classList.add('on'); }
+    };
+    $(host).appendChild(b);
+  });
+}
+function drawMine(){
+  다중칩('anger-chips', ANGER_TYPES, 고른화, function(a){ return a.icon + ' ' + a.label; });
+  다중칩('mybrake-chips', BRAKES, 고른브, function(b){ return b.icon + ' ' + b.name; });
+}
+async function submitMine(){
+  var one = $('my-one').value.trim();
+  if (!고른화.length) { toast('내가 화나는 순간을 하나 이상 골라 주세요'); return; }
+  if (!고른브.length) { toast('그때 걸 브레이크를 하나 이상 골라 주세요'); return; }
+  if (!one) { toast('내 브레이크를 한 문장으로 써 주세요'); return; }
+  var 화이름 = 고른화.map(function(id){ var x = ANGER_TYPES.filter(function(v){return v.id===id;})[0]; return x ? x.label : id; });
+  var 브이름 = 고른브.map(function(id){ var x = BRAKES.filter(function(v){return v.id===id;})[0]; return x ? x.name : id; });
+  내브레이크 = { nick: 닉네임, angers: 화이름, brakes: 브이름, one: one, doneAt: Date.now() };
+  if (방코드) await save(방코드, 닉네임, 내브레이크);
+  $('done-title').textContent = CONFIG.마무리말;
+  $('done-body').innerHTML =
+    '<div class="story"><b>화가 나는 순간</b><br>' + esc(화이름.join(', ')) + '</div>' +
+    '<div class="story"><b>걸 브레이크</b><br>' + esc(브이름.join(', ')) + '</div>' +
+    '<div class="guide">' + esc(one) + '</div>';
+  go('done');
+}
+function copyMine(){
+  if (!내브레이크) { toast('먼저 브레이크를 내 주세요'); return; }
+  copy('나의 브레이크\n화나는 순간: ' + 내브레이크.angers.join(', ') +
+       '\n걸 브레이크: ' + 내브레이크.brakes.join(', ') + '\n한 문장: ' + 내브레이크.one);
+}
+
+/* 교사 대시보드 */
+function reopenDash(){
+  var c = $('in-dash').value.trim();
+  if (!/^[0-9]{6}$/.test(c)) { toast('방 코드 6자리를 숫자로 입력해 주세요'); return; }
+  방코드 = c; openDash();
+}
+function openDash(){
+  $('dash-code').textContent = 방코드;
+  go('dash');
+  ready.then(function(){
+    if (!online){ $('dash-rows').innerHTML = '<p class="sub">연결이 안 되어 이 기기 기록만 보입니다.</p>'; return; }
+    onSnapshot(studentCol(방코드), function(snap){
+      학생들 = {};
+      snap.forEach(function(d){ 학생들[d.id] = d.data(); });
+      drawDash();
+    });
+  });
+}
+function 막대(host, freq, 폭){
+  var top = Object.keys(freq).map(function(k){ return [k, freq[k]]; }).sort(function(a,b){ return b[1]-a[1]; }).slice(0,8);
+  var max = top.length ? top[0][1] : 1;
+  $(host).innerHTML = top.length
+    ? top.map(function(p){ return '<div class="bar"><span style="width:' + 폭 + 'px">' + esc(p[0]) + '</span><i style="width:' + Math.round(p[1]/max*140) + 'px"></i><span>' + p[1] + '</span></div>'; }).join('')
+    : '<p class="sub">아직 기록이 없습니다.</p>';
+}
+function drawDash(){
+  var list = Object.keys(학생들).map(function(k){ return 학생들[k]; });
+  var done = list.filter(function(s){ return s.doneAt; });
+  $('n-join').textContent = list.length;
+  $('n-done').textContent = done.length;
+  var fa = {}, fb = {};
+  done.forEach(function(s){
+    (s.angers||[]).forEach(function(n){ fa[n]=(fa[n]||0)+1; });
+    (s.brakes||[]).forEach(function(n){ fb[n]=(fb[n]||0)+1; });
+  });
+  막대('dash-anger', fa, 130);
+  막대('dash-brake', fb, 120);
+  $('dash-rows').innerHTML = done.length
+    ? done.map(function(s){ return '<div class="row"><b>' + esc(s.nick) + '</b><br>' + esc((s.angers||[]).join(', ')) +
+        '<br>브레이크: ' + esc((s.brakes||[]).join(', ')) + '<br>' + esc(s.one) + '</div>'; }).join('')
+    : '<p class="sub">아직 제출한 브레이크가 없습니다.</p>';
+}
+function copyAll(){
+  var done = Object.keys(학생들).map(function(k){ return 학생들[k]; }).filter(function(s){ return s.doneAt; });
+  if (!done.length) { toast('복사할 기록이 없습니다'); return; }
+  copy('방 ' + 방코드 + ' · ' + done.length + '명\n\n' +
+    done.map(function(s){ return [s.nick, (s.angers||[]).join(' '), (s.brakes||[]).join(' '), s.one].join('\t'); }).join('\n'));
+}
+function copy(text){
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(function(){ toast('복사했습니다'); }, function(){ fallback(text); });
+  else fallback(text);
+}
+function fallback(text){
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); toast('복사했습니다'); }
+  catch(e){ window.prompt('직접 복사하세요 (Ctrl+C)', text); }
+  document.body.removeChild(ta);
+}
+
+/* 시작 */
+$('t-title').textContent = CONFIG.제목;
+$('t-sub').textContent = CONFIG.부제;
+$('t-meta').textContent = CONFIG.학년 + ' · 약 ' + CONFIG.소요시간;
+document.title = CONFIG.제목;
+drawHeroes();
+drawMine();
+
+Object.assign(window, { go:go, home:home, solo:solo, joinRoom:joinRoom, openHero:openHero,
+  nextEp:nextEp, explode:explode, drawBrakes:drawBrakes, doBrake:doBrake, finishBrake:finishBrake,
+  submitMine:submitMine, copyMine:copyMine, openDash:openDash, reopenDash:reopenDash, copyAll:copyAll });
+console.log('[SEL] ' + CONFIG.제목 + ' 간소화판 ready (인물 ' + SCENARIOS.length + ', 브레이크 ' + BRAKES.length + ')');
+</script>
+</body>
+</html>

@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>다름을 만났을 때 드는 마음</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+:root{--primary:#7C3AED;--primary-light:#A78BFA;--primary-dark:#5B21B6;--gradient:linear-gradient(135deg,#7C3AED 0%,#A78BFA 50%,#C4B5FD 100%);--gradient-bg:linear-gradient(135deg,#EDE9FE 0%,#F5F3FF 50%,#FFFFFF 100%);--success:#10B981;--error:#EF4444;--warning:#F59E0B;--text:#1F2937;--text-light:#6B7280;--bg-card:rgba(255,255,255,0.95)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans KR',sans-serif;min-height:100vh;background:var(--gradient-bg);color:var(--text);line-height:1.7;font-weight:700;font-size:18px}
+.container{max-width:500px;margin:0 auto;padding:16px}
+.screen{display:none}.screen.active{display:block;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.card{background:var(--bg-card);border-radius:20px;padding:24px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.title{font-size:1.5rem;font-weight:900;text-align:center;color:var(--primary-dark);margin-bottom:6px}
+.subtitle{font-size:.95rem;text-align:center;color:var(--text-light);margin-bottom:16px;font-weight:500}
+.badge{display:inline-block;background:var(--gradient);color:#fff;padding:4px 14px;border-radius:20px;font-size:.8rem;font-weight:700}
+.btn{width:100%;padding:16px 24px;border-radius:16px;font-size:17px;font-weight:900;font-family:'Noto Sans KR',sans-serif;border:none;cursor:pointer;min-height:52px;transition:all .2s;max-width:400px;display:block;margin:8px auto}
+.btn-primary{background:var(--gradient);color:#fff;box-shadow:0 4px 15px rgba(124,58,237,0.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,0.4)}
+.btn-secondary{background:rgba(124,58,237,0.1);color:var(--primary);border:2px solid var(--primary-light)}
+.btn-small{padding:10px 16px;font-size:14px;min-height:40px;width:auto;display:inline-block;margin:4px}
+.btn-danger{background:var(--error);color:#fff}
+input,textarea{min-height:48px;font-size:16px;font-family:'Noto Sans KR',sans-serif;font-weight:700;border:2px solid #E5E7EB;border-radius:12px;padding:12px 16px;width:100%;box-sizing:border-box}
+input:focus,textarea:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(124,58,237,0.1)}
+textarea{min-height:80px;resize:vertical}
+.privacy-notice{background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.15);border-radius:12px;padding:14px;font-size:13px;font-weight:400;color:var(--text-light);line-height:1.6;margin-top:16px}
+.nav-buttons{display:flex;gap:8px;margin-bottom:12px}
+.nav-btn{background:rgba(124,58,237,0.08);color:var(--primary);border:none;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif}
+.nav-btn:hover{background:rgba(124,58,237,0.15)}
+.choice-btn{padding:16px;border:2px solid #E5E7EB;border-radius:14px;background:#fff;cursor:pointer;transition:all .2s;text-align:left;width:100%;font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700;margin:6px 0;display:block}
+.choice-btn.selected{border-color:var(--primary);background:rgba(124,58,237,0.08);box-shadow:0 0 0 3px rgba(124,58,237,0.15);transform:scale(1.02)}
+.choice-btn.selected::after{content:' ✓';color:var(--primary);font-weight:900}
+.choice-btn:hover{border-color:var(--primary-light)}
+.door-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.door-card{background:linear-gradient(135deg,#f3e8ff,#ede9fe);border:2px solid #ddd6fe;border-radius:16px;padding:20px 12px;text-align:center;cursor:pointer;transition:all .3s;position:relative}
+.door-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(124,58,237,0.2)}
+.door-card.visited{border-color:var(--success);background:linear-gradient(135deg,#d1fae5,#ecfdf5)}
+.door-card.visited::after{content:'✅';position:absolute;top:8px;right:8px;font-size:14px}
+.door-card .door-emoji{font-size:2.2rem;margin-bottom:8px;display:block}
+.door-card .door-label{font-size:.85rem;font-weight:700;color:var(--primary-dark)}
+.story-box{background:linear-gradient(135deg,#faf5ff,#f3e8ff);border-left:4px solid var(--primary);border-radius:0 12px 12px 0;padding:16px 18px;margin:12px 0;font-size:15px;font-weight:500;line-height:1.8;color:#374151}
+.feeling-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.feeling-btn{padding:14px;border:2px solid #E5E7EB;border-radius:14px;background:#fff;cursor:pointer;transition:all .2s;text-align:center;font-family:'Noto Sans KR',sans-serif;font-size:15px;font-weight:700}
+.feeling-btn.selected{border-color:var(--primary);background:rgba(124,58,237,0.08);box-shadow:0 0 0 3px rgba(124,58,237,0.15)}
+.feeling-btn.selected::after{content:' ✓';color:var(--primary);font-weight:900}
+.mirror-card{background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid #f59e0b;border-radius:20px;padding:24px;text-align:center;margin:16px 0}
+.progress-bar{background:#E5E7EB;border-radius:10px;height:8px;margin:8px 0;overflow:hidden}
+.progress-fill{background:var(--gradient);height:100%;border-radius:10px;transition:width .3s}
+.tab-buttons{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{padding:8px 12px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;background:rgba(124,58,237,0.08);color:var(--primary)}
+.tab-btn.active{background:var(--primary);color:#fff}
+.data-table{width:100%;border-collapse:collapse;margin:8px 0;font-size:14px}
+.data-table th,.data-table td{border:1px solid #E5E7EB;padding:8px 10px;text-align:left}
+.data-table th{background:#F3F4F6;font-weight:700}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(31,41,55,0.95);color:#fff;padding:14px 28px;border-radius:14px;font-size:15px;font-weight:700;z-index:10000;opacity:0;transition:all .3s;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:center}
+.modal-content{background:#fff;border-radius:20px;padding:28px;max-width:400px;width:90%;text-align:center}
+.modal-icon{font-size:2rem;margin-bottom:12px}
+.modal-message{font-size:15px;line-height:1.7;margin-bottom:20px;font-weight:500}
+.modal-buttons{display:flex;gap:10px;justify-content:center}
+.modal-buttons .btn{width:auto;min-width:100px}
+.emoji-float{font-size:1.2rem;display:inline-block;animation:float 2s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.perspective-box{background:linear-gradient(135deg,#dbeafe,#eff6ff);border:2px solid #93c5fd;border-radius:16px;padding:18px;margin:12px 0}
+.section-label{font-size:13px;color:var(--primary);font-weight:900;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.result-card{background:rgba(124,58,237,0.05);border-radius:12px;padding:14px;margin:8px 0}
+.chart-container{margin:12px 0}
+.chart-container canvas{max-width:100%;border-radius:12px}
+@media(max-width:768px){body{font-size:16px;padding:8px}.container{max-width:100%;padding:12px}.btn{min-height:48px;font-size:16px}input,textarea{min-height:44px;font-size:16px}.door-grid{grid-template-columns:1fr 1fr}}
+@media(min-width:769px){.container{max-width:600px}}
+@media print{body *{visibility:hidden}#dashboard-content,#dashboard-content *{visibility:visible}#dashboard-content{position:absolute;left:0;top:0;width:100%}.btn,.nav-buttons,.tab-buttons,#toast,.modal-overlay{display:none!important}.card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ============ 시작 화면 ============ -->
+<div class="screen active" id="screen-start">
+<div class="card" style="text-align:center;">
+<div style="font-size:3rem;margin-bottom:8px">🚪</div>
+<div class="title">다름을 만났을 때 드는 마음</div>
+<div class="subtitle">낯선 문 뒤에는 어떤 세계가 있을까?</div>
+<div class="badge">⏱️ 예상 소요시간: 약 12분</div>
+<div style="font-size:12px;color:var(--text-light);margin-top:8px;font-weight:500">기본 복도 탐험 5분 + 더 깊은 복도·렌즈 연습 7분</div>
+<div style="margin-top:20px">
+<button class="btn btn-primary" onclick="showScreen('screen-login')">👩‍🏫 방 만들기 / 입장하기</button>
+<button class="btn btn-secondary" onclick="startSoloMode()">🌟 혼자 체험하기</button>
+</div>
+<div class="privacy-notice">
+🔐 <strong>안심하세요!</strong><br>
+우리가 사용하는 방 코드는 오직 입장할 때만 필요한 숫자일 뿐,
+여러분이 누구인지 알려주는 이름표가 아니랍니다.
+닉네임을 만들 때 개인정보를 포함하지 않도록 만들어 주세요.
+여러분의 익명성은 소중히 보호됩니다.
+</div>
+</div>
+</div>
+
+<!-- ============ 로그인 화면 ============ -->
+<div class="screen" id="screen-login">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="showScreen('screen-start')">← 처음으로</button>
+</div>
+<div class="card">
+<div class="title" style="font-size:1.2rem">🚪 입장하기</div>
+<div style="margin-top:16px">
+<button class="btn btn-primary" onclick="showScreen('screen-create-room')">👩‍🏫 방 만들기 (교사용)</button>
+<button class="btn btn-secondary" onclick="showScreen('screen-teacher-login')">🔑 교사로 접속하기</button>
+<button class="btn btn-secondary" onclick="showScreen('screen-student-login')">🧒 학생으로 참여하기</button>
+</div>
+</div>
+<div class="privacy-notice">
+🔐 <strong>안심하세요!</strong><br>
+입장 코드는 숫자로만 구성되어 있어 개인정보를 포함하지 않습니다.
+</div>
+</div>
+
+<!-- ============ 방 만들기 ============ -->
+<div class="screen" id="screen-create-room">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로가기</button>
+<button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+</div>
+<div class="card">
+<div class="title" style="font-size:1.2rem">👩‍🏫 방 만들기</div>
+<div style="margin-top:16px">
+<label style="font-size:14px;color:var(--text-light)">선생님 닉네임</label>
+<input type="text" id="teacher-name" placeholder="예: 김선생님" maxlength="10" style="margin:6px 0 14px">
+<label style="font-size:14px;color:var(--text-light)">관리자 비밀번호 (숫자 4자리)</label>
+<input type="password" id="room-password" placeholder="예: 1234" maxlength="4" inputmode="numeric" style="margin:6px 0 14px">
+<button class="btn btn-primary" onclick="createRoom()">🏠 방 만들기</button>
+</div>
+</div>
+</div>
+
+<!-- ============ 방 생성 완료 ============ -->
+<div class="screen" id="screen-room-created">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+</div>
+<div class="card" style="text-align:center;">
+<div style="font-size:2rem">🎉</div>
+<div class="title" style="font-size:1.2rem">방이 만들어졌어요!</div>
+<div style="margin:16px 0">
+<div style="font-size:14px;color:var(--text-light)">방 코드</div>
+<div id="display-room-code" style="font-size:2.5rem;font-weight:900;color:var(--primary);letter-spacing:6px;margin:8px 0"></div>
+<button class="btn-small btn-secondary" onclick="copyRoomCode()">📋 코드 복사</button>
+</div>
+<p style="font-size:14px;color:var(--text-light)">학생들에게 이 코드를 알려주세요!</p>
+<button class="btn btn-primary" onclick="enterDashboard()" style="margin-top:16px">📊 대시보드로 이동</button>
+</div>
+</div>
+
+<!-- ============ 교사 로그인 ============ -->
+<div class="screen" id="screen-teacher-login">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로가기</button>
+<button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+</div>
+<div class="card">
+<div class="title" style="font-size:1.2rem">🔑 교사로 접속</div>
+<div style="margin-top:16px">
+<label style="font-size:14px;color:var(--text-light)">방 코드 (숫자 6자리)</label>
+<input type="text" id="teacher-room-code" placeholder="방 코드 입력" maxlength="6" inputmode="numeric" style="margin:6px 0 14px">
+<label style="font-size:14px;color:var(--text-light)">비밀번호</label>
+<input type="password" id="teacher-password" placeholder="비밀번호 입력" maxlength="4" inputmode="numeric" style="margin:6px 0 14px">
+<button class="btn btn-primary" onclick="joinAsTeacher()">🔑 접속하기</button>
+</div>
+</div>
+</div>
+
+<!-- ============ 학생 로그인 ============ -->
+<div class="screen" id="screen-student-login">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로가기</button>
+<button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+</div>
+<div class="card">
+<div class="title" style="font-size:1.2rem">🧒 학생으로 참여</div>
+<div style="margin-top:16px">
+<label style="font-size:14px;color:var(--text-light)">방 코드 (숫자 6자리)</label>
+<input type="text" id="student-room-code" placeholder="선생님이 알려준 코드" maxlength="6" inputmode="numeric" style="margin:6px 0 14px">
+<label style="font-size:14px;color:var(--text-light)">닉네임</label>
+<input type="text" id="student-nickname" placeholder="별명을 만들어주세요" maxlength="10" style="margin:6px 0 14px">
+<button class="btn btn-primary" onclick="joinAsStudent()">🚀 입장하기</button>
+</div>
+</div>
+<div class="privacy-notice">
+🔐 닉네임에 실명이나 개인정보를 넣지 마세요!
+</div>
+</div>
+
+<!-- ============ 스토리 인트로 ============ -->
+<div class="screen" id="screen-story">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+</div>
+<div class="card">
+<div style="text-align:center;font-size:2.5rem;margin-bottom:12px">🚶‍♂️🚪</div>
+<div class="title" style="font-size:1.2rem">낯선 복도에 서다</div>
+<div class="story-box">
+어느 날, 긴 복도에 서 있습니다.<br><br>
+양쪽으로 여러 개의 문이 보여요. 문마다 희미한 빛이 새어 나오고, 안에서 누군가의 일상이 들립니다.<br><br>
+전학생이 온 날, 교실이 조용해지던 그 순간을 기억하나요?<br>
+낯선 말투, 처음 듣는 취미, 나와 다른 모습...<br><br>
+그때 마음속에 스쳐 지나간 느낌이 있었을 거예요.<br>
+<strong>오늘은 그 마음을 천천히 들여다볼 거예요.</strong>
+</div>
+<div style="text-align:center;margin-top:8px;font-size:14px;color:var(--text-light)">
+💡 어떤 느낌이든 틀린 것은 없어요. 솔직하게 느껴보세요.
+</div>
+<button class="btn btn-primary" onclick="goToMain()" style="margin-top:16px">🚪 문 앞으로 가기 →</button>
+</div>
+</div>
+
+<!-- ============ 메인 화면 (문 선택) ============ -->
+<div class="screen" id="screen-main">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+</div>
+<div class="card">
+<div style="text-align:center">
+<div class="title" style="font-size:1.1rem">🚪 낯섦의 복도</div>
+<div class="subtitle">문을 열고, 다른 세계를 만나보세요</div>
+<div class="progress-bar"><div class="progress-fill" id="main-progress" style="width:0%"></div></div>
+<div id="main-progress-text" style="font-size:13px;color:var(--text-light)">0 / 5 탐험 완료</div>
+</div>
+<div class="door-grid" id="door-grid"></div>
+<div id="reflection-btn-area" style="margin-top:12px;text-align:center"></div>
+</div>
+</div>
+
+<!-- ============ 문 탐험 화면 ============ -->
+<div class="screen" id="screen-door">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="doorGoBack()">← 복도로 돌아가기</button>
+<button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+</div>
+<div class="card" id="door-content"></div>
+</div>
+
+<!-- ============ 거울의 방 ============ -->
+<div class="screen" id="screen-mirror">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="backToMain()">← 복도로 돌아가기</button>
+<button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+</div>
+<div class="card" style="text-align:center;">
+<div style="font-size:3rem;margin-bottom:8px">🪞</div>
+<div class="title" style="font-size:1.2rem">거울의 방</div>
+<div class="story-box" style="text-align:left;">
+복도 끝에 마지막 문이 하나 있어요.<br>
+다가가 보니... 문에 거울이 달려 있습니다.<br><br>
+거울에 비친 건... <strong>바로 나</strong>예요.<br><br>
+생각해보면, <strong>나도 누군가에게는 낯선 사람</strong>일 수 있어요.
+</div>
+<div style="margin:16px 0">
+<div class="section-label">🤔 나도 누군가에게 낯설게 보일 수 있는 것은?</div>
+<textarea id="mirror-input" placeholder="예: 나만의 독특한 취미, 특별한 습관..." rows="3"></textarea>
+</div>
+<div style="margin:16px 0">
+<div class="section-label">💭 그때 나는 어떻게 대해주길 바랄까?</div>
+<textarea id="mirror-wish" placeholder="예: 이상하다고 하지 않고 한 번 물어봐줬으면..." rows="3"></textarea>
+</div>
+<button class="btn btn-primary" onclick="submitMirror()">💫 나의 마음 기록하기</button>
+</div>
+</div>
+
+<!-- ============ 완료 화면 ============ -->
+<div class="screen" id="screen-complete">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="backToMain()">← 다시 탐험하기</button>
+<button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+</div>
+<div class="card" style="text-align:center;">
+<div style="font-size:3rem;margin-bottom:8px">🎉</div>
+<div class="title" style="font-size:1.2rem">멋지게 해냈어요!</div>
+<div id="complete-summary" style="margin:16px 0"></div>
+<div class="story-box" style="text-align:left;">
+<strong>오늘 알게 된 것:</strong><br>
+🚪 다름을 만났을 때 느끼는 불편함은 자연스러운 감정이에요.<br>
+🔄 상대방의 눈으로 바라보면 새로운 것이 보여요.<br>
+🪞 나도 누군가에게는 낯선 문 뒤의 사람이에요.<br><br>
+<em>"불편함은 틀림이 아니라, 아직 익숙하지 않다는 신호"</em>
+</div>
+<button class="btn btn-primary" onclick="backToMain()">🔄 다시 탐험하러 가기</button>
+<button class="btn btn-secondary" onclick="saveMyResult()" style="margin-top:8px">📄 내 결과 저장하기</button>
+</div>
+
+<!-- 더 깊은 복도 (심화 탐험) -->
+<div class="card">
+<div style="text-align:center">
+<div class="title" style="font-size:1.1rem">🌌 더 깊은 복도</div>
+<div class="subtitle">아직 열지 않은 문이 남아 있어요</div>
+<div class="progress-bar"><div class="progress-fill" id="extra-progress" style="width:0%"></div></div>
+<div id="extra-progress-text" style="font-size:13px;color:var(--text-light)">0 / 6 탐험</div>
+</div>
+<div class="door-grid" id="extra-door-grid"></div>
+</div>
+
+<!-- 렌즈 바꿔보기 연습 -->
+<div class="card">
+<div style="text-align:center">
+<div class="title" style="font-size:1.1rem">🔄 렌즈 바꿔보기 연습</div>
+<div class="subtitle">판단의 렌즈를 이해의 렌즈로 바꿔보세요</div>
+</div>
+<div id="lens-practice-area"></div>
+</div>
+</div>
+
+<!-- ============ 교사 대시보드 ============ -->
+<div class="screen" id="screen-dashboard">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+<button class="nav-btn" onclick="refreshDashboard()">🔄 새로고침</button>
+</div>
+<div class="card">
+<div class="title" style="font-size:1.1rem">📊 교사 대시보드</div>
+<div style="font-size:14px;color:var(--text-light);text-align:center" id="dashboard-room-info"></div>
+</div>
+<div class="tab-buttons">
+<button class="tab-btn active" onclick="switchTab('tab-overview',this)">📊 현황</button>
+<button class="tab-btn" onclick="switchTab('tab-detail',this)">📋 상세기록</button>
+<button class="tab-btn" onclick="switchTab('tab-export',this)">📥 내보내기</button>
+<button class="tab-btn" onclick="switchTab('tab-tts',this)">🔊 TTS</button>
+</div>
+<div id="dashboard-content">
+<div id="tab-overview" class="tab-content"></div>
+<div id="tab-detail" class="tab-content" style="display:none"></div>
+<div id="tab-export" class="tab-content" style="display:none">
+<div class="card">
+<button class="btn btn-primary" onclick="downloadExcel()">📥 엑셀 다운로드</button>
+<button class="btn btn-secondary" onclick="downloadPDF()" style="margin-top:8px">📄 PDF 다운로드</button>
+</div>
+</div>
+<div id="tab-tts" class="tab-content" style="display:none">
+<div class="card">
+<div class="section-label">🔊 교사 읽기 도구</div>
+<p style="font-size:14px;color:var(--text-light)">버튼을 눌러 해당 영역의 내용을 읽어줍니다.</p>
+<div style="margin-top:8px">
+<button class="btn-small btn-secondary" onclick="speakSection('tab-overview')">▶️ 현황 읽기</button>
+<button class="btn-small btn-secondary" onclick="previewScript('tab-overview')">📝 현황 스크립트</button>
+</div>
+<div style="margin-top:4px">
+<button class="btn-small btn-secondary" onclick="speakSection('tab-detail')">▶️ 상세기록 읽기</button>
+<button class="btn-small btn-secondary" onclick="previewScript('tab-detail')">📝 상세 스크립트</button>
+</div>
+<div style="margin-top:4px">
+<button class="btn-small btn-secondary" onclick="speakGuide()">▶️ 수업 안내문 읽기</button>
+<button class="btn-small btn-secondary" onclick="previewScript('guide')">📝 안내문 보기</button>
+</div>
+<div style="margin-top:8px">
+<button class="btn-small btn-danger" onclick="stopSpeaking()">⏹️ 정지</button>
+</div>
+</div>
+</div>
+</div>
+<div class="card" style="margin-top:12px;text-align:center;">
+<p style="font-size:13px;color:var(--warning)">⚠️ 수업이 끝나면 데이터 초기화를 눌러주세요. 30일 후 자동 삭제됩니다.</p>
+<button class="btn-small btn-danger" onclick="resetData()">🗑️ 데이터 초기화</button>
+</div>
+</div>
+
+</div><!-- container -->
+
+<!-- 토스트 -->
+<div id="toast" class="toast"></div>
+
+<!-- 커스텀 확인 모달 -->
+<div id="confirmModal" class="modal-overlay">
+<div class="modal-content">
+<div class="modal-icon">⚠️</div>
+<div class="modal-message" id="confirmMessage"></div>
+<div class="modal-buttons">
+<button class="btn btn-secondary btn-small" onclick="closeConfirmModal()">취소</button>
+<button class="btn btn-primary btn-small" id="confirmOkBtn" style="background:var(--error)">확인</button>
+</div>
+</div>
+</div>
+
+<!-- 스크립트 미리보기 모달 -->
+<div id="scriptModal" class="modal-overlay">
+<div class="modal-content" style="max-width:460px">
+<div class="modal-icon">📝</div>
+<div class="modal-message" id="scriptModalBody" style="max-height:50vh;overflow-y:auto;text-align:left;white-space:pre-wrap;font-size:14px"></div>
+<div class="modal-buttons">
+<button class="btn btn-secondary btn-small" onclick="closeScriptModal()">닫기</button>
+</div>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s",
+    authDomain: "emo-dex.firebaseapp.com",
+    projectId: "emo-dex",
+    storageBucket: "emo-dex.firebasestorage.app",
+    messagingSenderId: "994736049700",
+    appId: "1:994736049700:web:8233fa7b68cd6e0cccd2b1",
+    measurementId: "G-6YLB5C6VNR"
+};
+
+const APP_ID = 'sel-lesson-16';
+
+let app, auth, db;
+let useFirebase = false;
+let currentUser = null;
+const localDB = {};
+
+try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    useFirebase = true;
+} catch(e) { console.log('Firebase init fail:', e); }
+
+function getRoomRef(code) { return doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code); }
+function getStudentRef(code, nick) { return doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students', nick); }
+function getStudentsCol(code) { return collection(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students'); }
+
+const DB = {
+    async saveRoom(code, data) {
+        if (useFirebase) { try { await setDoc(getRoomRef(code), data); return; } catch(e) { console.log('FB saveRoom fail'); } }
+        localDB['room_' + code] = { ...(localDB['room_' + code] || {}), ...data };
+    },
+    async getRoom(code) {
+        if (useFirebase) { try { const s = await getDoc(getRoomRef(code)); return s.exists() ? s.data() : null; } catch(e) {} }
+        return localDB['room_' + code] || null;
+    },
+    async saveStudent(code, nick, data) {
+        if (useFirebase) { try { await setDoc(getStudentRef(code, nick), data, { merge: true }); return; } catch(e) {} }
+        if (!localDB['students_' + code]) localDB['students_' + code] = {};
+        localDB['students_' + code][nick] = { ...(localDB['students_' + code][nick] || {}), ...data };
+    },
+    async getStudent(code, nick) {
+        if (useFirebase) { try { const s = await getDoc(getStudentRef(code, nick)); return s.exists() ? s.data() : null; } catch(e) {} }
+        return (localDB['students_' + code] || {})[nick] || null;
+    },
+    async getAllStudents(code) {
+        if (useFirebase) { try { const s = await getDocs(getStudentsCol(code)); const r = {}; s.forEach(d => r[d.id] = d.data()); return r; } catch(e) {} }
+        return localDB['students_' + code] || {};
+    },
+    async deleteAllStudents(code) {
+        if (useFirebase) {
+            try { const s = await getDocs(getStudentsCol(code)); for (const d of s.docs) await deleteDoc(d.ref); } catch(e) {}
+        }
+        delete localDB['students_' + code];
+    },
+    async deleteRoom(code) {
+        if (useFirebase) {
+            try {
+                const s = await getDocs(getStudentsCol(code));
+                for (const d of s.docs) await deleteDoc(d.ref);
+                await deleteDoc(getRoomRef(code));
+            } catch(e) {}
+        }
+        delete localDB['room_' + code];
+        delete localDB['students_' + code];
+    },
+    onStudentsChange(code, cb) {
+        if (useFirebase) { try { return onSnapshot(getStudentsCol(code), snap => { const r = {}; snap.forEach(d => r[d.id] = d.data()); cb(r); }); } catch(e) {} }
+        cb(localDB['students_' + code] || {});
+        const iv = setInterval(() => cb(localDB['students_' + code] || {}), 3000);
+        return () => clearInterval(iv);
+    }
+};
+
+let authReady = new Promise((resolve) => {
+    if (!auth) { resolve(null); return; }
+    const timeout = setTimeout(() => resolve(null), 5000);
+    onAuthStateChanged(auth, user => { if (user) { currentUser = user; clearTimeout(timeout); resolve(user); } });
+    signInAnonymously(auth).catch(() => { clearTimeout(timeout); resolve(null); });
+});
+
+// ═══ 상태 변수 ═══
+let currentRoomCode = '';
+let currentNickname = '';
+let isTeacher = false;
+let isSoloMode = false;
+let unsubscribe = null;
+let dashboardData = {};
+let confirmCallback = null;
+
+// 학생 활동 데이터
+let visitedDoors = new Set();
+let doorResponses = {};
+let mirrorData = { myDifference: '', myWish: '' };
+let reflectionDone = false;
+
+// 심화 탐험 / 렌즈 연습 상태
+let visitedExtra = new Set();
+let lensBest = 0;
+let lensPlayed = 0;
+let lensLastScore = 0;
+let lensState = null;
+const LENS_ROUND = 5;
+
+// ═══ 시나리오 데이터 ═══
+const DOORS = [
+    {
+        id: 'alone',
+        emoji: '📖',
+        label: '혼자 노는 친구',
+        scene: `쉬는 시간, 운동장에서 모두 축구를 하고 있어요.\n그런데 한 아이가 혼자 벤치에 앉아 책을 읽고 있습니다.\n주변 아이들은 그 모습을 보며 수군거려요.\n"왜 같이 안 놀지?" "좀 이상하지 않아?"`,
+        perspectiveText: `그 아이는 사실 어릴 때부터 책을 좋아했어요.\n축구를 싫어하는 게 아니라, 쉬는 시간만큼은 좋아하는 책의 세계에 빠지고 싶은 거예요.\n가끔은 "같이 놀자"는 말을 기다리기도 하지만,\n혼자 있는 시간이 불편한 건 아니에요.`,
+        perspectiveQ: '이 친구의 마음을 알고 나니, 느낌이 달라졌나요?'
+    },
+    {
+        id: 'language',
+        emoji: '🗣️',
+        label: '다른 말을 쓰는 친구',
+        scene: `새 학기, 전학생이 자기소개를 합니다.\n말투가 조금 느리고, 억양도 달라요.\n"저는... 집에서 엄마랑 베트남어로 이야기해요."\n교실이 잠시 조용해집니다.\n몇몇 아이들이 서로를 바라봐요.`,
+        perspectiveText: `그 아이에게 베트남어는 엄마의 목소리이고, 따뜻한 집의 언어예요.\n한국어를 배우느라 매일 노력하고 있어요.\n두 가지 언어를 할 수 있다는 건 사실 대단한 일이에요.\n하지만 친구들 앞에서 말할 때면 가슴이 두근거려요.\n"발음이 이상하다고 생각하면 어쩌지..." 하고요.`,
+        perspectiveQ: '이 친구의 이야기를 듣고 나니, 어떤 마음이 드나요?'
+    },
+    {
+        id: 'hobby',
+        emoji: '🐛',
+        label: '독특한 취미의 친구',
+        scene: `좋아하는 것 발표 시간입니다.\n한 아이가 앞에 서서 말해요.\n"저는 곤충 표본 모으는 게 취미예요. 어제도 장수풍뎅이를..."\n교실 여기저기서 "으으~" 소리가 나요.\n발표하던 아이의 어깨가 움츠러듭니다.`,
+        perspectiveText: `그 아이는 유치원 때부터 곤충에 빠졌어요.\n자연 다큐멘터리를 보면서 생명의 신비에 감탄했거든요.\n곤충 도감은 그 아이의 보물 1호예요.\n"으으~" 소리를 들었을 때, 좋아하는 걸 말한 게 부끄러워졌어요.\n'다음부터는 말하지 말아야지...' 하고 생각했어요.`,
+        perspectiveQ: '그 아이가 "다음부터는 말하지 말아야지"라고 생각한 것에 대해 어떤 마음이 드나요?'
+    },
+    {
+        id: 'pace',
+        emoji: '🐢',
+        label: '느린 속도의 친구',
+        scene: `모둠 활동 시간입니다.\n한 아이가 글씨를 천천히 쓰고 있어요.\n다른 아이들은 이미 다 끝났는데, 그 아이만 아직이에요.\n"빨리 좀 해!" 누군가 짜증스러운 목소리로 말합니다.\n그 아이의 손이 더 떨리기 시작해요.`,
+        perspectiveText: `그 아이는 한 글자 한 글자 정성을 담아 쓰는 타입이에요.\n빠른 게 중요한 게 아니라, 정확하게 하고 싶은 거예요.\n"빨리 해!"라는 말을 들으면 머리가 하얘져요.\n더 빨리 하고 싶은데 손이 안 따라주는 느낌...\n사실 집에서 혼자 하면 꽤 잘해요. 다만 시선이 무서운 거예요.`,
+        perspectiveQ: '이 친구의 속마음을 알고 나서, 어떤 생각이 드나요?'
+    },
+    {
+        id: 'mirror',
+        emoji: '🪞',
+        label: '마지막 문',
+        scene: '',
+        perspectiveText: '',
+        perspectiveQ: ''
+    }
+];
+
+const FEELINGS = [
+    { key: 'awkward', emoji: '😶', label: '어색함' },
+    { key: 'curious', emoji: '🤔', label: '궁금함' },
+    { key: 'distance', emoji: '😐', label: '거리감' },
+    { key: 'interest', emoji: '👀', label: '관심' },
+    { key: 'discomfort', emoji: '😣', label: '불편함' },
+    { key: 'sympathy', emoji: '🥺', label: '안타까움' }
+];
+
+const REASONS = [
+    '나와 달라서',
+    '처음 보는 모습이라서',
+    '왜 그러는지 모르겠어서',
+    '더 알고 싶어서',
+    '나도 비슷한 경험이 있어서',
+    '그냥 느낌이 그랬어'
+];
+
+// ═══ 심화 탐험용 추가 상황 (기본 4문 완료 후 열리는 '더 깊은 복도') ═══
+const EXTRA_DOORS = [
+    {
+        id: 'lunch',
+        emoji: '🍱',
+        label: '낯선 도시락의 친구',
+        scene: `점심시간, 도시락 뚜껑이 하나둘 열립니다.\n한 아이의 도시락에서 처음 맡아보는 향이 퍼져요.\n"어? 이게 무슨 냄새야?" 누군가 코를 막습니다.\n도시락 주인은 조용히 뚜껑을 반쯤 닫아요.`,
+        perspectiveText: `그 도시락은 오늘 새벽에 엄마가 싸준 거예요.\n엄마 고향에서 명절마다 먹던 음식이라, 아이에게는 '집의 맛'이에요.\n어제는 "학교에서 먹기 부끄러우니까 김밥 싸주면 안 돼?"라고 말할 뻔했대요.\n그 말을 하면 엄마가 서운해할까 봐 삼켰다고 해요.\n짝꿍이 "무슨 맛이야? 나도 궁금해"라고 물어본 날은, 뚜껑을 끝까지 열었대요.`,
+        perspectiveQ: '이 친구는 언제 도시락 뚜껑을 끝까지 열 수 있었나요?'
+    },
+    {
+        id: 'sport',
+        emoji: '🏃',
+        label: '체육이 어려운 친구',
+        scene: `피구 편을 가르는 시간이에요.\n한 아이의 이름이 계속 불리지 않습니다.\n"쟤랑 같은 편 되면 지는데..." 작게 속삭이는 소리가 들려요.\n그 아이는 운동화 끈만 계속 고쳐 묶습니다.`,
+        perspectiveText: `그 아이는 공이 날아오면 눈이 먼저 감겨요.\n작년에 공에 맞아 안경이 깨진 적이 있거든요.\n대신 규칙을 제일 잘 알아서, 그 아이가 심판을 보면 아무도 다투지 않아요.\n"잘 못해도 같이 하자"는 말을 딱 한 번 들어봤는데,\n그날은 하루 종일 발걸음이 가벼웠대요.`,
+        perspectiveQ: '이 친구는 언제 기분이 나아졌다고 했나요?'
+    },
+    {
+        id: 'sound',
+        emoji: '🎧',
+        label: '소리에 예민한 친구',
+        scene: `학예회 연습으로 교실이 시끌시끌해요.\n한 아이가 갑자기 두 손으로 귀를 막고 복도로 나갑니다.\n"쟤 왜 저래?" "분위기 깨네." 웅성거림이 커져요.`,
+        perspectiveText: `그 아이에게 큰 소리는 그냥 시끄러운 정도가 아니에요.\n머릿속에서 소리가 부풀어 올라서 생각이 잘 이어지지 않아요.\n복도에서 30초만 서 있으면 다시 괜찮아진대요.\n지난주에는 짝꿍이 아무 말 없이 문을 열어줬는데,\n그때가 제일 마음이 편했다고 해요.`,
+        perspectiveQ: '이 친구는 언제 마음이 편해졌다고 했나요?'
+    },
+    {
+        id: 'stuff',
+        emoji: '🎒',
+        label: '물건이 다른 친구',
+        scene: `현장학습 준비물을 확인하는 시간이에요.\n한 아이의 가방은 형이 쓰던 낡은 가방입니다.\n"그거 완전 옛날 거 아니야?" 웃음소리가 번져요.\n그 아이는 가방을 슬쩍 책상 밑으로 내려놓습니다.`,
+        perspectiveText: `그 가방은 형이 6년 동안 메고 다니던 거예요.\n형이 졸업하던 날 "이제 네 거야"라며 직접 건네줬어요.\n아이는 그날 가방을 안고 잤을 만큼 좋아했어요.\n웃음소리를 들은 날, 처음으로 그 가방이 부끄러워졌대요.\n담임 선생님이 "형이 물려준 거구나, 오래 쓴 물건엔 이야기가 있지"라고 말해준 뒤로 다시 어깨에 멨어요.`,
+        perspectiveQ: '이 친구에게 그 가방은 어떤 의미였을까요?'
+    },
+    {
+        id: 'holiday',
+        emoji: '🎎',
+        label: '명절이 다른 친구',
+        scene: `"이번 명절에 뭐 했어?" 이야기꽃이 핍니다.\n한 아이가 말해요. "우리 집은 그날은 특별히 안 해요. 대신 다른 날에 온 가족이 모여요."\n"에이~ 그런 게 어딨어?" 몇몇이 고개를 갸웃해요.`,
+        perspectiveText: `그 아이네 가족은 다른 날짜에 모여 큰 상을 차려요.\n할머니가 끓여주는 국이 그날의 주인공이래요.\n아이는 그 날을 일 년 내내 기다립니다.\n"그런 게 어딨어?"라는 말을 들었을 때, 우리 집이 이상한가 싶어 잠깐 조용해졌대요.\n짝꿍이 "그날 뭐 먹어? 맛있겠다"라고 물어봤을 땐 신나서 한참 이야기했대요.`,
+        perspectiveQ: '"그런 게 어딨어?" 대신 어떤 말을 들었을 때 이 친구가 신나 보였나요?'
+    },
+    {
+        id: 'face',
+        emoji: '😐',
+        label: '표정이 잘 안 변하는 친구',
+        scene: `모둠 발표가 끝나고 다들 웃으며 손뼉을 칩니다.\n한 아이만 표정이 거의 그대로예요.\n"쟤는 재미없나 봐." "좀 차가운 것 같아." 뒤에서 말이 오갑니다.`,
+        perspectiveText: `그 아이는 사실 마음속으로 크게 웃고 있었어요.\n원래 표정이 잘 드러나지 않는 편이래요.\n집에서도 "좋아하는 게 티가 안 나서 아쉽다"는 말을 자주 들어요.\n발표가 끝난 뒤 조용히 "오늘 진짜 잘했어"라고 메시지를 보낸 건 그 아이였어요.`,
+        perspectiveQ: '표정과 마음이 다를 수 있다는 걸 알고 나니, 어떤 생각이 드나요?'
+    }
+];
+
+// ═══ 렌즈 바꿔보기 연습 문항 ═══
+const LENS_ITEMS = [
+    {
+        situation: '급식 시간, 한 친구가 반찬 하나를 그대로 남겼어요.',
+        options: [
+            { text: '"완전 편식쟁이네."', lens: false },
+            { text: '"안 먹는 이유가 있을지도 몰라. 한번 물어볼까?"', lens: true },
+            { text: '"그럴 거면 받지를 말지."', lens: false }
+        ],
+        explain: '이해의 렌즈는 "왜 저래"가 아니라 "무슨 사정이 있을까"로 시작해요.'
+    },
+    {
+        situation: '전학 온 친구가 쉬는 시간에 거의 말을 하지 않아요.',
+        options: [
+            { text: '"우리랑 친해질 마음이 없나 봐."', lens: false },
+            { text: '"아직 낯설어서 말을 고르고 있는 중일 수도 있어."', lens: true },
+            { text: '"우리를 무시하는 거 아니야?"', lens: false }
+        ],
+        explain: '조용함은 거절이 아니라 아직 익숙해지는 중이라는 신호일 수 있어요.'
+    },
+    {
+        situation: '모둠 활동에서 한 친구가 계속 다른 방법을 제안해요.',
+        options: [
+            { text: '"왜 자꾸 딴지를 걸어."', lens: false },
+            { text: '"내가 못 본 걸 봤을 수도 있어. 이유를 들어보자."', lens: true },
+            { text: '"그냥 튀고 싶은 거지."', lens: false }
+        ],
+        explain: '다른 의견은 방해가 아니라, 내가 보지 못한 각도일 수 있어요.'
+    },
+    {
+        situation: '발표할 때 목소리가 아주 작은 친구가 있어요.',
+        options: [
+            { text: '"자신감이 하나도 없네."', lens: false },
+            { text: '"지금 많이 떨리는 중일 수도 있어."', lens: true },
+            { text: '"준비를 안 했나 보다."', lens: false }
+        ],
+        explain: '보이는 모습 뒤에는 아직 말하지 못한 마음이 있을 때가 많아요.'
+    },
+    {
+        situation: '친구가 나와 완전히 다른 것을 좋아한다고 말했어요.',
+        options: [
+            { text: '"취향 진짜 특이하다."', lens: false },
+            { text: '"나는 잘 모르는 세계네. 뭐가 좋은지 물어볼까?"', lens: true },
+            { text: '"그런 걸 왜 좋아해?"', lens: false }
+        ],
+        explain: '모르는 것은 이상한 것이 아니라, 아직 안 가본 곳이에요.'
+    },
+    {
+        situation: '짝꿍이 오늘따라 인사를 받아주지 않았어요.',
+        options: [
+            { text: '"나를 싫어하나 봐."', lens: false },
+            { text: '"오늘 마음이 무거운 일이 있었을 수도 있어."', lens: true },
+            { text: '"치사하게 왜 저래."', lens: false }
+        ],
+        explain: '상대의 행동을 늘 나에 대한 반응으로만 읽지 않아도 괜찮아요.'
+    },
+    {
+        situation: '한 친구가 규칙을 여러 번 꼼꼼히 확인해요.',
+        options: [
+            { text: '"융통성이 없어."', lens: false },
+            { text: '"실수하는 게 많이 걱정되는 걸 수도 있어."', lens: true },
+            { text: '"왜 저렇게 유난이야."', lens: false }
+        ],
+        explain: '꼼꼼함의 뒤에는 잘하고 싶은 마음이 숨어 있을 수 있어요.'
+    },
+    {
+        situation: '친구가 나와 다른 방식으로 문제를 풀었어요.',
+        options: [
+            { text: '"그건 틀린 방법이야."', lens: false },
+            { text: '"저 방법으로도 답이 나오네. 어떻게 생각했는지 궁금해."', lens: true },
+            { text: '"배운 대로 해야지."', lens: false }
+        ],
+        explain: '길이 하나가 아니라는 걸 알면, 다름이 위협이 아니라 힌트가 돼요.'
+    }
+];
+
+// ═══ 공통 함수 ═══
+function showToast(msg, type = 'info') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = type === 'error' ? 'rgba(239,68,68,0.95)' : type === 'success' ? 'rgba(16,185,129,0.95)' : 'rgba(31,41,55,0.95)';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+window.showScreen = function(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const t = document.getElementById(id);
+    if (t) { t.classList.add('active'); window.scrollTo(0, 0); }
+};
+
+window.showConfirmModal = function(message, onConfirm) {
+    document.getElementById('confirmMessage').innerHTML = message;
+    document.getElementById('confirmModal').style.display = 'flex';
+    confirmCallback = onConfirm;
+    document.getElementById('confirmOkBtn').onclick = () => {
+        const cb = confirmCallback;
+        closeConfirmModal();
+        if (cb) cb();
+    };
+};
+
+window.closeConfirmModal = function() {
+    document.getElementById('confirmModal').style.display = 'none';
+    confirmCallback = null;
+    document.getElementById('confirmOkBtn').textContent = '확인';
+    document.getElementById('confirmOkBtn').style.background = 'var(--error)';
+};
+
+async function copyToClipboard(text) {
+    try { await navigator.clipboard.writeText(text); showToast('✅ 코드가 복사되었습니다!'); }
+    catch(e1) {
+        const ta = document.createElement('textarea'); ta.value = text;
+        ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { document.execCommand('copy'); showToast('✅ 코드가 복사되었습니다!'); }
+        catch(e2) { showToast('📋 코드: ' + text + ' (직접 복사해주세요)'); }
+        document.body.removeChild(ta);
+    }
+}
+
+function simpleHash(str) { let h = 0; for (let i = 0; i < str.length; i++) { h = ((h << 5) - h) + str.charCodeAt(i); h |= 0; } return Math.abs(h).toString(36); }
+
+// ═══ 방 만들기 ═══
+window.createRoom = async function() {
+    await authReady;
+    const name = document.getElementById('teacher-name').value.trim();
+    const pw = document.getElementById('room-password').value.trim();
+    if (!name) { showToast('닉네임을 입력해주세요.', 'error'); return; }
+    if (!pw || pw.length !== 4 || !/^\d+$/.test(pw)) { showToast('비밀번호는 숫자 4자리로 입력해주세요.', 'error'); return; }
+
+    const code = String(Math.floor(Math.random() * 900000 + 100000));
+    const exp = new Date(); exp.setDate(exp.getDate() + 30);
+
+    await DB.saveRoom(code, {
+        teacherName: name, password: simpleHash(pw),
+        createdAt: new Date().toISOString(), expiresAt: exp.toISOString()
+    });
+
+    currentRoomCode = code; currentNickname = name; isTeacher = true; isSoloMode = false;
+    document.getElementById('display-room-code').textContent = code;
+    showScreen('screen-room-created');
+};
+
+window.copyRoomCode = function() { copyToClipboard(currentRoomCode); };
+
+window.enterDashboard = function() {
+    document.getElementById('dashboard-room-info').textContent = `방 코드: ${currentRoomCode}`;
+    startDashboardListener();
+    showScreen('screen-dashboard');
+};
+
+// ═══ 교사 접속 ═══
+window.joinAsTeacher = async function() {
+    await authReady;
+    const code = document.getElementById('teacher-room-code').value.trim();
+    const pw = document.getElementById('teacher-password').value.trim();
+    if (!code || !pw) { showToast('방 코드와 비밀번호를 입력해주세요.', 'error'); return; }
+    const room = await DB.getRoom(code);
+    if (!room) { showToast('존재하지 않는 방입니다.', 'error'); return; }
+    if (room.expiresAt && new Date(room.expiresAt) < new Date()) { await DB.deleteRoom(code); showToast('만료된 방입니다.', 'error'); return; }
+    if (room.password !== simpleHash(pw)) { showToast('비밀번호가 틀립니다.', 'error'); return; }
+    currentRoomCode = code; isTeacher = true; isSoloMode = false;
+    currentNickname = room.teacherName || '선생님';
+    enterDashboard();
+};
+
+// ═══ 학생 입장 ═══
+window.joinAsStudent = async function() {
+    await authReady;
+    const code = document.getElementById('student-room-code').value.trim();
+    const nick = document.getElementById('student-nickname').value.trim();
+    if (!code || !nick) { showToast('방 코드와 닉네임을 입력해주세요.', 'error'); return; }
+    const room = await DB.getRoom(code);
+    if (!room) { showToast('존재하지 않는 방입니다.', 'error'); return; }
+    if (room.expiresAt && new Date(room.expiresAt) < new Date()) { await DB.deleteRoom(code); showToast('만료된 방입니다.', 'error'); return; }
+
+    const existing = await DB.getStudent(code, nick);
+    if (existing) {
+        const visited = (existing.visitedDoors || []).length;
+        const visitedEx = (existing.visitedExtra || []).length;
+        showConfirmModal(
+            `<strong>${nick}</strong>님, 이전에 참여한 기록이 있어요!<br><br>` +
+            `🚪 탐험한 문: ${visited}개<br>` +
+            `🌌 더 깊은 복도: ${visitedEx}개<br>` +
+            `🔄 렌즈 연습 최고 기록: ${existing.lensBest || 0} / ${LENS_ROUND}<br>` +
+            `${existing.completedAt ? '✅ 활동 완료!' : '⏳ 진행 중...'}<br><br>` +
+            `이어서 할까요?`,
+            async () => {
+                currentRoomCode = code; currentNickname = nick; isTeacher = false; isSoloMode = false;
+                restoreStudentData(existing);
+                await DB.saveStudent(code, nick, { lastVisit: new Date().toISOString() });
+                showToast(`🎉 ${nick}님, 다시 오셨군요!`, 'success');
+                if (reflectionDone) { openComplete(); } else { goToMain(); }
+            }
+        );
+        document.getElementById('confirmOkBtn').textContent = '이어하기';
+        document.getElementById('confirmOkBtn').style.background = 'var(--primary)';
+        return;
+    }
+
+    currentRoomCode = code; currentNickname = nick; isTeacher = false; isSoloMode = false;
+    resetActivityState();
+    await DB.saveStudent(code, nick, { joinedAt: new Date().toISOString(), visitedDoors: [], visitedExtra: [], doorResponses: {}, lensBest: 0, lensPlayed: 0 });
+    showScreen('screen-story');
+};
+
+function resetActivityState() {
+    visitedDoors = new Set();
+    visitedExtra = new Set();
+    doorResponses = {};
+    mirrorData = { myDifference: '', myWish: '' };
+    reflectionDone = false;
+    lensBest = 0; lensPlayed = 0; lensLastScore = 0; lensState = null;
+}
+
+function restoreStudentData(data) {
+    visitedDoors = new Set(data.visitedDoors || []);
+    visitedExtra = new Set(data.visitedExtra || []);
+    doorResponses = data.doorResponses || {};
+    mirrorData = { myDifference: data.mirrorDifference || '', myWish: data.mirrorWish || '' };
+    reflectionDone = !!(data.completedAt);
+    lensBest = data.lensBest || 0;
+    lensPlayed = data.lensPlayed || 0;
+    lensLastScore = data.lensLastScore || 0;
+    lensState = null;
+}
+
+// 학생 활동 데이터 즉시 저장 (혼자 체험 모드는 저장하지 않음)
+async function persist(payload) {
+    if (isSoloMode || !currentRoomCode || !currentNickname) return;
+    try { await DB.saveStudent(currentRoomCode, currentNickname, payload); } catch(e) {}
+}
+
+// ═══ 혼자 체험하기 ═══
+window.startSoloMode = function() {
+    isSoloMode = true; isTeacher = false;
+    currentNickname = '탐험가'; currentRoomCode = '';
+    resetActivityState();
+    showScreen('screen-story');
+};
+
+// ═══ 메인 화면 ═══
+window.goToMain = function() {
+    renderDoorGrid();
+    updateProgress();
+    updateReflectionBtn();
+    showScreen('screen-main');
+};
+
+window.backToMain = function() {
+    renderDoorGrid();
+    updateProgress();
+    updateReflectionBtn();
+    showScreen('screen-main');
+    showToast('🚪 복도로 돌아왔어요!', 'success');
+};
+
+function renderDoorGrid() {
+    const grid = document.getElementById('door-grid');
+    grid.innerHTML = '';
+    DOORS.forEach((door, i) => {
+        if (door.id === 'mirror') {
+            const allVisited = DOORS.filter(d => d.id !== 'mirror').every(d => visitedDoors.has(d.id));
+            const div = document.createElement('div');
+            div.className = 'door-card' + (mirrorData.myDifference ? ' visited' : '');
+            div.style.gridColumn = 'span 2';
+            if (!allVisited) {
+                div.style.opacity = '0.4';
+                div.style.cursor = 'not-allowed';
+                div.innerHTML = `<span class="door-emoji">🔒</span><span class="door-label">모든 문을 열면 나타나요</span>`;
+            } else {
+                div.innerHTML = `<span class="door-emoji">🪞</span><span class="door-label">마지막 문 — 거울의 방</span>`;
+                div.onclick = () => openMirror();
+            }
+            grid.appendChild(div);
+            return;
+        }
+        const div = document.createElement('div');
+        div.className = 'door-card' + (visitedDoors.has(door.id) ? ' visited' : '');
+        div.innerHTML = `<span class="door-emoji">${door.emoji}</span><span class="door-label">${door.label}</span>`;
+        div.onclick = () => openDoor(i);
+        grid.appendChild(div);
+    });
+}
+
+function updateProgress() {
+    const total = DOORS.length - 1;
+    const done = visitedDoors.size;
+    const pct = Math.round((done / total) * 100);
+    document.getElementById('main-progress').style.width = pct + '%';
+    document.getElementById('main-progress-text').textContent = `${done} / ${total} 탐험 완료`;
+}
+
+function updateReflectionBtn() {
+    const area = document.getElementById('reflection-btn-area');
+    if (reflectionDone) {
+        area.innerHTML = `<div style="color:var(--success);font-size:14px;font-weight:700">✅ 활동을 완료했어요!</div>
+            <button class="btn btn-secondary" onclick="openComplete()" style="margin-top:8px;font-size:14px">📜 결과 다시 보기</button>`;
+    } else if (mirrorData.myDifference) {
+        area.innerHTML = `<button class="btn btn-primary" onclick="goToComplete()">🎉 활동 마무리하기 →</button>`;
+    } else {
+        area.innerHTML = '';
+    }
+}
+
+// ═══ 문 열기 ═══
+let currentDoorIndex = -1;
+let currentDoorStep = 0;
+let currentDoorExtra = false;
+
+function getCurrentDoor() {
+    return currentDoorExtra ? EXTRA_DOORS[currentDoorIndex] : DOORS[currentDoorIndex];
+}
+
+function openDoor(index, extra) {
+    currentDoorIndex = index;
+    currentDoorExtra = !!extra;
+    currentDoorStep = 0;
+    renderDoorStep(getCurrentDoor());
+    showScreen('screen-door');
+}
+
+window.doorGoBack = function() {
+    if (currentDoorExtra) { openComplete(); }
+    else { backToMain(); }
+};
+
+function renderDoorStep(door) {
+    const ct = document.getElementById('door-content');
+    const resp = doorResponses[door.id] || {};
+    const isVisited = currentDoorExtra ? visitedExtra.has(door.id) : visitedDoors.has(door.id);
+
+    if (currentDoorStep === 0) {
+        // Step 1: 장면 읽기 + 감정 선택
+        ct.innerHTML = `
+            <div style="text-align:center;font-size:2rem;margin-bottom:8px">${door.emoji}</div>
+            <div class="title" style="font-size:1.1rem">${door.label}</div>
+            <div class="story-box">${door.scene.replace(/\n/g, '<br>')}</div>
+            <div class="section-label" style="margin-top:16px">💭 이 장면을 봤을 때, 가장 먼저 든 마음은?</div>
+            <div class="feeling-grid" id="feeling-grid-${door.id}">
+                ${FEELINGS.map(f => `<button class="feeling-btn ${resp.feeling === f.key ? 'selected' : ''}" data-key="${f.key}" onclick="selectFeeling('${door.id}','${f.key}')">${f.emoji} ${f.label}</button>`).join('')}
+            </div>
+            <div class="section-label" style="margin-top:12px">🔍 왜 그런 마음이 들었을까요?</div>
+            <div id="reason-area-${door.id}">
+                ${REASONS.map(r => `<button class="choice-btn ${resp.reason === r ? 'selected' : ''}" onclick="selectReason('${door.id}',this,'${r}')">${r}</button>`).join('')}
+            </div>
+            <div style="margin-top:12px">
+                <textarea id="reason-text-${door.id}" placeholder="더 하고 싶은 말이 있다면 써보세요 (선택)" rows="2">${resp.reasonText || ''}</textarea>
+            </div>
+            <button class="btn btn-primary" id="door-next-btn" onclick="doorNext('${door.id}')" style="margin-top:16px" ${!resp.feeling && !isVisited ? 'disabled' : ''}>
+                🔄 렌즈 바꿔보기 →
+            </button>`;
+    } else if (currentDoorStep === 1) {
+        // Step 2: 관점 전환
+        ct.innerHTML = `
+            <div style="text-align:center;font-size:2rem;margin-bottom:8px">🔄</div>
+            <div class="title" style="font-size:1.1rem">렌즈를 바꿔볼까요?</div>
+            <div class="subtitle">같은 장면, ${door.label}의 눈으로 보기</div>
+            <div class="perspective-box">
+                <div style="font-size:14px;color:#3b82f6;font-weight:900;margin-bottom:8px">👁️ 그 친구의 이야기</div>
+                <div style="font-size:15px;line-height:1.8;font-weight:500">${door.perspectiveText.replace(/\n/g, '<br>')}</div>
+            </div>
+            <div class="section-label" style="margin-top:16px">${door.perspectiveQ}</div>
+            <div id="perspective-choices-${door.id}">
+                ${['네, 많이 달라졌어요', '조금 달라진 것 같아요', '잘 모르겠어요', '처음이랑 비슷해요'].map(c =>
+                    `<button class="choice-btn ${resp.perspectiveChoice === c ? 'selected' : ''}" onclick="selectPerspective('${door.id}',this,'${c}')">${c}</button>`
+                ).join('')}
+            </div>
+            <div style="margin-top:12px">
+                <div class="section-label">💬 이 친구에게 한마디 해준다면?</div>
+                <textarea id="perspective-msg-${door.id}" placeholder="예: 네 취미 멋지다! / 힘들었겠다..." rows="2">${resp.perspectiveMsg || ''}</textarea>
+            </div>
+            <button class="btn btn-primary" onclick="doorComplete('${door.id}')" style="margin-top:16px">✅ 탐험 완료!</button>`;
+    }
+}
+
+window.selectFeeling = function(doorId, key) {
+    if (!doorResponses[doorId]) doorResponses[doorId] = {};
+    doorResponses[doorId].feeling = key;
+    document.querySelectorAll(`#feeling-grid-${doorId} .feeling-btn`).forEach(b => b.classList.toggle('selected', b.dataset.key === key));
+    const btn = document.getElementById('door-next-btn');
+    if (btn) btn.disabled = false;
+};
+
+window.selectReason = function(doorId, el, reason) {
+    if (!doorResponses[doorId]) doorResponses[doorId] = {};
+    doorResponses[doorId].reason = reason;
+    el.parentElement.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+};
+
+window.selectPerspective = function(doorId, el, choice) {
+    if (!doorResponses[doorId]) doorResponses[doorId] = {};
+    doorResponses[doorId].perspectiveChoice = choice;
+    el.parentElement.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+};
+
+window.doorNext = async function(doorId) {
+    const resp = doorResponses[doorId] || {};
+    if (!resp.feeling) { showToast('마음을 하나 골라주세요.', 'error'); return; }
+    const textEl = document.getElementById('reason-text-' + doorId);
+    if (textEl) resp.reasonText = textEl.value.trim();
+    doorResponses[doorId] = resp;
+    currentDoorStep = 1;
+    renderDoorStep(getCurrentDoor());
+    window.scrollTo(0, 0);
+    // 중간 이탈 대비: 1단계 응답을 즉시 저장
+    persist({ doorResponses: doorResponses });
+};
+
+window.doorComplete = async function(doorId) {
+    const resp = doorResponses[doorId] || {};
+    const msgEl = document.getElementById('perspective-msg-' + doorId);
+    if (msgEl) resp.perspectiveMsg = msgEl.value.trim();
+    doorResponses[doorId] = resp;
+
+    const door = getCurrentDoor();
+    if (currentDoorExtra) {
+        visitedExtra.add(doorId);
+        await persist({ visitedExtra: Array.from(visitedExtra), doorResponses: doorResponses });
+        showToast(`✅ ${door.label} 탐험 완료! (${visitedExtra.size}/${EXTRA_DOORS.length})`, 'success');
+        openComplete();
+        return;
+    }
+
+    visitedDoors.add(doorId);
+    await persist({ visitedDoors: Array.from(visitedDoors), doorResponses: doorResponses });
+    showToast(`✅ ${door.label} 탐험 완료!`, 'success');
+    backToMain();
+};
+
+// ═══ 거울의 방 ═══
+function openMirror() {
+    if (mirrorData.myDifference) {
+        document.getElementById('mirror-input').value = mirrorData.myDifference;
+        document.getElementById('mirror-wish').value = mirrorData.myWish;
+    }
+    showScreen('screen-mirror');
+}
+
+window.submitMirror = async function() {
+    const diff = document.getElementById('mirror-input').value.trim();
+    const wish = document.getElementById('mirror-wish').value.trim();
+    if (!diff) { showToast('나의 다른 점을 하나 적어주세요.', 'error'); return; }
+    mirrorData.myDifference = diff;
+    mirrorData.myWish = wish;
+
+    await persist({ mirrorDifference: diff, mirrorWish: wish });
+
+    showToast('🪞 거울의 방 완료!', 'success');
+    backToMain();
+};
+
+// ═══ 활동 완료 ═══
+window.goToComplete = async function() {
+    const first = !reflectionDone;
+    reflectionDone = true;
+    if (first) await persist({ completedAt: new Date().toISOString() });
+    openComplete();
+};
+
+window.openComplete = function() {
+    renderCompleteSummary();
+    renderExtraGrid();
+    updateExtraProgress();
+    renderLensPractice();
+    showScreen('screen-complete');
+};
+
+function renderCompleteSummary() {
+    const summary = document.getElementById('complete-summary');
+    if (!summary) return;
+    let html = '<div style="text-align:left">';
+    DOORS.filter(d => d.id !== 'mirror').forEach(door => {
+        const resp = doorResponses[door.id];
+        if (resp) {
+            const feel = FEELINGS.find(f => f.key === resp.feeling);
+            html += `<div class="result-card">
+                <strong>${door.emoji} ${door.label}</strong><br>
+                <span style="font-size:14px">첫 마음: ${feel ? feel.emoji + ' ' + feel.label : '-'}</span>
+                ${resp.perspectiveMsg ? `<br><span style="font-size:13px;color:var(--primary)">💬 "${resp.perspectiveMsg}"</span>` : ''}
+            </div>`;
+        }
+    });
+    if (mirrorData.myDifference) {
+        html += `<div class="result-card">
+            <strong>🪞 나도 누군가에게 낯선 사람</strong><br>
+            <span style="font-size:14px">"${mirrorData.myDifference}"</span>
+            ${mirrorData.myWish ? `<br><span style="font-size:13px;color:var(--primary)">💭 "${mirrorData.myWish}"</span>` : ''}
+        </div>`;
+    }
+    EXTRA_DOORS.forEach(door => {
+        if (!visitedExtra.has(door.id)) return;
+        const resp = doorResponses[door.id] || {};
+        const feel = FEELINGS.find(f => f.key === resp.feeling);
+        html += `<div class="result-card" style="background:rgba(59,130,246,0.06)">
+            <strong>${door.emoji} ${door.label}</strong> <span style="font-size:12px;color:#3b82f6">심화</span><br>
+            <span style="font-size:14px">첫 마음: ${feel ? feel.emoji + ' ' + feel.label : '-'}</span>
+            ${resp.perspectiveMsg ? `<br><span style="font-size:13px;color:var(--primary)">💬 "${resp.perspectiveMsg}"</span>` : ''}
+        </div>`;
+    });
+    if (lensPlayed > 0) {
+        html += `<div class="result-card" style="background:rgba(16,185,129,0.08)">
+            <strong>🔄 렌즈 바꿔보기 연습</strong><br>
+            <span style="font-size:14px">최고 기록 ${lensBest} / ${LENS_ROUND} · 도전 ${lensPlayed}회</span>
+        </div>`;
+    }
+    html += '</div>';
+    summary.innerHTML = html;
+}
+
+// ═══ 더 깊은 복도 (심화 탐험) ═══
+function renderExtraGrid() {
+    const grid = document.getElementById('extra-door-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    EXTRA_DOORS.forEach((door, i) => {
+        const div = document.createElement('div');
+        div.className = 'door-card' + (visitedExtra.has(door.id) ? ' visited' : '');
+        div.innerHTML = `<span class="door-emoji">${door.emoji}</span><span class="door-label">${door.label}</span>`;
+        div.onclick = () => openDoor(i, true);
+        grid.appendChild(div);
+    });
+}
+
+function updateExtraProgress() {
+    const bar = document.getElementById('extra-progress');
+    const txt = document.getElementById('extra-progress-text');
+    if (!bar || !txt) return;
+    const total = EXTRA_DOORS.length;
+    const done = visitedExtra.size;
+    bar.style.width = Math.round(done / total * 100) + '%';
+    let msg = '';
+    if (done === 0) msg = ' · 🌱 한 문만 열어볼까요?';
+    else if (done < total / 2) msg = ' · 🔥 좋은 시작이에요!';
+    else if (done < total) msg = ' · 🎯 절반을 넘었어요!';
+    else msg = ' · 🎊 모든 문을 열었어요!';
+    txt.textContent = `${done} / ${total} 탐험${msg}`;
+}
+
+// ═══ 렌즈 바꿔보기 연습 ═══
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+window.lensStart = function() {
+    const pool = shuffle(LENS_ITEMS.slice()).slice(0, LENS_ROUND).map(it => ({
+        situation: it.situation,
+        explain: it.explain,
+        options: shuffle(it.options.slice())
+    }));
+    lensState = { items: pool, idx: 0, score: 0, answered: false, picked: -1, feedback: '' };
+    renderLensPractice();
+};
+
+window.lensAnswer = function(i) {
+    if (!lensState || lensState.answered) return;
+    const it = lensState.items[lensState.idx];
+    const opt = it.options[i];
+    const lensOpt = it.options.find(o => o.lens);
+    lensState.answered = true;
+    lensState.picked = i;
+    if (opt.lens) {
+        lensState.score++;
+        lensState.feedback = `🔍 이건 <strong>이해의 렌즈</strong>로 본 말이에요.<br>${it.explain}`;
+    } else {
+        lensState.feedback = `그렇게 느낄 수도 있어요. 그 마음이 잘못된 건 아니에요.<br>` +
+            `다만 <strong>이해의 렌즈</strong>로 보면 이렇게 보여요 →<br>` +
+            `<strong>${lensOpt.text}</strong><br>${it.explain}`;
+    }
+    renderLensPractice();
+};
+
+window.lensNext = function() {
+    if (!lensState) return;
+    lensState.idx++;
+    lensState.answered = false;
+    lensState.picked = -1;
+    lensState.feedback = '';
+    if (lensState.idx >= lensState.items.length) finishLensRound();
+    renderLensPractice();
+};
+
+function finishLensRound() {
+    lensPlayed++;
+    lensLastScore = lensState.score;
+    if (lensState.score > lensBest) { lensBest = lensState.score; lensState.newBest = true; }
+    persist({ lensBest: lensBest, lensPlayed: lensPlayed, lensLastScore: lensLastScore });
+}
+
+window.lensRestart = function() { lensStart(); };
+window.lensClose = function() { lensState = null; renderLensPractice(); };
+
+function renderLensPractice() {
+    const area = document.getElementById('lens-practice-area');
+    if (!area) return;
+
+    if (!lensState) {
+        area.innerHTML = `<div class="perspective-box" style="text-align:center">
+            <div style="font-size:14px;font-weight:500;line-height:1.8">같은 장면도 <strong>어떤 렌즈</strong>로 보느냐에 따라 다르게 보여요.<br>
+            낯선 느낌이 드는 건 잘못이 아니에요. 다만 그 다음에 <strong>판단</strong> 대신 <strong>이해</strong>를 골라볼 수 있어요.</div>
+            <div style="margin-top:10px;font-size:13px;color:var(--text-light)">⭐ 최고 기록 ${lensBest} / ${LENS_ROUND} · 🔁 도전 ${lensPlayed}회</div>
+        </div>
+        <button class="btn btn-primary" onclick="lensStart()">${lensPlayed ? '🔄 다시 도전하기 (문항이 바뀌어요!)' : '🔄 렌즈 연습 시작하기'}</button>`;
+        return;
+    }
+
+    if (lensState.idx >= lensState.items.length) {
+        const s = lensState.score;
+        area.innerHTML = `<div class="mirror-card">
+            <div style="font-size:2rem">${lensState.newBest ? '🔥' : '🌟'}</div>
+            <div style="font-size:1.1rem;font-weight:900;color:var(--primary-dark)">이해의 렌즈 ${s} / ${lensState.items.length}</div>
+            ${lensState.newBest ? '<div style="color:var(--success);font-weight:900;margin-top:4px">NEW BEST!</div>' : ''}
+            <div style="font-size:13px;font-weight:500;margin-top:8px">⭐ 최고 기록 ${lensBest} / ${LENS_ROUND} · 🔁 도전 ${lensPlayed}회</div>
+            <div style="font-size:13px;font-weight:500;margin-top:8px">렌즈를 바꾸는 건 연습이 필요한 일이에요. 오늘 몇 개를 골랐는지보다,<br>다음에 한 번 더 생각해보는 것이 더 중요해요.</div>
+        </div>
+        <button class="btn btn-primary" onclick="lensRestart()">🔄 다시 도전하기 (문항이 바뀌어요!)</button>
+        <button class="btn btn-secondary" onclick="lensClose()" style="margin-top:8px">✅ 연습 마치기</button>`;
+        return;
+    }
+
+    const it = lensState.items[lensState.idx];
+    let h = `<div style="font-size:13px;color:var(--text-light);text-align:center">문항 ${lensState.idx + 1} / ${lensState.items.length} · 이해의 렌즈 ${lensState.score}개</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(lensState.idx / lensState.items.length * 100)}%"></div></div>
+        <div class="story-box">${it.situation}</div>
+        <div class="section-label">🔎 어떤 말이 '이해의 렌즈'로 본 말일까요?</div>`;
+    it.options.forEach((o, i) => {
+        const sel = lensState.answered && lensState.picked === i;
+        h += `<button class="choice-btn ${sel ? 'selected' : ''}" ${lensState.answered ? 'disabled' : ''} onclick="lensAnswer(${i})">${o.text}</button>`;
+    });
+    if (lensState.answered) {
+        h += `<div class="perspective-box" style="font-size:14px;font-weight:500;line-height:1.8">${lensState.feedback}</div>
+            <button class="btn btn-primary" onclick="lensNext()">${lensState.idx + 1 < lensState.items.length ? '다음 문항 →' : '결과 보기 →'}</button>`;
+    }
+    area.innerHTML = h;
+}
+
+// ═══ 내 결과 저장하기 (혼자 체험 / 학생 공통) ═══
+window.saveMyResult = function() {
+    const L = [];
+    L.push('다름을 만났을 때 드는 마음 — 나의 기록');
+    L.push('이름(닉네임): ' + (currentNickname || '탐험가'));
+    L.push('저장 시각: ' + new Date().toLocaleString('ko-KR'));
+    L.push('');
+    L.push('■ 복도 탐험');
+    DOORS.filter(d => d.id !== 'mirror').concat(EXTRA_DOORS).forEach(door => {
+        const r = doorResponses[door.id];
+        if (!r) return;
+        const f = FEELINGS.find(x => x.key === r.feeling);
+        L.push('- ' + door.label);
+        L.push('   첫 마음: ' + (f ? f.label : '-') + ' / 이유: ' + (r.reason || '-'));
+        if (r.reasonText) L.push('   덧붙인 말: ' + r.reasonText);
+        if (r.perspectiveChoice) L.push('   렌즈를 바꾼 뒤: ' + r.perspectiveChoice);
+        if (r.perspectiveMsg) L.push('   한마디: ' + r.perspectiveMsg);
+    });
+    L.push('');
+    L.push('■ 거울의 방');
+    L.push('  나도 누군가에게 낯설 수 있는 것: ' + (mirrorData.myDifference || '-'));
+    L.push('  그때 이렇게 대해주면 좋겠어요: ' + (mirrorData.myWish || '-'));
+    L.push('');
+    L.push('■ 렌즈 바꿔보기 연습');
+    L.push('  최고 기록: ' + lensBest + ' / ' + LENS_ROUND + ' (도전 ' + lensPlayed + '회)');
+    L.push('');
+    L.push('※ 낯선 느낌이 드는 것은 잘못이 아니에요. 아직 익숙하지 않다는 신호예요.');
+    const text = L.join('\n');
+
+    try {
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `다름을만났을때_${currentNickname || '탐험가'}.txt`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(() => { try { URL.revokeObjectURL(url); } catch(e) {} }, 1000);
+        showToast('📄 내 결과를 저장했어요!', 'success');
+        return;
+    } catch(e) {}
+    showScriptModal(text);
+};
+
+// ═══ 처음으로 ═══
+window.confirmGoHome = function() {
+    const visited = visitedDoors.size;
+    const msg = visited > 0
+        ? `처음 화면으로 돌아갈까요?<br><br>🚪 탐험한 문: ${visited}개 · 🌌 더 깊은 복도: ${visitedExtra.size}개<br>` +
+          (isSoloMode ? '⚠️ 혼자 체험 모드는 나가면 기록이 사라져요!' : '✅ 같은 닉네임으로 다시 들어오면 이어할 수 있어요!')
+        : '처음 화면으로 돌아갈까요?';
+    showConfirmModal(msg, () => {
+        if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+        showScreen('screen-start');
+    });
+};
+
+// ═══ 교사 대시보드 ═══
+function startDashboardListener() {
+    if (unsubscribe) { unsubscribe(); }
+    unsubscribe = DB.onStudentsChange(currentRoomCode, (data) => {
+        dashboardData = data;
+        renderDashboard(data);
+    });
+}
+
+window.refreshDashboard = async function() {
+    const data = await DB.getAllStudents(currentRoomCode);
+    dashboardData = data;
+    renderDashboard(data);
+};
+
+const ALL_DOORS = DOORS.filter(d => d.id !== 'mirror').concat(EXTRA_DOORS);
+const BASE_DOOR_IDS = DOORS.filter(d => d.id !== 'mirror').map(d => d.id);
+const EXTRA_DOOR_IDS = EXTRA_DOORS.map(d => d.id);
+const PERSPECTIVE_CHOICES = ['네, 많이 달라졌어요', '조금 달라진 것 같아요', '잘 모르겠어요', '처음이랑 비슷해요'];
+const CHART_COLORS = ['#7C3AED', '#A78BFA', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6'];
+
+function barRow(label, count, max) {
+    const w = max > 0 ? Math.round(count / max * 100) : 0;
+    return `<div style="margin:6px 0"><span style="font-size:14px">${label}: ${count}</span>
+        <div style="background:#E5E7EB;border-radius:6px;height:16px;overflow:hidden;margin-top:2px">
+            <div style="background:var(--gradient);height:100%;width:${w}%;border-radius:6px;transition:width .3s"></div>
+        </div></div>`;
+}
+
+function renderDashboard(data) {
+    const entries = Object.entries(data);
+    const total = entries.length;
+    const completed = entries.filter(([, d]) => d.completedAt).length;
+
+    // ═══ Tab 1: 현황 ═══
+    const ov = document.getElementById('tab-overview');
+    let html = `<div class="card">
+        <div class="section-label">참여 현황</div>
+        <div style="font-size:1.5rem;font-weight:900;color:var(--primary)">${total}명 참여 / ${completed}명 완료</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${total ? Math.round(completed/total*100) : 0}%"></div></div>
+        <div style="font-size:13px;color:var(--text-light);margin-top:6px">기본 복도 4문 · 더 깊은 복도 ${EXTRA_DOORS.length}문 · 렌즈 연습 ${LENS_ROUND}문항</div>
+    </div>`;
+
+    // 감정 분포
+    const feelingCounts = {};
+    entries.forEach(([, d]) => {
+        if (d.doorResponses) {
+            Object.values(d.doorResponses).forEach(r => {
+                if (r.feeling) feelingCounts[r.feeling] = (feelingCounts[r.feeling] || 0) + 1;
+            });
+        }
+    });
+    if (Object.keys(feelingCounts).length > 0) {
+        html += `<div class="card"><div class="section-label">💭 감정 분포 (전체 문 통합)</div>`;
+        const maxC = Math.max(...Object.values(feelingCounts));
+        FEELINGS.forEach(f => {
+            const c = feelingCounts[f.key] || 0;
+            const w = maxC > 0 ? Math.round(c / maxC * 100) : 0;
+            html += `<div style="margin:6px 0"><span style="font-size:14px">${f.emoji} ${f.label}: ${c}회</span>
+                <div style="background:#E5E7EB;border-radius:6px;height:16px;overflow:hidden;margin-top:2px">
+                    <div style="background:var(--gradient);height:100%;width:${w}%;border-radius:6px;transition:width .3s"></div>
+                </div></div>`;
+        });
+        html += `<div class="chart-container"><canvas id="chart-feeling"></canvas></div>
+            <div style="font-size:12px;color:var(--text-light)">※ 어떤 마음이든 틀린 것이 없습니다. 분포는 '옳고 그름'이 아니라 우리 반의 솔직한 첫 반응입니다.</div>`;
+        html += '</div>';
+    }
+
+    // 관점 전환 응답 분포
+    const pcCounts = {};
+    entries.forEach(([, d]) => {
+        if (d.doorResponses) Object.values(d.doorResponses).forEach(r => {
+            if (r.perspectiveChoice) pcCounts[r.perspectiveChoice] = (pcCounts[r.perspectiveChoice] || 0) + 1;
+        });
+    });
+    if (Object.keys(pcCounts).length > 0) {
+        const maxP = Math.max(...Object.values(pcCounts));
+        html += `<div class="card"><div class="section-label">🔄 렌즈를 바꾼 뒤의 변화</div>`;
+        PERSPECTIVE_CHOICES.forEach(c => { html += barRow(c, pcCounts[c] || 0, maxP); });
+        html += '</div>';
+    }
+
+    // 문별 탐험 인원
+    const doorCounts = {};
+    entries.forEach(([, d]) => {
+        (d.visitedDoors || []).forEach(id => doorCounts[id] = (doorCounts[id] || 0) + 1);
+        (d.visitedExtra || []).forEach(id => doorCounts[id] = (doorCounts[id] || 0) + 1);
+    });
+    if (total > 0) {
+        html += `<div class="card"><div class="section-label">🚪 문별 탐험 인원</div>`;
+        ALL_DOORS.forEach(dr => {
+            const isEx = EXTRA_DOOR_IDS.indexOf(dr.id) >= 0;
+            html += barRow(`${dr.emoji} ${dr.label}${isEx ? ' (심화)' : ''}`, doorCounts[dr.id] || 0, total);
+        });
+        html += '</div>';
+    }
+
+    // 렌즈 연습 현황
+    const lensPlayers = entries.filter(([, d]) => (d.lensPlayed || 0) > 0);
+    if (lensPlayers.length > 0) {
+        const avgBest = (lensPlayers.reduce((s, [, d]) => s + (d.lensBest || 0), 0) / lensPlayers.length).toFixed(1);
+        const totalTry = lensPlayers.reduce((s, [, d]) => s + (d.lensPlayed || 0), 0);
+        const dist = {};
+        lensPlayers.forEach(([, d]) => { const k = d.lensBest || 0; dist[k] = (dist[k] || 0) + 1; });
+        const maxD = Math.max(...Object.values(dist));
+        html += `<div class="card"><div class="section-label">🔄 렌즈 바꿔보기 연습</div>
+            <div style="font-size:14px">참여 ${lensPlayers.length}명 · 평균 최고기록 ${avgBest} / ${LENS_ROUND} · 누적 도전 ${totalTry}회</div>`;
+        for (let s = LENS_ROUND; s >= 0; s--) { if (dist[s]) html += barRow(`${s}점`, dist[s], maxD); }
+        html += '</div>';
+    }
+
+    // 심화 탐험 현황
+    const exDone = entries.filter(([, d]) => (d.visitedExtra || []).length > 0).length;
+    if (total > 0) {
+        const exTotal = entries.reduce((s, [, d]) => s + (d.visitedExtra || []).length, 0);
+        html += `<div class="card"><div class="section-label">🌌 더 깊은 복도</div>
+            <div style="font-size:14px">심화 탐험 참여 ${exDone}명 / 누적 탐험 ${exTotal}문</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(exDone/total*100)}%"></div></div>
+        </div>`;
+    }
+
+    // 친구에게 건넨 한마디 — 워드클라우드
+    const msgs = [];
+    entries.forEach(([, d]) => {
+        if (d.doorResponses) Object.values(d.doorResponses).forEach(r => { if (r.perspectiveMsg) msgs.push(r.perspectiveMsg); });
+        if (d.mirrorWish) msgs.push(d.mirrorWish);
+    });
+    if (msgs.length > 0) {
+        html += `<div class="card"><div class="section-label">💬 친구에게 건넨 말 (워드클라우드)</div>
+            <div class="chart-container"><canvas id="chart-words"></canvas></div>
+            <div style="max-height:220px;overflow-y:auto">`;
+        msgs.slice(0, 40).forEach(m => { html += `<div class="result-card" style="font-size:14px">"${m}"</div>`; });
+        html += '</div></div>';
+    }
+
+    // 거울의 방 응답
+    const mirrorTexts = entries.filter(([, d]) => d.mirrorDifference).map(([n, d]) => d.mirrorDifference);
+    if (mirrorTexts.length > 0) {
+        html += `<div class="card"><div class="section-label">🪞 "나도 누군가에게 낯선 것" 응답</div>`;
+        mirrorTexts.forEach(t => { html += `<div class="result-card" style="font-size:14px">"${t}"</div>`; });
+        html += '</div>';
+    }
+    ov.innerHTML = html;
+    drawDashboardCharts();
+
+    // ═══ Tab 2: 상세기록 ═══
+    const dt = document.getElementById('tab-detail');
+    let dtHtml = '<div class="card"><div class="section-label">📋 학생별 상세 기록</div>';
+    if (entries.length === 0) {
+        dtHtml += '<p style="color:var(--text-light);font-size:14px">아직 참여한 학생이 없습니다.</p>';
+    } else {
+        dtHtml += '<table class="data-table"><tr><th>닉네임</th><th>기본</th><th>심화</th><th>첫 마음</th><th>거울</th><th>렌즈</th><th>완료</th></tr>';
+        entries.forEach(([name, d]) => {
+            const vd = (d.visitedDoors || []).length;
+            const ve = (d.visitedExtra || []).length;
+            const feelings = d.doorResponses ? Object.values(d.doorResponses).map(r => {
+                const f = FEELINGS.find(fl => fl.key === r.feeling);
+                return f ? f.emoji : '';
+            }).join(' ') : '-';
+            dtHtml += `<tr><td>${name}</td><td>${vd}/4</td><td>${ve}/${EXTRA_DOORS.length}</td><td>${feelings}</td><td>${d.mirrorDifference ? '✅' : '-'}</td><td>${d.lensPlayed ? (d.lensBest || 0) + '/' + LENS_ROUND : '-'}</td><td>${d.completedAt ? '✅' : '-'}</td></tr>`;
+        });
+        dtHtml += '</table>';
+    }
+    dtHtml += '</div>';
+
+    entries.forEach(([name, d]) => {
+        if (d.doorResponses) {
+            dtHtml += `<div class="card"><div class="section-label">${name}의 응답</div>`;
+            Object.entries(d.doorResponses).forEach(([doorId, r]) => {
+                const door = ALL_DOORS.find(dd => dd.id === doorId);
+                const feel = FEELINGS.find(f => f.key === r.feeling);
+                const isEx = EXTRA_DOOR_IDS.indexOf(doorId) >= 0;
+                dtHtml += `<div class="result-card"><strong>${door ? door.emoji + ' ' + door.label : doorId}</strong>${isEx ? ' <span style="font-size:12px;color:#3b82f6">심화</span>' : ''}<br>`;
+                dtHtml += `<span style="font-size:13px">마음: ${feel ? feel.emoji + feel.label : '-'} | 이유: ${r.reason || '-'}</span>`;
+                if (r.reasonText) dtHtml += `<br><span style="font-size:13px;color:var(--text-light)">추가: "${r.reasonText}"</span>`;
+                if (r.perspectiveChoice) dtHtml += `<br><span style="font-size:13px;color:#3b82f6">관점전환: ${r.perspectiveChoice}</span>`;
+                if (r.perspectiveMsg) dtHtml += `<br><span style="font-size:13px;color:var(--primary)">한마디: "${r.perspectiveMsg}"</span>`;
+                dtHtml += '</div>';
+            });
+            if (d.mirrorDifference) dtHtml += `<div class="result-card"><strong>🪞 거울</strong><br><span style="font-size:13px">"${d.mirrorDifference}"</span>${d.mirrorWish ? '<br><span style="font-size:13px;color:var(--primary)">"' + d.mirrorWish + '"</span>' : ''}</div>`;
+            if (d.lensPlayed) dtHtml += `<div class="result-card"><strong>🔄 렌즈 연습</strong><br><span style="font-size:13px">최고 ${d.lensBest || 0}/${LENS_ROUND} · 도전 ${d.lensPlayed}회</span></div>`;
+            dtHtml += '</div>';
+        }
+    });
+    dt.innerHTML = dtHtml;
+}
+
+// ═══ 캔버스 시각화 (숨은 탭 폭 0 가드 포함) ═══
+function canvasWidth(canvas) {
+    const wrap = canvas.parentElement;
+    const cw = wrap ? wrap.clientWidth : 0;
+    return Math.max(260, cw - 24);
+}
+
+function drawDashboardCharts() {
+    try { drawFeelingPie(); } catch(e) {}
+    try { drawWordCloud(); } catch(e) {}
+}
+
+function drawFeelingPie() {
+    const cv = document.getElementById('chart-feeling');
+    if (!cv) return;
+    const counts = {};
+    Object.values(dashboardData).forEach(d => {
+        if (d.doorResponses) Object.values(d.doorResponses).forEach(r => { if (r.feeling) counts[r.feeling] = (counts[r.feeling] || 0) + 1; });
+    });
+    const items = FEELINGS.map((f, i) => ({ label: f.label, value: counts[f.key] || 0, color: CHART_COLORS[i % CHART_COLORS.length] })).filter(x => x.value > 0);
+    const w = canvasWidth(cv);
+    const legendRows = Math.ceil(items.length / 2);
+    const h = 200 + legendRows * 24 + 12;
+    cv.width = w; cv.height = h;
+    const ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, w, h);
+    const totalV = items.reduce((s, i) => s + i.value, 0);
+    if (!totalV) return;
+    const cx = w / 2, cy = 100, r = 80;
+    let a = -Math.PI / 2;
+    items.forEach(it => {
+        const sl = it.value / totalV * Math.PI * 2;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, a, a + sl); ctx.closePath();
+        ctx.fillStyle = it.color; ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+        a += sl;
+    });
+    ctx.font = '700 13px "Noto Sans KR",sans-serif';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    const colW = w / 2;
+    items.forEach((it, i) => {
+        const col = i % 2, row = Math.floor(i / 2);
+        const x = 8 + col * colW, y = 200 + row * 24 + 10;
+        ctx.fillStyle = it.color; ctx.fillRect(x, y - 6, 12, 12);
+        ctx.fillStyle = '#1F2937';
+        const pct = Math.round(it.value / totalV * 100);
+        ctx.fillText(`${it.label} ${it.value}(${pct}%)`, x + 18, y);
+    });
+}
+
+function drawWordCloud() {
+    const cv = document.getElementById('chart-words');
+    if (!cv) return;
+    const freq = {};
+    Object.values(dashboardData).forEach(d => {
+        const texts = [];
+        if (d.doorResponses) Object.values(d.doorResponses).forEach(r => { if (r.perspectiveMsg) texts.push(r.perspectiveMsg); });
+        if (d.mirrorWish) texts.push(d.mirrorWish);
+        texts.forEach(t => {
+            String(t).split(/[\s,.!?~"'()\[\]]+/).forEach(tok => {
+                const k = tok.trim();
+                if (k.length >= 2) freq[k] = (freq[k] || 0) + 1;
+            });
+        });
+    });
+    const words = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 30);
+    const w = canvasWidth(cv);
+    if (!words.length) { cv.width = w; cv.height = 40; return; }
+    const maxF = words[0][1];
+    const ctx0 = cv.getContext('2d');
+    // 배치 계산 (줄바꿈)
+    const lines = [];
+    let line = [], lineW = 0, lineH = 0;
+    words.forEach(([word, f]) => {
+        const size = 14 + Math.round(f / maxF * 20);
+        ctx0.font = `900 ${size}px "Noto Sans KR",sans-serif`;
+        const tw = ctx0.measureText(word).width + 16;
+        if (lineW + tw > w - 8 && line.length) { lines.push({ items: line, h: lineH }); line = []; lineW = 0; lineH = 0; }
+        line.push({ word: word, size: size, w: tw });
+        lineW += tw; lineH = Math.max(lineH, size + 10);
+    });
+    if (line.length) lines.push({ items: line, h: lineH });
+    const h = lines.reduce((s, l) => s + l.h, 0) + 16;
+    cv.width = w; cv.height = h;
+    const ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, w, h);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    let y = 8;
+    lines.forEach(l => {
+        let x = 4;
+        l.items.forEach((it, i) => {
+            ctx.font = `900 ${it.size}px "Noto Sans KR",sans-serif`;
+            ctx.fillStyle = CHART_COLORS[(i + Math.round(y)) % CHART_COLORS.length];
+            ctx.fillText(it.word, x + 8, y + l.h / 2);
+            x += it.w;
+        });
+        y += l.h;
+    });
+}
+
+window.switchTab = function(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const tc = document.getElementById(tabId);
+    if (tc) tc.style.display = 'block';
+    if (btn && btn.classList) btn.classList.add('active');
+    if (tabId === 'tab-overview') setTimeout(drawDashboardCharts, 0);
+};
+
+// ═══ 내보내기 ═══
+window.downloadExcel = function() {
+    const entries = Object.entries(dashboardData);
+    if (!entries.length) { showToast('내보낼 데이터가 없습니다.', 'error'); return; }
+    if (typeof XLSX === 'undefined') { showToast('엑셀 기능을 아직 불러오는 중입니다. 잠시 후 다시 눌러주세요.', 'error'); return; }
+
+    // 시트1 — 요약
+    const head = ['닉네임', '참여시간', '기본탐험(4)', '심화탐험(' + EXTRA_DOORS.length + ')'];
+    BASE_DOOR_IDS.forEach((id, i) => head.push('기본문' + (i + 1) + '_마음'));
+    EXTRA_DOOR_IDS.forEach((id, i) => head.push('심화문' + (i + 1) + '_마음'));
+    // ⭐ 맞춤법 수정: '바램'(→색이 바래다)은 소망을 뜻하는 '바람'의 잘못된 표기
+    head.push('렌즈최고점', '렌즈도전횟수', '거울_나의다름', '거울_바람', '완료');
+    const wsData = [head];
+    entries.forEach(([name, d]) => {
+        const row = [name, d.joinedAt ? new Date(d.joinedAt).toLocaleString('ko-KR') : '-',
+            (d.visitedDoors || []).length, (d.visitedExtra || []).length];
+        BASE_DOOR_IDS.concat(EXTRA_DOOR_IDS).forEach(id => {
+            const r = (d.doorResponses || {})[id];
+            if (r) { const f = FEELINGS.find(fl => fl.key === r.feeling); row.push(f ? f.label : '-'); }
+            else row.push('-');
+        });
+        row.push(d.lensBest || 0, d.lensPlayed || 0, d.mirrorDifference || '-', d.mirrorWish || '-', d.completedAt ? 'Y' : 'N');
+        wsData.push(row);
+    });
+
+    // 시트2 — 문별 상세
+    const detail = [['닉네임', '문', '구분', '첫 마음', '이유', '덧붙인 말', '렌즈 바꾼 뒤', '친구에게 한마디']];
+    entries.forEach(([name, d]) => {
+        Object.entries(d.doorResponses || {}).forEach(([id, r]) => {
+            const door = ALL_DOORS.find(dd => dd.id === id);
+            const f = FEELINGS.find(fl => fl.key === r.feeling);
+            detail.push([name, door ? door.label : id,
+                EXTRA_DOOR_IDS.indexOf(id) >= 0 ? '심화' : '기본',
+                f ? f.label : '-', r.reason || '-', r.reasonText || '-',
+                r.perspectiveChoice || '-', r.perspectiveMsg || '-']);
+        });
+    });
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), '참여결과');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(detail), '문별상세');
+    XLSX.writeFile(wb, `SEL_다름의마음_${currentRoomCode}.xlsx`);
+    showToast('📥 엑셀 다운로드 완료!', 'success');
+};
+
+window.downloadPDF = function() {
+    const entries = Object.entries(dashboardData);
+    if (!entries.length) { showToast('내보낼 데이터가 없습니다.', 'error'); return; }
+
+    const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    let pdfBody = '';
+    const total = entries.length;
+    const completed = entries.filter(([, d]) => d.completedAt).length;
+    pdfBody += `<div class="card"><h3>📊 참여 현황</h3><p>참여 ${total}명 / 완료 ${completed}명</p></div>`;
+
+    // 감정 분포
+    const fc = {};
+    entries.forEach(([, d]) => { if (d.doorResponses) Object.values(d.doorResponses).forEach(r => { if (r.feeling) fc[r.feeling] = (fc[r.feeling] || 0) + 1; }); });
+    if (Object.keys(fc).length) {
+        pdfBody += '<div class="card"><h3>💭 감정 분포</h3><table><tr><th>감정</th><th>횟수</th></tr>';
+        FEELINGS.forEach(f => { if (fc[f.key]) pdfBody += `<tr><td>${f.emoji} ${f.label}</td><td>${fc[f.key]}</td></tr>`; });
+        pdfBody += '</table><p style="font-size:12px;color:#6B7280">※ 어떤 마음이든 틀린 것이 없습니다. 판단이 아니라 이해로 넘어가는 과정이 학습 목표입니다.</p></div>';
+    }
+
+    // 렌즈를 바꾼 뒤의 변화
+    const pc = {};
+    entries.forEach(([, d]) => { if (d.doorResponses) Object.values(d.doorResponses).forEach(r => { if (r.perspectiveChoice) pc[r.perspectiveChoice] = (pc[r.perspectiveChoice] || 0) + 1; }); });
+    if (Object.keys(pc).length) {
+        pdfBody += '<div class="card"><h3>🔄 렌즈를 바꾼 뒤의 변화</h3><table><tr><th>응답</th><th>횟수</th></tr>';
+        PERSPECTIVE_CHOICES.forEach(c => { if (pc[c]) pdfBody += `<tr><td>${esc(c)}</td><td>${pc[c]}</td></tr>`; });
+        pdfBody += '</table></div>';
+    }
+
+    // 학생별 기록
+    pdfBody += '<div class="card"><h3>📋 학생별 기록</h3><table><tr><th>닉네임</th><th>기본</th><th>심화</th>';
+    BASE_DOOR_IDS.forEach((_, i) => pdfBody += `<th>기본${i + 1}</th>`);
+    pdfBody += '<th>렌즈</th><th>거울</th><th>완료</th></tr>';
+    entries.forEach(([name, d]) => {
+        pdfBody += `<tr><td>${esc(name)}</td><td>${(d.visitedDoors || []).length}/4</td><td>${(d.visitedExtra || []).length}/${EXTRA_DOORS.length}</td>`;
+        BASE_DOOR_IDS.forEach(id => {
+            const r = (d.doorResponses || {})[id];
+            const f = r ? FEELINGS.find(fl => fl.key === r.feeling) : null;
+            pdfBody += `<td>${f ? f.label : '-'}</td>`;
+        });
+        pdfBody += `<td>${d.lensPlayed ? (d.lensBest || 0) + '/' + LENS_ROUND : '-'}</td><td>${d.mirrorDifference ? 'O' : '-'}</td><td>${d.completedAt ? 'O' : '-'}</td></tr>`;
+    });
+    pdfBody += '</table></div>';
+
+    // 문별 상세 응답
+    pdfBody += '<div class="card"><h3>🚪 문별 상세 응답</h3><table><tr><th>닉네임</th><th>문</th><th>구분</th><th>첫 마음</th><th>이유</th><th>렌즈 바꾼 뒤</th><th>한마디</th></tr>';
+    entries.forEach(([name, d]) => {
+        Object.entries(d.doorResponses || {}).forEach(([id, r]) => {
+            const door = ALL_DOORS.find(dd => dd.id === id);
+            const f = FEELINGS.find(fl => fl.key === r.feeling);
+            pdfBody += `<tr><td>${esc(name)}</td><td>${esc(door ? door.label : id)}</td><td>${EXTRA_DOOR_IDS.indexOf(id) >= 0 ? '심화' : '기본'}</td>` +
+                `<td>${f ? f.label : '-'}</td><td>${esc(r.reason || '-')}</td><td>${esc(r.perspectiveChoice || '-')}</td><td>${esc(r.perspectiveMsg || '-')}</td></tr>`;
+        });
+    });
+    pdfBody += '</table></div>';
+
+    // 거울의 방
+    const mir = entries.filter(([, d]) => d.mirrorDifference);
+    if (mir.length) {
+        pdfBody += '<div class="card"><h3>🪞 거울의 방</h3><table><tr><th>닉네임</th><th>나도 낯설 수 있는 것</th><th>이렇게 대해주면 좋겠어요</th></tr>';
+        mir.forEach(([name, d]) => { pdfBody += `<tr><td>${esc(name)}</td><td>${esc(d.mirrorDifference)}</td><td>${esc(d.mirrorWish || '-')}</td></tr>`; });
+        pdfBody += '</table></div>';
+    }
+
+    try {
+        const pw = window.open('', '_blank');
+        if (pw) {
+            pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SEL 대시보드 출력</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>*{font-family:'Noto Sans KR',sans-serif;margin:0;padding:0;box-sizing:border-box}body{padding:24px;font-size:14px;color:#1F2937;line-height:1.6}
+.print-header{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #7C3AED}
+.print-header h2{color:#7C3AED;font-size:20px;margin-bottom:4px}.print-header p{color:#6B7280;font-size:12px}
+.card{border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin:12px 0;page-break-inside:avoid}
+table{width:100%;border-collapse:collapse;margin:8px 0}th,td{border:1px solid #E5E7EB;padding:8px 10px;text-align:left;font-size:13px}
+th{background:#F3F4F6;font-weight:700}h3{color:#7C3AED;font-size:16px;margin:12px 0 8px}
+.print-guide{background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;text-align:center}
+@media print{.print-guide{display:none}}</style></head><body>
+<div class="print-guide">💡 <strong>PDF로 저장하려면:</strong> 인쇄 대화상자에서 "대상"을 <strong>"PDF로 저장"</strong>으로 선택하세요.</div>
+<div class="print-header"><h2>🚪 다름을 만났을 때 드는 마음</h2><p>방 코드: ${currentRoomCode} | 출력: ${new Date().toLocaleString('ko-KR')}</p></div>
+${pdfBody}<scr` + `ipt>setTimeout(function(){window.print()},1000);</scr` + `ipt></body></html>`);
+            pw.document.close();
+            showToast('📄 새 창에서 인쇄 화면이 열립니다.', 'success');
+            return;
+        }
+    } catch(e) {}
+    try { showToast('📄 Ctrl+P로 PDF 저장해주세요.', 'info'); setTimeout(() => window.print(), 500); }
+    catch(e) { showToast('📄 키보드에서 Ctrl+P (Mac: ⌘+P)를 눌러 PDF로 저장해주세요.', 'info'); }
+};
+
+// ═══ TTS ═══
+const TEACHER_GUIDE = [
+    '오늘 활동은 다름을 만났을 때 드는 마음을 살펴보는 시간입니다.',
+    '먼저 낯섦의 복도에서 네 개의 상황을 하나씩 열어봅니다.',
+    '각 문에서 학생들은 장면을 읽고, 가장 먼저 든 마음을 고르고, 그 이유를 적습니다.',
+    '그다음 렌즈 바꿔보기 화면에서 그 친구의 이야기를 읽고, 마음이 어떻게 달라졌는지 표시합니다.',
+    '마지막 거울의 방에서는 나도 누군가에게 낯선 사람일 수 있다는 점을 생각해 봅니다.',
+    '활동을 마치면 더 깊은 복도에서 여섯 개의 상황을 더 탐험하고, 렌즈 바꿔보기 연습 문항에 도전할 수 있습니다.',
+    '지도할 때 기억할 점입니다. 낯설다, 불편하다는 느낌 자체는 잘못이 아닙니다.',
+    '느낌을 좋다 나쁘다로 평가하지 말고, 그 느낌 다음에 무엇을 선택하는지를 함께 이야기해 주세요.',
+    '판단 대신 이해로 옮겨가는 연습이 오늘의 핵심입니다.'
+].join('\n');
+
+let isSpeaking = false;
+window.speakSection = function(sectionId) {
+    if (isSpeaking) { window.speechSynthesis.cancel(); isSpeaking = false; }
+    const el = document.getElementById(sectionId);
+    if (!el) return;
+    const text = el.innerText;
+    if (!text) { showToast('읽을 내용이 아직 없습니다.', 'error'); return; }
+    speakText(text);
+};
+
+window.speakGuide = function() { speakText(TEACHER_GUIDE); };
+
+function speakText(text) {
+    if (isSpeaking) { window.speechSynthesis.cancel(); }
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ko-KR'; u.rate = 0.9;
+    u.onend = () => { isSpeaking = false; };
+    window.speechSynthesis.speak(u);
+    isSpeaking = true;
+}
+
+window.stopSpeaking = function() { window.speechSynthesis.cancel(); isSpeaking = false; };
+
+window.showScriptModal = function(text) {
+    document.getElementById('scriptModalBody').textContent = text;
+    document.getElementById('scriptModal').style.display = 'flex';
+};
+window.closeScriptModal = function() { document.getElementById('scriptModal').style.display = 'none'; };
+
+window.previewScript = function(which) {
+    if (which === 'guide') { showScriptModal(TEACHER_GUIDE); return; }
+    const el = document.getElementById(which);
+    const t = el ? el.innerText.trim() : '';
+    showScriptModal(t || '읽을 내용이 아직 없습니다.');
+};
+
+// ═══ 데이터 초기화 ═══
+window.resetData = function() {
+    showConfirmModal('⚠️ 모든 학생 데이터를 삭제합니다.<br>이 작업은 되돌릴 수 없습니다.<br><br>정말 삭제하시겠습니까?', async () => {
+        if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+        await DB.deleteAllStudents(currentRoomCode);   // 방 정보(비밀번호)는 유지
+        dashboardData = {};
+        renderDashboard({});
+        startDashboardListener();
+        showToast('🗑️ 데이터가 초기화되었습니다.', 'success');
+    });
+};
+
+// ═══ 초기화 ═══
+await authReady;
+</script>
+</body>
+</html>

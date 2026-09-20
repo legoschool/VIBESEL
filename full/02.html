@@ -1,0 +1,2226 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>내 마음 신호등 읽기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+:root {
+    --primary: #7C3AED;
+    --primary-light: #A78BFA;
+    --primary-dark: #5B21B6;
+    --gradient: linear-gradient(135deg, #7C3AED 0%, #A78BFA 50%, #C4B5FD 100%);
+    --gradient-bg: linear-gradient(135deg, #EDE9FE 0%, #F5F3FF 50%, #FFFFFF 100%);
+    --success: #10B981;
+    --error: #EF4444;
+    --warning: #F59E0B;
+    --text: #1F2937;
+    --text-light: #6B7280;
+    --bg-card: rgba(255,255,255,0.95);
+    --green: #22c55e;
+    --green-bg: #dcfce7;
+    --yellow: #eab308;
+    --yellow-bg: #fef9c3;
+    --red: #ef4444;
+    --red-bg: #fee2e2;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.7;
+    background: var(--gradient-bg);
+    min-height: 100vh;
+    color: var(--text);
+}
+h1, h2, h3 { font-weight: 900; }
+.container { max-width: 500px; margin: 0 auto; padding: 16px; }
+.screen { display: none; }
+.screen.active { display: block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.btn {
+    padding: 16px 24px; border-radius: 16px; font-size: 17px; font-weight: 900;
+    font-family: 'Noto Sans KR', sans-serif; border: none; cursor: pointer;
+    min-height: 52px; transition: all 0.2s; width: 100%; max-width: 400px;
+    display: block; margin: 8px auto; text-align: center;
+}
+.btn-primary { background: var(--gradient); color: white; box-shadow: 0 4px 15px rgba(124,58,237,0.3); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,58,237,0.4); }
+.btn-secondary { background: rgba(124,58,237,0.1); color: var(--primary); border: 2px solid var(--primary-light); }
+.btn-small { padding: 10px 16px; font-size: 14px; min-height: 40px; width: auto; display: inline-block; }
+.btn-escape {
+    background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+    color: white; box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+}
+.btn-escape:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16,185,129,0.4); }
+.btn-danger { background: linear-gradient(135deg, #EF4444 0%, #F87171 100%); color: white; }
+
+input, textarea {
+    min-height: 48px; font-size: 16px; font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 700; border: 2px solid #E5E7EB; border-radius: 12px;
+    padding: 12px 16px; width: 100%; box-sizing: border-box;
+}
+input:focus, textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+
+.card {
+    background: var(--bg-card); border-radius: 20px; padding: 24px;
+    margin: 12px 0; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.privacy-notice {
+    background: rgba(124,58,237,0.05); border: 1px solid rgba(124,58,237,0.15);
+    border-radius: 12px; padding: 14px; font-size: 13px; font-weight: 400;
+    color: var(--text-light); line-height: 1.6; margin-top: 16px;
+}
+.nav-buttons { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.nav-btn {
+    background: rgba(124,58,237,0.08); border: none; padding: 8px 14px;
+    border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer;
+    color: var(--primary); font-family: 'Noto Sans KR', sans-serif;
+}
+.badge {
+    display: inline-block; background: rgba(124,58,237,0.1); color: var(--primary);
+    padding: 6px 14px; border-radius: 20px; font-size: 14px; font-weight: 700;
+}
+
+/* 신호등 선택 버튼 */
+.signal-buttons { display: flex; gap: 12px; margin: 16px 0; justify-content: center; }
+.signal-btn {
+    flex: 1; padding: 18px 12px; border-radius: 16px; border: 3px solid #E5E7EB;
+    cursor: pointer; text-align: center; transition: all 0.3s; background: white;
+    max-width: 130px;
+}
+.signal-btn .signal-icon { font-size: 36px; display: block; margin-bottom: 6px; }
+.signal-btn .signal-label { font-size: 14px; font-weight: 900; }
+.signal-btn.green:hover, .signal-btn.green.selected { border-color: var(--green); background: var(--green-bg); }
+.signal-btn.yellow:hover, .signal-btn.yellow.selected { border-color: var(--yellow); background: var(--yellow-bg); }
+.signal-btn.red:hover, .signal-btn.red.selected { border-color: var(--red); background: var(--red-bg); }
+.signal-btn.selected { transform: scale(1.05); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
+
+/* 스토리 카드 */
+.story-card {
+    background: white; border-radius: 16px; padding: 20px;
+    border-left: 5px solid var(--primary-light); font-size: 16px; line-height: 1.9;
+}
+.story-card p { margin-bottom: 6px; }
+
+/* 스토리 그리드 */
+.story-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.story-item {
+    background: white; border: 2px solid #E5E7EB; border-radius: 14px;
+    padding: 14px 12px; cursor: pointer; transition: all 0.2s; text-align: center;
+    position: relative;
+}
+.story-item:hover { border-color: var(--primary-light); transform: translateY(-2px); }
+.story-item.completed { border-color: var(--success); background: rgba(16,185,129,0.05); }
+.story-item.escaped { border-color: #10B981; }
+.story-item .story-emoji { font-size: 28px; display: block; margin-bottom: 4px; }
+.story-item .story-title { font-size: 13px; font-weight: 900; }
+.story-item .story-tag { font-size: 11px; color: var(--text-light); }
+.story-item .escape-badge {
+    position: absolute; top: -6px; right: -6px; background: #10B981;
+    color: white; font-size: 11px; padding: 2px 8px; border-radius: 10px;
+    font-weight: 900; box-shadow: 0 2px 6px rgba(16,185,129,0.3);
+}
+
+/* 단계 표시 */
+.story-stage-label {
+    display: inline-block; padding: 4px 12px; border-radius: 8px;
+    font-size: 13px; font-weight: 900;
+}
+.stage-green { background: var(--green-bg); color: #15803d; }
+.stage-yellow { background: var(--yellow-bg); color: #a16207; }
+.stage-red { background: var(--red-bg); color: #b91c1c; }
+
+/* 피드백 박스 */
+.feedback-box { border-radius: 14px; padding: 16px; margin-top: 12px; }
+.feedback-tip { font-size: 13px; color: var(--primary); font-weight: 900; padding: 8px; background: rgba(124,58,237,0.06); border-radius: 8px; }
+.signal-legend { text-align:left; background:#F9FAFB; border:1px solid #E5E7EB; border-radius:12px; padding:12px 14px; margin:14px 0 4px; font-size:13.5px; line-height:1.6; }
+.signal-legend-title { font-weight:900; font-size:14px; margin-bottom:6px; }
+.signal-legend-row { display:flex; gap:8px; align-items:flex-start; margin:4px 0; }
+.signal-legend-dot { flex:none; width:12px; height:12px; border-radius:50%; margin-top:6px; }
+.signal-legend-foot { margin-top:6px; color:var(--text-light); font-size:12.5px; }
+.signal-legend-details { margin:4px 0 8px; }
+.signal-legend-details summary { cursor:pointer; font-size:13px; font-weight:700; color:var(--primary); list-style:none; text-align:center; padding:6px; }
+.signal-legend-details summary::-webkit-details-marker { display:none; }
+.signal-legend-details .signal-legend { margin-top:6px; }
+.why-btn { display:inline-block; margin:3px 4px 3px 0; padding:6px 10px; border-radius:999px; border:1.5px solid #E5E7EB; background:#fff; font-family:'Noto Sans KR',sans-serif; font-size:12.5px; font-weight:700; color:var(--text); cursor:pointer; }
+.why-btn.selected { border-color:var(--primary); background:rgba(124,58,237,0.08); color:var(--primary); }
+.scene-table { width:100%; border-collapse:collapse; font-size:12.5px; margin-top:6px; }
+.scene-table th, .scene-table td { padding:4px 6px; border-bottom:1px solid #F3F4F6; text-align:center; }
+.scene-table th { color:var(--text-light); font-weight:700; font-size:11.5px; }
+
+/* 타임라인 */
+.timeline { position: relative; padding-left: 24px; margin: 16px 0; }
+.timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 3px; background: #E5E7EB; border-radius: 2px; }
+.timeline-item { position: relative; padding: 10px 0 10px 16px; }
+.timeline-item::before {
+    content: ''; position: absolute; left: -20px; top: 16px;
+    width: 14px; height: 14px; border-radius: 50%; border: 3px solid white;
+}
+.timeline-item.tl-green::before { background: var(--green); }
+.timeline-item.tl-yellow::before { background: var(--yellow); }
+.timeline-item.tl-red::before { background: var(--red); }
+.timeline-item.tl-escape::before { background: var(--success); box-shadow: 0 0 8px rgba(16,185,129,0.5); }
+.timeline-choice {
+    display: inline-block; padding: 3px 10px; border-radius: 8px;
+    font-size: 12px; font-weight: 700;
+}
+
+/* 프로그레스 바 */
+.progress-bar { background: #E5E7EB; border-radius: 10px; height: 10px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 10px; transition: width 0.5s; }
+.progress-green { background: linear-gradient(90deg, var(--green), #4ade80); }
+
+/* 위기탈출 */
+.escape-box {
+    background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+    border: 2px solid #10B981; border-radius: 16px; padding: 20px; margin: 16px 0;
+    animation: escapeGlow 2s ease-in-out infinite;
+}
+@keyframes escapeGlow {
+    0%, 100% { box-shadow: 0 0 10px rgba(16,185,129,0.2); }
+    50% { box-shadow: 0 0 20px rgba(16,185,129,0.4); }
+}
+.escape-option {
+    padding: 14px 16px; border: 2px solid #D1FAE5; border-radius: 12px;
+    background: white; cursor: pointer; transition: all 0.2s; margin: 8px 0;
+    text-align: left; font-size: 15px;
+}
+.escape-option:hover { border-color: #10B981; background: #ECFDF5; transform: scale(1.02); }
+.escape-option.selected { border-color: #10B981; background: #ECFDF5; box-shadow: 0 0 0 3px rgba(16,185,129,0.2); }
+.escape-option.selected::after { content: ' ✓'; color: #10B981; font-weight: 900; }
+
+/* 나의 신호등 카드 */
+.mylight-section {
+    border-radius: 14px; padding: 16px; margin: 12px 0;
+    border-left: 5px solid;
+}
+.mylight-green { background: rgba(34,197,94,0.06); border-color: var(--green); }
+.mylight-yellow { background: rgba(234,179,8,0.06); border-color: var(--yellow); }
+.mylight-red { background: rgba(239,68,68,0.06); border-color: var(--red); }
+.mylight-strategy { background: rgba(124,58,237,0.06); border-color: var(--primary); }
+.mylight-promise { background: rgba(16,185,129,0.06); border-color: var(--success); }
+.mylight-label { font-size: 14px; font-weight: 900; margin-bottom: 8px; }
+
+/* 신호등 카드 결과 */
+.traffic-light-card {
+    background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+    border-radius: 20px; padding: 24px; color: white; margin: 16px 0;
+    text-align: center; position: relative; overflow: hidden;
+}
+.traffic-light-card::before {
+    content: ''; position: absolute; top: -50px; right: -50px;
+    width: 150px; height: 150px; border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+}
+.tl-light {
+    display: inline-flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.1); border-radius: 12px;
+    padding: 12px 16px; margin: 6px 0; width: 100%; text-align: left;
+}
+.tl-dot {
+    width: 24px; height: 24px; border-radius: 50%;
+    flex-shrink: 0; box-shadow: 0 0 10px;
+}
+.tl-dot.green { background: var(--green); box-shadow: 0 0 10px rgba(34,197,94,0.5); }
+.tl-dot.yellow { background: var(--yellow); box-shadow: 0 0 10px rgba(234,179,8,0.5); }
+.tl-dot.red { background: var(--red); box-shadow: 0 0 10px rgba(239,68,68,0.5); }
+.tl-text { font-size: 13px; line-height: 1.5; }
+
+/* 탭 */
+.tab-buttons { display: flex; gap: 4px; overflow-x: auto; padding: 8px 0; }
+.tab-btn {
+    padding: 8px 14px; border-radius: 10px; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 700; background: rgba(124,58,237,0.08);
+    color: var(--text-light); white-space: nowrap; font-family: 'Noto Sans KR', sans-serif;
+}
+.tab-btn.active { background: var(--primary); color: white; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* 통계 */
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #F3F4F6; }
+.stat-label { font-size: 14px; }
+.stat-value { font-size: 14px; font-weight: 900; color: var(--primary); }
+
+/* 토스트 */
+.toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: rgba(31,41,55,0.95); color: white;
+    padding: 14px 28px; border-radius: 14px; font-size: 15px;
+    font-weight: 700; z-index: 10000; opacity: 0;
+    transition: all 0.3s; max-width: 90%; text-align: center;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* 모달 */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 9999;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.modal-content {
+    background: white; border-radius: 20px; padding: 28px;
+    max-width: 380px; width: 100%; text-align: center;
+}
+.modal-icon { font-size: 40px; margin-bottom: 12px; }
+.modal-message { font-size: 15px; line-height: 1.7; margin-bottom: 20px; }
+.modal-buttons { display: flex; gap: 10px; }
+.modal-buttons .btn { flex: 1; margin: 0; }
+
+/* 반응형 */
+@media (max-width: 768px) {
+    body { font-size: 16px; padding: 8px; }
+    .container { max-width: 100%; padding: 12px; }
+    .btn { min-height: 48px; font-size: 16px; }
+    input, textarea { min-height: 44px; font-size: 16px; }
+    .story-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+}
+@media (min-width: 769px) { .container { max-width: 600px; } }
+
+/* 인쇄 */
+@media print {
+    body * { visibility: hidden; }
+    #dashboard-content, #dashboard-content * { visibility: visible; }
+    #dashboard-content { position: absolute; left: 0; top: 0; width: 100%; }
+    .btn, .nav-buttons, .tab-buttons, #toast, .modal-overlay { display: none !important; }
+    .card { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+}
+
+/* 위기탈출 성공 애니메이션 */
+@keyframes celebrate {
+    0% { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+    50% { transform: scale(1.1) rotate(5deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.celebrate { animation: celebrate 0.5s ease-out; }
+
+/* 읽기 확인 버튼 */
+.read-confirm-btn {
+    background: rgba(124,58,237,0.08); color: var(--primary);
+    border: 2px dashed var(--primary-light); border-radius: 12px;
+    padding: 12px; font-size: 15px; font-weight: 700; cursor: pointer;
+    width: 100%; text-align: center; transition: all 0.2s;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+.read-confirm-btn:hover { background: rgba(124,58,237,0.15); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ═══════════════ 시작 화면 ═══════════════ -->
+<div class="screen active" id="screen-start">
+    <div class="card" style="text-align:center;">
+        <div style="font-size:60px; margin-bottom:8px;">🚦</div>
+        <h1 style="font-size:24px; margin-bottom:6px;">내 마음 신호등 읽기</h1>
+        <p style="font-size:15px; color:var(--text-light);">마음이 올라가는 단계를 알아차리고, 위기를 탈출해보세요!</p>
+        <span class="badge" style="margin-top:10px;">⏱️ 예상 소요시간: 약 15~25분</span>
+        <div style="margin-top:20px;">
+            <button class="btn btn-primary" onclick="showScreen('screen-login')">👩‍🏫 방 만들기 / 입장하기</button>
+            <button class="btn btn-secondary" onclick="startSoloMode()">🌟 혼자 체험하기</button>
+        </div>
+        <div class="privacy-notice">
+            🔐 <strong>안심하세요!</strong><br>
+            방 코드는 숫자일 뿐, 여러분이 누구인지 알려주는 이름표가 아닙니다.
+            닉네임을 만들 때 개인정보를 포함하지 않도록 해주세요.
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ 로그인 화면 ═══════════════ -->
+<div class="screen" id="screen-login">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-start')">← 처음으로</button>
+    </div>
+    <div class="card">
+        <button class="btn btn-primary" onclick="showScreen('screen-create-room')" style="margin-bottom:10px;">
+            👩‍🏫 방 만들기 (교사용)
+        </button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-join-teacher')" style="margin-bottom:10px;">
+            🔑 교사로 접속하기
+        </button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-join-student')">
+            🧒 학생으로 참여하기
+        </button>
+    </div>
+    <div class="privacy-notice">
+        🔐 <strong>안심하세요!</strong><br>
+        방 코드는 숫자로만 구성되어 있어 개인정보를 포함하지 않습니다.
+        닉네임을 만들 때 개인정보를 포함하지 않도록 만들어 주세요.
+    </div>
+</div>
+
+<!-- ═══════════════ 방 만들기 ═══════════════ -->
+<div class="screen" id="screen-create-room">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로가기</button>
+        <button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <h2 style="font-size:20px; margin-bottom:16px;">👩‍🏫 방 만들기</h2>
+        <input id="teacher-name" placeholder="선생님 닉네임" style="margin-bottom:10px;">
+        <input id="teacher-pw" type="password" placeholder="관리자 비밀번호 (숫자 4자리)" maxlength="4" inputmode="numeric" style="margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="createRoom()">🏠 방 만들기</button>
+    </div>
+</div>
+
+<!-- ═══════════════ 방 생성 완료 ═══════════════ -->
+<div class="screen" id="screen-room-created">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card" style="text-align:center;">
+        <h2 style="font-size:20px; margin-bottom:12px;">🎉 방이 만들어졌어요!</h2>
+        <p style="font-size:14px; color:var(--text-light);">아래 코드를 학생들에게 알려주세요.</p>
+        <div style="font-size:48px; font-weight:900; color:var(--primary); margin:16px 0; letter-spacing:8px;" id="display-room-code"></div>
+        <button class="btn btn-secondary btn-small" onclick="copyRoomCode()">📋 코드 복사</button>
+        <button class="btn btn-primary" onclick="enterDashboard()" style="margin-top:16px;">📊 대시보드 열기</button>
+    </div>
+</div>
+
+<!-- ═══════════════ 교사 접속 ═══════════════ -->
+<div class="screen" id="screen-join-teacher">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로가기</button>
+        <button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <h2 style="font-size:20px; margin-bottom:16px;">🔑 교사로 접속</h2>
+        <input id="teacher-join-code" placeholder="방 코드 (6자리)" maxlength="6" inputmode="numeric" style="margin-bottom:10px;">
+        <input id="teacher-join-pw" type="password" placeholder="비밀번호 (4자리)" maxlength="4" inputmode="numeric" style="margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="joinAsTeacher()">🔑 접속하기</button>
+    </div>
+</div>
+
+<!-- ═══════════════ 학생 입장 ═══════════════ -->
+<div class="screen" id="screen-join-student">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로가기</button>
+        <button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <h2 style="font-size:20px; margin-bottom:16px;">🧒 학생으로 참여</h2>
+        <input id="student-room-code" placeholder="방 코드 (6자리)" maxlength="6" inputmode="numeric" style="margin-bottom:10px;">
+        <input id="student-nickname" placeholder="닉네임 (개인정보 포함 금지)" style="margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="joinAsStudent()">🚀 입장하기</button>
+    </div>
+</div>
+
+<!-- ═══════════════ 도입 스토리 ═══════════════ -->
+<div class="screen" id="screen-story">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:50px; margin-bottom:12px;">🚦</div>
+        <h2 style="font-size:20px; margin-bottom:12px;">마음에도 신호등이 있다면?</h2>
+        <div style="font-size:15px; line-height:1.8; text-align:left; color:var(--text);">
+            <p>쉬는 시간이 끝나고 교실에 돌아온 <strong>은수</strong>.</p>
+            <p>친구가 장난으로 가방을 밀었어요. "그냥 장난인데 왜 그래~"</p>
+            <p>은수는 아무 말도 못하고 자리에 앉았어요.</p>
+            <p style="margin-top:12px;">사실 은수의 마음은 이미 아침부터 <strong>조금씩 올라가고</strong> 있었어요.</p>
+            <p>아침에 엄마한테 혼났고, 버스를 놓쳤고, 숙제도 못 했거든요.</p>
+            <p style="margin-top:12px; color:var(--primary); font-weight:900;">
+                마음은 갑자기 폭발하지 않아요.<br>
+                🟢 초록 → 🟡 노랑 → 🔴 빨강<br>
+                단계를 거쳐 올라간답니다.
+            </p>
+            <p style="margin-top:12px;">오늘은 여러 친구들의 이야기 속에서,<br>
+            마음이 <strong>어떻게 변해가는지</strong> 읽어보고,<br>
+            <strong style="color:var(--success);">🎯 위기 탈출</strong>도 해볼 거예요!</p>
+        </div>
+<div class="signal-legend">
+    <div class="signal-legend-title">🚦 신호등 세 가지 색</div>
+    <div class="signal-legend-row"><span class="signal-legend-dot" style="background:var(--green);"></span><span><strong>초록</strong> 마음이 편안해요. 몸이 가볍고 웃음이 나요.</span></div>
+    <div class="signal-legend-row"><span class="signal-legend-dot" style="background:var(--yellow);"></span><span><strong>노랑</strong> 마음이 불편해지기 시작해요. 한숨, 입 삐죽, 주먹 쥐기, 두근거림 같은 몸 신호가 와요.</span></div>
+    <div class="signal-legend-row"><span class="signal-legend-dot" style="background:var(--red);"></span><span><strong>빨강</strong> 마음이 터질 것 같아요. 소리를 지르기도 하고, 반대로 말문이 막히고 눈물이 나기도 해요.</span></div>
+    <div class="signal-legend-foot">같은 장면이라도 사람마다 색이 다를 수 있어요. 이야기 속 친구의 몸 신호를 보면서 골라 보세요.</div>
+</div>
+        <button class="btn btn-primary" onclick="goToMain()" style="margin-top:20px;">🚦 시작하기!</button>
+    </div>
+</div>
+
+<!-- ═══════════════ 메인 화면 (스토리 선택) ═══════════════ -->
+<div class="screen" id="screen-main">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <h2 style="font-size:20px; margin-bottom:6px;">🚦 어떤 친구의 이야기를 볼까요?</h2>
+        <p style="font-size:13px; color:var(--text-light); margin-bottom:4px;" id="main-progress-text"></p>
+        <div class="progress-bar">
+            <div class="progress-fill progress-green" id="main-progress-bar" style="width:0%"></div>
+        </div>
+        <div class="story-grid" id="story-grid"></div>
+    </div>
+    <div class="card" id="mylight-btn-area">
+        <!-- 나의 신호등 만들기 버튼 동적 생성 -->
+    </div>
+    <div style="text-align:center; margin-top:12px;">
+        <button class="btn btn-secondary" onclick="goToComplete()" id="btn-go-complete" style="display:none;">
+            🎉 결과 보러 가기
+        </button>
+    </div>
+</div>
+
+<!-- ═══════════════ 스토리 진행 화면 ═══════════════ -->
+<div class="screen" id="screen-play">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="backToStorySelect()">← 뒤로가기</button>
+        <button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <div id="play-header" style="margin-bottom:12px;"></div>
+        <div id="play-content"></div>
+        <div id="play-signal-area" style="display:none;">
+            <details class="signal-legend-details">
+                <summary>🚦 신호등 색 다시 보기</summary>
+                <div class="signal-legend">
+    <div class="signal-legend-title">🚦 신호등 세 가지 색</div>
+    <div class="signal-legend-row"><span class="signal-legend-dot" style="background:var(--green);"></span><span><strong>초록</strong> 마음이 편안해요. 몸이 가볍고 웃음이 나요.</span></div>
+    <div class="signal-legend-row"><span class="signal-legend-dot" style="background:var(--yellow);"></span><span><strong>노랑</strong> 마음이 불편해지기 시작해요. 한숨, 입 삐죽, 주먹 쥐기, 두근거림 같은 몸 신호가 와요.</span></div>
+    <div class="signal-legend-row"><span class="signal-legend-dot" style="background:var(--red);"></span><span><strong>빨강</strong> 마음이 터질 것 같아요. 소리를 지르기도 하고, 반대로 말문이 막히고 눈물이 나기도 해요.</span></div>
+    <div class="signal-legend-foot">같은 장면이라도 사람마다 색이 다를 수 있어요. 이야기 속 친구의 몸 신호를 보면서 골라 보세요.</div>
+</div>
+            </details>
+            <p style="font-size:15px; font-weight:900; text-align:center; margin:12px 0;">
+                이 친구의 마음은 지금 어떤 색일까요?
+            </p>
+            <div class="signal-buttons" id="signal-buttons"></div>
+        </div>
+        <div id="play-feedback" style="display:none;"></div>
+        <div id="play-escape-area" style="display:none;"></div>
+        <div id="play-nav-buttons" style="text-align:center; margin-top:16px;"></div>
+    </div>
+</div>
+
+<!-- ═══════════════ 나의 신호등 만들기 ═══════════════ -->
+<div class="screen" id="screen-mylight">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-main')">← 뒤로가기</button>
+        <button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <h2 style="font-size:20px; margin-bottom:6px;">🪞 나만의 마음 신호등 만들기</h2>
+        <p style="font-size:14px; color:var(--text-light); margin-bottom:16px;">
+            스토리 속 친구들처럼, 나도 마음이 올라가는 단계가 있어요.<br>
+            나만의 신호등을 만들어보세요!
+        </p>
+
+        <div class="mylight-section mylight-green">
+            <div class="mylight-label">🟢 나의 초록 — 마음이 편안할 때</div>
+            <p style="font-size:13px; color:var(--text-light); margin-bottom:8px;">편안할 때 내 몸은 어떤 느낌이에요?</p>
+            <textarea id="mylight-green" rows="2" placeholder="예: 몸이 가볍고, 웃음이 나와요. 친구들이랑 놀고 싶어요." style="min-height:60px;"></textarea>
+        </div>
+
+        <div class="mylight-section mylight-yellow">
+            <div class="mylight-label">🟡 나의 노랑 — 불편해지기 시작할 때</div>
+            <p style="font-size:13px; color:var(--text-light); margin-bottom:8px;">짜증이나 불안이 시작될 때 어떤 신호가 오나요?</p>
+            <textarea id="mylight-yellow" rows="2" placeholder="예: 입이 삐죽 나와요. 한숨이 나와요. 다리를 떨어요." style="min-height:60px;"></textarea>
+        </div>
+
+        <div class="mylight-section mylight-red">
+            <div class="mylight-label">🔴 나의 빨강 — 마음이 폭발할 때</div>
+            <p style="font-size:13px; color:var(--text-light); margin-bottom:8px;">참을 수 없을 때 나는 어떻게 되나요?</p>
+            <textarea id="mylight-red" rows="2" placeholder="예: 소리를 질러요. 눈물이 나와요. 아무것도 하기 싫어요." style="min-height:60px;"></textarea>
+        </div>
+
+        <div class="mylight-section mylight-strategy">
+            <div class="mylight-label">🛑 나의 멈추기 전략</div>
+            <p style="font-size:13px; color:var(--text-light); margin-bottom:8px;">노랑에서 알아차렸을 때, 나는 이렇게 할 거예요!</p>
+            <div id="strategy-options" style="margin-bottom:8px;"></div>
+            <textarea id="mylight-strategy-custom" rows="2" placeholder="나만의 전략이 있다면 적어주세요!" style="min-height:50px;"></textarea>
+        </div>
+
+        <div class="mylight-section mylight-promise">
+            <div class="mylight-label">💪 나의 다짐 한마디</div>
+            <textarea id="mylight-promise" rows="2" placeholder="예: 노랑이 왔을 때, 먼저 숨을 크게 쉬어볼 거예요!" style="min-height:60px;"></textarea>
+        </div>
+
+        <button class="btn btn-primary" onclick="submitMyLight()" style="margin-top:16px;">🪞 나의 신호등 완성!</button>
+    </div>
+</div>
+
+<!-- ═══════════════ 나의 신호등 결과 ═══════════════ -->
+<div class="screen" id="screen-mylight-result">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-main')">← 뒤로가기</button>
+        <button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div class="card" style="text-align:center;">
+        <h2 style="font-size:20px; margin-bottom:16px;">🪞 나만의 마음 신호등</h2>
+        <div id="mylight-card-area"></div>
+        <div style="margin-top:16px;">
+            <button class="btn btn-secondary" onclick="showScreen('screen-mylight')">✏️ 수정하기</button>
+            <button class="btn btn-primary" onclick="goToMain()">📖 스토리 더 보기</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ 완료 화면 ═══════════════ -->
+<div class="screen" id="screen-complete">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="backToMain()">← 다시 탐험하기</button>
+        <button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:50px; margin-bottom:12px;">🎉</div>
+        <h2 style="font-size:22px; margin-bottom:12px;">멋지게 해냈어요!</h2>
+        <div id="complete-summary"></div>
+        <div style="margin-top:20px;">
+            <button class="btn btn-primary" onclick="backToMain()">🔄 다른 이야기도 볼래요!</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ 교사 대시보드 ═══════════════ -->
+<div class="screen" id="screen-dashboard">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+        <button class="nav-btn" onclick="refreshDashboard()">🔄 새로고침</button>
+    </div>
+    <div class="card">
+        <h2 style="font-size:20px; margin-bottom:4px;">👩‍🏫 교사 대시보드</h2>
+        <p style="font-size:13px; color:var(--text-light);">방 코드: <strong id="dash-room-code"></strong></p>
+    </div>
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('tab-overview', this)">📊 현황</button>
+        <button class="tab-btn" onclick="switchTab('tab-detail', this)">📋 상세기록</button>
+        <button class="tab-btn" onclick="switchTab('tab-export', this)">📥 내보내기</button>
+        <button class="tab-btn" onclick="switchTab('tab-tts', this)">🔊 TTS</button>
+    </div>
+    <div id="dashboard-content">
+        <div class="tab-content active" id="tab-overview"></div>
+        <div class="tab-content" id="tab-detail"></div>
+        <div class="tab-content" id="tab-export">
+            <div class="card">
+                <h3 style="font-size:16px; margin-bottom:12px;">📥 데이터 내보내기</h3>
+                <button class="btn btn-primary" onclick="downloadExcel()" style="margin-bottom:8px;">📊 엑셀 다운로드</button>
+                <button class="btn btn-secondary" onclick="downloadPDF()">📄 PDF 다운로드 (인쇄)</button>
+            </div>
+            <div class="card" style="background:rgba(245,158,11,0.05); border:1px solid rgba(245,158,11,0.2);">
+                <p style="font-size:13px;">⚠️ 수업이 끝나면 데이터 초기화를 눌러주세요. 학생 기록만 지워지고 방 코드는 그대로 쓸 수 있어요. (방은 30일 후 자동 삭제)</p>
+                <button class="btn btn-small" onclick="confirmResetData()" style="background:var(--error); color:white; margin-top:8px;">🗑️ 데이터 초기화</button>
+            </div>
+        </div>
+        <div class="tab-content" id="tab-tts">
+            <div class="card">
+                <h3 style="font-size:16px; margin-bottom:6px;">🔊 대시보드 읽어주기</h3>
+                <p style="font-size:13px; color:var(--text-light); margin-bottom:12px;">영역을 골라 들려주거나, 읽을 내용을 미리 확인할 수 있어요.</p>
+                <div id="tts-section-list">
+                    <div class="stat-row"><span class="stat-label">📊 전체 요약</span><span>
+                        <button class="btn btn-primary btn-small" onclick="speakSection('all')">▶️</button>
+                        <button class="btn btn-secondary btn-small" onclick="previewTTS('all')" style="margin-left:4px;">📝</button>
+                    </span></div>
+                    <div class="stat-row"><span class="stat-label">👥 참여 현황</span><span>
+                        <button class="btn btn-primary btn-small" onclick="speakSection('overview')">▶️</button>
+                        <button class="btn btn-secondary btn-small" onclick="previewTTS('overview')" style="margin-left:4px;">📝</button>
+                    </span></div>
+                    <div class="stat-row"><span class="stat-label">🚦 신호등 분포</span><span>
+                        <button class="btn btn-primary btn-small" onclick="speakSection('signal')">▶️</button>
+                        <button class="btn btn-secondary btn-small" onclick="previewTTS('signal')" style="margin-left:4px;">📝</button>
+                    </span></div>
+                    <div class="stat-row"><span class="stat-label">🎯 위기탈출 전략</span><span>
+                        <button class="btn btn-primary btn-small" onclick="speakSection('strategy')">▶️</button>
+                        <button class="btn btn-secondary btn-small" onclick="previewTTS('strategy')" style="margin-left:4px;">📝</button>
+                    </span></div>
+                    <div class="stat-row"><span class="stat-label">📋 학생별 요약</span><span>
+                        <button class="btn btn-primary btn-small" onclick="speakSection('students')">▶️</button>
+                        <button class="btn btn-secondary btn-small" onclick="previewTTS('students')" style="margin-left:4px;">📝</button>
+                    </span></div>
+                </div>
+                <button class="btn btn-secondary" onclick="stopSpeaking()" style="margin-top:12px;">⏹️ 정지</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 토스트 & 모달 -->
+<div id="toast" class="toast"></div>
+<div id="confirmModal" class="modal-overlay" style="display:none">
+    <div class="modal-content">
+        <div class="modal-icon">⚠️</div>
+        <div class="modal-message" id="confirmMessage"></div>
+        <div class="modal-buttons">
+            <button class="btn btn-secondary" onclick="closeConfirmModal()">취소</button>
+            <button class="btn btn-primary" id="confirmOkBtn" style="background:var(--error)">확인</button>
+        </div>
+    </div>
+</div>
+<div id="ttsPreviewModal" class="modal-overlay" style="display:none">
+    <div class="modal-content" style="max-width:420px;">
+        <div class="modal-icon">📝</div>
+        <div class="modal-message" id="ttsPreviewText" style="text-align:left; max-height:50vh; overflow:auto; font-size:14px;"></div>
+        <div class="modal-buttons">
+            <button class="btn btn-secondary" onclick="closeTTSPreview()">닫기</button>
+        </div>
+    </div>
+</div>
+
+</div><!-- /container -->
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s",
+    authDomain: "emo-dex.firebaseapp.com",
+    projectId: "emo-dex",
+    storageBucket: "emo-dex.firebasestorage.app",
+    messagingSenderId: "994736049700",
+    appId: "1:994736049700:web:8233fa7b68cd6e0cccd2b1",
+    measurementId: "G-6YLB5C6VNR"
+};
+
+const APP_ID = 'sel-lesson-03';
+let app, auth, db, useFirebase = false;
+const localDB = {};
+
+try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    useFirebase = true;
+} catch(e) { console.log('[Firebase] Init failed, using local'); }
+
+function getRoomRef(code) { return doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code); }
+function getStudentRef(code, nick) { return doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students', nick); }
+function getStudentsCol(code) { return collection(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students'); }
+
+const DB = {
+    async saveRoom(code, data) {
+        if (useFirebase) { try { await setDoc(getRoomRef(code), data); return; } catch(e){} }
+        localDB['room_'+code] = data;
+    },
+    async getRoom(code) {
+        if (useFirebase) { try { const s = await getDoc(getRoomRef(code)); return s.exists() ? s.data() : null; } catch(e){} }
+        return localDB['room_'+code] || null;
+    },
+    async saveStudent(code, nick, data) {
+        if (useFirebase) { try { await setDoc(getStudentRef(code, nick), data, {merge:true}); return; } catch(e){} }
+        if (!localDB['students_'+code]) localDB['students_'+code] = {};
+        localDB['students_'+code][nick] = {...(localDB['students_'+code][nick]||{}), ...data};
+    },
+    async getStudent(code, nick) {
+        if (useFirebase) { try { const s = await getDoc(getStudentRef(code, nick)); return s.exists() ? s.data() : null; } catch(e){} }
+        return localDB['students_'+code]?.[nick] || null;
+    },
+    async getAllStudents(code) {
+        if (useFirebase) { try { const snap = await getDocs(getStudentsCol(code)); const r={}; snap.forEach(d=>r[d.id]=d.data()); return r; } catch(e){} }
+        return localDB['students_'+code] || {};
+    },
+    async deleteRoom(code) {
+        if (useFirebase) {
+            try {
+                const snap = await getDocs(getStudentsCol(code));
+                for (const d of snap.docs) await deleteDoc(d.ref);
+                await deleteDoc(getRoomRef(code));
+            } catch(e){}
+        }
+        delete localDB['room_'+code]; delete localDB['students_'+code];
+    },
+    // ⭐ 추가: 학생 기록만 삭제(방 문서는 유지) — 교사용 '데이터 초기화'가 방까지 지워 재로그인/재입장이 막히던 문제 해결
+    async deleteStudentsOnly(code) {
+        if (useFirebase) {
+            try {
+                const snap = await getDocs(getStudentsCol(code));
+                for (const d of snap.docs) await deleteDoc(d.ref);
+            } catch(e){}
+        }
+        if (localDB['students_'+code]) localDB['students_'+code] = {};
+    },
+    onStudentsChange(code, cb) {
+        if (useFirebase) { try { return onSnapshot(getStudentsCol(code), snap => { const r={}; snap.forEach(d=>r[d.id]=d.data()); cb(r); }); } catch(e){} }
+        cb(localDB['students_'+code] || {}); return null;
+    }
+};
+
+let currentUser = null;
+async function initAuth() {
+    if (!auth) return null;
+    return new Promise((resolve) => {
+        const timeout = setTimeout(() => resolve(null), 5000);
+        onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; clearTimeout(timeout); resolve(user); } });
+        signInAnonymously(auth).catch(() => { clearTimeout(timeout); resolve(null); });
+    });
+}
+const authReady = initAuth();
+
+// ═══════════════════════════════════════
+// 상태 변수
+// ═══════════════════════════════════════
+let currentRoomCode = '', currentNickname = '', isTeacher = false, isSoloMode = false;
+let currentStoryId = '', currentStage = 0, currentAnswers = [];
+let completedStories = new Set();
+let escapedStories = new Set(); // 위기탈출 성공한 스토리
+let escapeChoices = {};          // 스토리별 선택한 탈출 전략
+let storyAnswers = {};
+let whyDiff = {};            // 이야기 속 색과 다르게 골랐을 때 학생이 고른 이유
+const WHY_DIFF_OPTIONS = ['나도 비슷한 일이 있어서', '이 상황이 더 힘들게 느껴져서', '이 상황이 별로 힘들지 않아 보여서', '그냥 그렇게 느껴져서'];
+let mylightDone = false;
+let mylightData = {};
+let selectedStrategies = new Set();
+let dashboardData = {};
+let unsubscribe = null;
+
+// ═══════════════════════════════════════
+// 스토리 데이터 (6개 + 위기탈출 분기 포함)
+// ═══════════════════════════════════════
+const STORIES = [
+    {
+        id: 'sujin', emoji: '🏫', title: '수진이의 모둠 활동', tag: '학교 · 역할 갈등',
+        stages: [
+            { label: '1단계', expected: 'green', content: '수진이네 반은 오늘 사회 시간에 모둠 활동을 해요.\n수진이는 자료 조사를 맡았어요.\n"오늘 열심히 하면 좋은 결과가 나올 거야!"\n수진이는 설레는 마음으로 태블릿을 켰어요.', bodySignal: '😊 몸이 편안하고, 기대감에 손이 먼저 움직여요.', tip: '초록 상태에서는 에너지가 자연스럽게 나와요.' },
+            { label: '2단계', expected: 'green', content: '그런데 같은 모둠 친구 민재가 계속 떠들면서\n"이거 대충 하자~" 하고 말해요.\n수진이는 살짝 불편하지만 아직 괜찮아요.\n"그래도 나라도 잘 하면 되니까."', bodySignal: '😐 살짝 눈살이 찌푸려지지만 아직 참을 만해요.', tip: '이 단계에서 알아차리면 "나 좀 불편해" 라고 말할 수 있어요.' },
+            { label: '3단계', expected: 'yellow', content: '발표 자료를 정리하는데, 민재가 수진이 파트까지\n건드리면서 "이게 뭐야, 다시 해" 라고 해요.\n수진이 얼굴이 빨개졌어요.\n가슴이 두근두근 뛰기 시작해요.', bodySignal: '😤 얼굴이 빨개지고, 심장이 빨리 뛰어요. 주먹이 꽉 쥐어져요.', tip: '노랑 신호! 지금 "잠깐 멈추기"를 하면 폭발을 막을 수 있어요.' },
+            { label: '4단계', expected: 'yellow', content: '선생님이 "곧 발표합니다!" 하셨어요.\n민재는 자기가 다 한 것처럼 발표하겠다고 해요.\n수진이 속에서 뜨거운 것이 올라와요.\n"내가 다 했는데... 너무 억울해..."', bodySignal: '😠 목소리가 떨리고, 눈물이 날 것 같아요. 배가 아파와요.', tip: '노랑에서 빨강으로 넘어가기 직전이에요. 지금이 마지막 기회!' },
+            { label: '5단계', expected: 'red', content: '민재가 발표를 시작하자 수진이가 벌떡 일어나\n"다 내가 한 건데!!" 하고 소리쳤어요.\n교실이 조용해졌어요.\n수진이도 자기가 왜 그렇게 소리쳤는지 놀랐어요.', bodySignal: '😫 온몸이 떨리고, 눈물이 터져요. 머릿속이 하얘져요.', tip: '빨강까지 왔어요. 나중에 "3단계에서 알아차렸으면..." 하고 돌아보게 될 거예요.' }
+        ],
+        escapeStage: 2, // 3단계(index 2)에서 탈출 가능
+        escapeOptions: [
+            { id: 'talk', emoji: '🗣️', text: '선생님에게 "저희 모둠 역할 다시 정해주세요" 요청하기', strategy: '도움 요청하기' },
+            { id: 'express', emoji: '💬', text: '민재에게 "나도 열심히 했어. 내 파트는 건드리지 말아줘" 말하기', strategy: '나-전달법' },
+            { id: 'pause', emoji: '🧘', text: '잠깐 숨 크게 쉬고, 내 자료를 차분히 다시 정리하기', strategy: '잠깐 멈추기' }
+        ],
+        escapeEnding: {
+            talk: '수진이가 용기를 내어 선생님에게 다가갔어요.\n"선생님, 저희 모둠 역할이 좀 헷갈려요. 도와주실 수 있나요?"\n선생님이 모둠 역할을 다시 정리해주셨어요.\n민재도 자기 역할을 제대로 하기 시작했고,\n수진이는 자기가 열심히 준비한 부분을 자신 있게 발표했어요. 😊',
+            express: '수진이가 떨리는 목소리로 말했어요.\n"민재야, 나도 이거 열심히 했어. 내가 맡은 건 나한테 맡겨줘."\n민재가 잠깐 놀란 표정을 짓더니 "...그래, 알겠어" 했어요.\n완벽하진 않았지만, 수진이는 자기 목소리를 낸 자신이 뿌듯했어요. 😊',
+            pause: '수진이는 주먹을 꽉 쥐었다가... 천천히 폈어요.\n"후... 일단 심호흡." 크게 숨을 들이마시고 내쉬었어요.\n마음이 조금 가라앉자, 자기 자료를 다시 차분히 정리할 수 있었어요.\n발표 때 자기 파트를 멋지게 해냈어요! 😊'
+        },
+        insight: '수진이의 마음은 갑자기 폭발한 게 아니에요. 1단계부터 5단계까지 <strong>천천히 올라갔어요</strong>. 만약 3단계에서 "나 지금 좀 화나고 있어"를 알아차렸다면, 선생님에게 말하거나 잠깐 쉬는 선택을 할 수 있었을 거예요.'
+    },
+    {
+        id: 'minsu', emoji: '🏠', title: '민수의 주말 아침', tag: '가정 · 잔소리 누적',
+        stages: [
+            { label: '1단계', expected: 'green', content: '주말 아침, 민수는 늦잠을 자고 기분 좋게 일어났어요.\n"오늘은 게임도 하고 친구도 만나야지!"\n창밖으로 햇살이 들어오고 기분이 좋아요.', bodySignal: '😊 몸이 가볍고 기분 좋은 상태예요.', tip: '초록! 에너지가 가득한 상태예요.' },
+            { label: '2단계', expected: 'green', content: '거실에 나왔더니 엄마가 말해요.\n"민수야, 방 먼저 정리하고 나와."\n"네~" 대답은 했지만 살짝 귀찮아요.\n그래도 뭐, 금방 하면 되니까.', bodySignal: '😐 약간 귀찮지만 아직 기분은 괜찮아요.', tip: '작은 불편함이 생겼지만 아직 초록이에요.' },
+            { label: '3단계', expected: 'yellow', content: '방을 정리하고 나왔더니 엄마가 또 말해요.\n"숙제는 했어? 학원 준비는?" \n"아 진짜... 좀 쉬고 싶은데."\n민수의 입이 삐죽 나왔어요.', bodySignal: '😤 입이 삐죽, 한숨이 나와요. 귀가 뜨거워져요.', tip: '노랑 신호! "엄마, 잠깐 쉬고 할게요" 라고 말할 수 있어요.' },
+            { label: '4단계', expected: 'red', content: '"게임은 하루에 30분만!" 엄마가 리모컨을 뺐어요.\n민수의 눈에 눈물이 고여요.\n"맨날 공부만 하라고 해! 나는 로봇이 아니란 말이야!"\n방문을 쾅 닫고 들어갔어요.', bodySignal: '😢 눈물이 나고, 소리를 지르고 싶어요. 방문을 세게 닫아요.', tip: '빨강! 하지만 민수의 마음 깊은 곳에는 "나도 쉬고 싶어"라는 말이 있었어요.' },
+            { label: '5단계', expected: 'red', content: '방 안에서 민수는 이불을 뒤집어쓰고 울었어요.\n엄마가 문 밖에서 "민수야..." 하고 부르지만\n대답하고 싶지 않아요.\n"아무도 내 마음 모르는 것 같아..."', bodySignal: '😭 온몸이 무겁고, 아무것도 하고 싶지 않아요.', tip: '빨강이 오래 가면 몸도 마음도 지쳐요. 이럴 때 믿을 수 있는 사람에게 "나 좀 힘들어"라고 말하는 게 중요해요.' }
+        ],
+        escapeStage: 2,
+        escapeOptions: [
+            { id: 'negotiate', emoji: '🤝', text: '"엄마, 30분만 쉬고 숙제할게요. 약속!" 하고 협상하기', strategy: '대화로 협상하기' },
+            { id: 'accept', emoji: '📝', text: '"알겠어요" 하고 숙제를 빨리 끝낸 다음 놀기', strategy: '우선순위 정하기' },
+            { id: 'express', emoji: '💬', text: '"엄마, 계속 해야 할 게 나오니까 좀 지쳐요" 하고 마음 말하기', strategy: '마음 표현하기' }
+        ],
+        escapeEnding: {
+            negotiate: '민수가 엄마에게 다가가서 말했어요.\n"엄마, 저 30분만 쉬고 나서 숙제 할게요. 약속해요!"\n엄마가 잠깐 생각하더니 "그래, 대신 약속 지켜야 해" 하셨어요.\n민수는 30분 동안 좋아하는 만화를 보고,\n그 다음에 숙제를 시작했어요. 오히려 더 집중이 잘 됐어요! 😊',
+            accept: '민수는 "후..." 하고 한숨을 쉬었지만,\n"빨리 끝내면 놀 수 있잖아" 하고 마음을 바꿨어요.\n숙제를 후딱 끝내니 시간이 많이 남았어요.\n엄마도 "다 했구나!" 하고 웃으셨어요.\n민수는 남은 시간에 신나게 게임했어요! 😊',
+            express: '민수가 조금 떨리는 목소리로 말했어요.\n"엄마, 아침부터 계속 해야 할 게 나오니까 좀 지쳐요..."\n엄마가 놀란 표정으로 "그랬어? 미안해, 한꺼번에 말한 거 같네" 하셨어요.\n"하나씩 하자. 먼저 뭐 하고 싶어?" \n민수는 엄마가 자기 마음을 들어주셔서 기분이 좋아졌어요. 😊'
+        },
+        insight: '민수가 폭발한 건 "게임 30분" 때문만이 아니에요. 아침부터 쌓인 잔소리가 <strong>한 방울씩 물을 채우다가 넘친 것</strong>이에요. 3단계에서 "엄마, 좀 쉬고 할게요"라고 말했다면 달라졌을 수 있어요.'
+    },
+    {
+        id: 'haeun', emoji: '👫', title: '하은이의 점심시간', tag: '학교 · 소외감',
+        stages: [
+            { label: '1단계', expected: 'green', content: '점심시간! 하은이는 급식을 받으며 기분이 좋아요.\n오늘 메뉴는 좋아하는 떡볶이!\n"유진아, 같이 먹자!" 하은이가 단짝에게 손을 흔들었어요.', bodySignal: '😊 입꼬리가 올라가고 발걸음이 가벼워요.', tip: '좋아하는 메뉴에 좋아하는 친구! 완벽한 초록이에요.' },
+            { label: '2단계', expected: 'yellow', content: '그런데 유진이가 다른 친구들 쪽으로 가버렸어요.\n"유진아!" 하고 불렀는데 못 들은 것 같아요.\n하은이는 혼자 자리에 앉았어요.\n"...괜찮아, 잠깐이겠지."', bodySignal: '😔 가슴이 살짝 쿵 내려앉는 느낌이에요.', tip: '조용히 힘든 것도 신호등이 바뀌는 순간이에요.' },
+            { label: '3단계', expected: 'yellow', content: '유진이와 친구들이 웃으면서 이야기하는 게 보여요.\n하은이는 밥을 먹으면서 자꾸 그쪽을 쳐다봐요.\n"나는 왜 안 불러주지..."\n떡볶이가 갑자기 맛이 없어졌어요.', bodySignal: '😢 입맛이 없어지고, 자꾸 한숨이 나와요. 눈이 뜨거워져요.', tip: '노랑 신호. 하은이처럼 화를 안 내도 마음이 아플 수 있어요.' },
+            { label: '4단계', expected: 'red', content: '오후 수업 시간, 유진이가 "하은아, 지우개 빌려줘~" 해요.\n하은이는 아무 말 없이 지우개를 던지듯 놓았어요.\n"왜 그래?" 유진이가 물었지만\n하은이는 고개를 돌렸어요.', bodySignal: '😶 말하고 싶은데 말이 안 나와요. 몸이 뻣뻣해져요.', tip: '하은이의 빨강은 소리를 지르는 게 아니에요. 말문이 닫히는 것도 빨강이에요.' },
+            { label: '5단계', expected: 'red', content: '방과 후, 하은이는 집에 가면서 혼자 생각해요.\n"나는 유진이한테 중요한 친구가 아닌가 봐..."\n눈물이 볼을 타고 흘러내려요.\n집에 가서도 엄마한테 "아무 일 없어요" 라고 했어요.', bodySignal: '😭 조용히 우는 것도 빨강이에요. 혼자 삼키면 마음이 더 아파요.', tip: '조용히 힘든 것도 빨강이에요. 누군가에게 "좀 속상해"라고 한마디만 해도 달라질 수 있어요.' }
+        ],
+        escapeStage: 2,
+        escapeOptions: [
+            { id: 'approach', emoji: '👋', text: '"유진아, 나도 같이 앉아도 돼?" 하고 다가가기', strategy: '용기 내어 다가가기' },
+            { id: 'other', emoji: '🤗', text: '다른 친구에게 "같이 먹자!" 하고 먼저 말 걸기', strategy: '새로운 연결 만들기' },
+            { id: 'journal', emoji: '📓', text: '속상한 마음을 수첩에 적으면서 마음 정리하기', strategy: '마음 기록하기' }
+        ],
+        escapeEnding: {
+            approach: '하은이는 용기를 모아 유진이 쪽으로 걸어갔어요.\n"유진아, 나도 같이 먹어도 돼?"\n"어? 당연하지! 안 보여서 못 불렀어, 미안~"\n유진이가 옆자리를 비켜줬어요.\n하은이의 마음이 한결 가벼워졌어요. 😊',
+            other: '하은이는 옆 반에서 온 새 친구 미소에게 말을 걸었어요.\n"같이 먹을래? 오늘 떡볶이 맛있어!"\n미소가 활짝 웃으며 옆에 앉았어요.\n둘이 이야기하다 보니 점심시간이 금방 지나갔어요.\n새 친구가 생긴 기분은 생각보다 따뜻했어요. 😊',
+            journal: '하은이는 수첩을 꺼내 작게 적었어요.\n"유진이가 나를 안 불러줘서 속상했다."\n적고 나니 마음이 조금 정리됐어요.\n"나중에 유진이한테 속상했다고 말해봐야지."\n혼자 삼키지 않기로 마음먹었어요. 😊'
+        },
+        insight: '하은이는 한 번도 화를 내거나 소리를 지르지 않았어요. 하지만 마음은 분명히 <strong>빨강</strong>이었어요. 소리 없이 아픈 마음도 신호등에 보여요. 조용히 힘든 친구를 알아차리는 것도 중요해요.'
+    },
+    {
+        id: 'junho', emoji: '📱', title: '준호의 게임 시간', tag: '가정 · 약속 갈등',
+        stages: [
+            { label: '1단계', expected: 'green', content: '준호는 학교에서 돌아와 간식을 먹고 있어요.\n"오늘은 친구들이랑 게임하기로 했는데!"\n시계를 보니 약속 시간이 30분 남았어요.\n마음이 설레요!', bodySignal: '😊 기대감에 손이 근질근질해요.', tip: '좋아하는 활동이 기다리고 있으면 기분이 좋죠!' },
+            { label: '2단계', expected: 'yellow', content: '아빠가 말해요. "준호야, 오늘 학원 숙제 다 했어?"\n"...아직이요."\n"숙제 먼저 하고 게임해."\n준호는 시계를 다시 봤어요. 친구들이 기다리는데...', bodySignal: '😰 조급해져요. 시계를 자꾸 쳐다보게 돼요.', tip: '마음이 급해지기 시작했어요. 노랑 신호!' },
+            { label: '3단계', expected: 'yellow', content: '급하게 숙제를 하는데 잘 안 풀려요.\n친구한테서 메시지가 와요: "야 빨리 와!"\n"아 진짜..." 준호의 다리가 계속 떨려요.\n연필을 꽉 쥐면서 대충 답을 적었어요.', bodySignal: '😤 다리가 떨리고, 연필을 꽉 쥐어요. 초조해요.', tip: '이때 "아빠, 30분만 먼저 하고 숙제 할게요"라고 말할 수 있었을까요?' },
+            { label: '4단계', expected: 'red', content: '드디어 컴퓨터를 켰는데, 이미 친구들 게임이 끝나 있었어요.\n"야, 너 뭐 하다 왔어? 우리 다 끝났는데."\n준호는 책상을 쾅 쳤어요.\n"다 아빠 때문이잖아!!"', bodySignal: '😫 분노가 터져요. 무언가를 치거나 던지고 싶어요.', tip: '빨강! 하지만 정말 화가 난 대상은 아빠일까요, 상황일까요?' },
+            { label: '5단계', expected: 'red', content: '아빠가 "소리 지르지 마!" 하셨어요.\n준호는 컴퓨터를 끄고 방에 들어가 문을 잠갔어요.\n"나만 손해야... 맨날 나만..."\n이불 속에서 휴대폰만 만지작거려요.', bodySignal: '😢 억울하고 외로워요. 아무것도 하기 싫어요.', tip: '감정이 폭발한 뒤에는 후회와 외로움이 와요. 이때 "좀 속상했어요"라고 말할 수 있으면 좋겠죠.' }
+        ],
+        escapeStage: 1,
+        escapeOptions: [
+            { id: 'plan', emoji: '📋', text: '"아빠, 친구랑 약속이 있어요. 30분 게임하고 바로 숙제할게요!" 계획 제안하기', strategy: '계획 세우기' },
+            { id: 'msg', emoji: '💬', text: '친구에게 "나 30분 후에 갈게! 숙제 좀 하고!" 메시지 보내기', strategy: '상황 알리기' },
+            { id: 'breathe', emoji: '🧘', text: '조급한 마음을 잠깐 멈추고, 숙제에 집중해보기', strategy: '잠깐 멈추기' }
+        ],
+        escapeEnding: {
+            plan: '준호가 아빠에게 차분하게 말했어요.\n"아빠, 친구들이랑 약속이 있어요. 30분만 하고 바로 숙제할게요!"\n아빠가 생각하시더니 "그래, 30분만이다. 타이머 맞춰놔."\n준호는 친구들이랑 신나게 한 판 하고, 약속대로 숙제도 끝냈어요! 😊',
+            msg: '준호는 친구에게 메시지를 보냈어요.\n"미안, 숙제 먼저 해야 해! 30분 뒤에 들어갈게!"\n친구들이 "ㅇㅋ 기다릴게~" 답장을 보내왔어요.\n조급함이 좀 줄어들자 숙제도 더 잘 풀렸어요. 😊',
+            breathe: '준호는 "후..." 하고 크게 숨을 쉬었어요.\n"급해봤자 틀리기만 하잖아. 차분하게 하자."\n천천히 풀으니까 생각보다 빨리 끝났어요.\n게임에도 제 시간에 들어갈 수 있었어요! 😊'
+        },
+        insight: '준호의 분노는 "게임을 못 해서"만은 아니에요. 기대 → 조급 → 좌절이 <strong>단계적으로 쌓인 것</strong>이에요. 숙제와 게임 사이에서 느낀 조급함을 2단계에서 말했다면, 아빠와 타협할 수 있었을 거예요.'
+    },
+    {
+        id: 'seoyeon', emoji: '📝', title: '서연이의 시험 날', tag: '학교 · 성적 압박',
+        stages: [
+            { label: '1단계', expected: 'green', content: '서연이는 이번 수학 시험을 열심히 준비했어요.\n어젯밤까지 문제집을 두 번이나 풀었거든요.\n"이번엔 잘 볼 수 있을 거야!"\n시험지를 받으며 깊이 숨을 들이쉬었어요.', bodySignal: '😊 준비를 많이 해서 자신감이 있어요.', tip: '준비를 했다는 것만으로도 초록 상태가 될 수 있어요!' },
+            { label: '2단계', expected: 'yellow', content: '시험을 풀기 시작했는데, 3번 문제가 어려워요.\n"이거... 본 적 없는 유형인데?"\n시계를 보니 시간이 많이 지나 있어요.\n손에 땀이 나기 시작해요.', bodySignal: '😰 손에 땀이 나고, 심장이 빨라져요.', tip: '불안의 시작이에요. "괜찮아, 다른 문제 먼저 풀자"가 도움이 될 수 있어요.' },
+            { label: '3단계', expected: 'yellow', content: '주변을 보니 다른 친구들은 잘 풀고 있는 것 같아요.\n지우가 벌써 뒤집어서 뒷면을 풀고 있어요.\n"나만 못하는 건가..."\n서연이의 연필이 멈췄어요.', bodySignal: '😟 머릿속이 하얘지고, 연필이 멈춰요. 비교하게 돼요.', tip: '남과 비교하면 불안이 커져요. 내 문제에만 집중하는 연습이 필요해요.' },
+            { label: '4단계', expected: 'red', content: '시험이 끝났어요. 친구들이 답을 맞춰보고 있어요.\n"나 5번 3이었는데?" "나도!"\n서연이 답은 달라요. 하나, 둘, 셋... 점점 틀린 게 많아요.\n눈물이 그렁그렁해요.', bodySignal: '😢 가슴이 쪼여오고, 눈물을 참기 힘들어요.', tip: '시험 결과가 기대와 다를 때 느끼는 감정도 자연스러운 거예요.' },
+            { label: '5단계', expected: 'red', content: '"엄마한테 뭐라고 하지... 또 실망하실 텐데."\n서연이는 쉬는 시간에 책상에 엎드렸어요.\n친구가 "서연아 같이 놀자!" 해도\n"나 좀 혼자 있을래..." 하고 고개를 돌렸어요.', bodySignal: '😭 무기력하고, 자책이 반복돼요. 아무도 만나기 싫어요.', tip: '"시험 하나로 나의 가치가 결정되지 않아요." 이 말을 기억해주세요.' }
+        ],
+        escapeStage: 1,
+        escapeOptions: [
+            { id: 'skip', emoji: '⏭️', text: '"어려운 건 넘기자!" 하고 쉬운 문제부터 풀기', strategy: '전략적 선택' },
+            { id: 'self', emoji: '💪', text: '"나는 열심히 준비했어. 내 페이스대로 하자!" 속으로 응원하기', strategy: '자기 격려' },
+            { id: 'focus', emoji: '👀', text: '친구 쪽을 보지 않고 내 시험지에만 집중하기', strategy: '비교 멈추기' }
+        ],
+        escapeEnding: {
+            skip: '서연이는 결심했어요. "3번은 나중에!"\n쉬운 문제부터 술술 풀어나가니 자신감이 돌아왔어요.\n남은 시간에 3번도 다시 도전했어요.\n완벽하진 않았지만, 할 수 있는 만큼 최선을 다했어요! 😊',
+            self: '서연이는 속으로 말했어요.\n"나 어제 문제집 두 번이나 풀었잖아. 나 잘하고 있어!"\n떨리던 손이 조금 진정됐어요.\n한 글자 한 글자 차분히 써나갔어요.\n시험 후에도 마음이 한결 편했어요. 😊',
+            focus: '서연이는 고개를 돌려 내 시험지만 봤어요.\n"다른 사람은 다른 사람이야. 나는 나."\n집중하니까 생각보다 풀리는 문제가 많았어요.\n시험이 끝나고 "나 나름 열심히 했다!" 생각할 수 있었어요. 😊'
+        },
+        insight: '서연이의 불안은 시험 문제가 어려워서만이 아니에요. "잘해야 한다"는 압박 + 친구와의 비교 + 부모님 기대가 <strong>겹겹이 쌓인 것</strong>이에요. 2단계에서 "어려운 문제는 넘기자"라고 스스로 말했다면, 나머지 문제에 집중할 수 있었을 거예요.'
+    },
+    {
+        id: 'jiho', emoji: '🚌', title: '지호의 등굣길', tag: '일상 · 짜증 누적',
+        stages: [
+            { label: '1단계', expected: 'green', content: '월요일 아침, 지호는 알람 소리에 눈을 떴어요.\n"아, 월요일이다..." 좀 귀찮지만 괜찮아요.\n세수하고 밥 먹고 준비하면 되니까요.', bodySignal: '😐 약간 귀찮지만 큰 문제는 없어요.', tip: '아직 초록이에요. 월요일 아침이 쉽지 않지만 괜찮아요.' },
+            { label: '2단계', expected: 'yellow', content: '그런데 양말이 안 보여요. 서랍을 다 뒤졌는데 없어요.\n"엄마! 양말 어딨어?!" \n동생이 지호 양말을 신고 나타났어요.\n"아 진짜..." 지호는 동생 양말을 억지로 신었어요.', bodySignal: '😤 짜증이 올라와요. 동작이 거칠어져요.', tip: '작은 짜증이 쌓이기 시작했어요!' },
+            { label: '3단계', expected: 'yellow', content: '급하게 뛰어나갔는데 버스가 눈앞에서 떠났어요!\n"아... 다음 버스는 15분 후인데."\n학교에 늦을 것 같아요.\n발을 동동 구르며 정류장에 서 있어요.', bodySignal: '😰 조급해지고, 발을 동동 굴러요. 한숨이 계속 나와요.', tip: '노랑 누적! 양말 + 버스가 겹치니까 짜증이 배로 커져요.' },
+            { label: '4단계', expected: 'red', content: '간신히 학교에 도착했는데 이미 수업이 시작됐어요.\n"지호, 왜 늦었어?" 선생님이 물어요.\n친구들이 쳐다봐요.\n지호는 아무 말도 못 하고 자리에 앉았어요. 얼굴이 빨개요.', bodySignal: '😳 얼굴이 화끈거리고, 창피해요. 숨고 싶어요.', tip: '짜증 + 창피함이 겹치니까 빨강이 됐어요.' },
+            { label: '5단계', expected: 'red', content: '1교시 중간, 옆자리 친구가 속삭여요.\n"야, 너 오늘 양말 왜 그래? ㅋㅋ"\n동생 양말이 핑크색이었거든요.\n지호는 얼굴을 책으로 가리고 아무 말도 안 했어요.\n속으로 "오늘은 최악이야..." 라고 생각했어요.', bodySignal: '😤 온몸이 뜨겁고, 아무도 말 걸지 않았으면 좋겠어요.', tip: '작은 일들이 모여 큰 감정이 됐어요. 이럴 때 "오늘 좀 힘든 날이야"라고 인정하는 게 첫걸음이에요.' }
+        ],
+        escapeStage: 2,
+        escapeOptions: [
+            { id: 'accept', emoji: '🤷', text: '"버스 놓쳤으니 다음 버스 기다리면서 심호흡하자" 상황 받아들이기', strategy: '상황 수용하기' },
+            { id: 'humor', emoji: '😄', text: '"핑크 양말이라니... 좀 웃기긴 하네" 유머로 넘기기', strategy: '유머 활용하기' },
+            { id: 'label', emoji: '🏷️', text: '"오늘은 짜증나는 날이구나" 하고 마음에 이름 붙여주기', strategy: '감정 이름 붙이기' }
+        ],
+        escapeEnding: {
+            accept: '지호는 정류장에서 크게 숨을 쉬었어요.\n"어차피 버스는 갔으니까... 다음 버스 타면 되지."\n기다리면서 하늘을 봤더니 구름이 예뻤어요.\n늦긴 했지만 마음은 덜 힘들었어요.\n"늦은 건 어쩔 수 없지. 지금부터 잘 하면 돼!" 😊',
+            humor: '지호는 핑크 양말을 내려다보며 살짝 웃었어요.\n"이거 오히려 패션 아닌가? ㅋㅋ"\n한 번 웃으니까 무거웠던 마음이 조금 풀렸어요.\n"뭐, 핑크도 나쁘지 않지!" 😊',
+            label: '지호는 속으로 말해봤어요.\n"오늘은 짜증나는 날이구나. 그럴 수 있지."\n이름을 붙여주니까 신기하게도 짜증이 조금 줄었어요.\n"짜증나는 날이라고 최악의 날은 아니잖아." 😊'
+        },
+        insight: '지호를 폭발하게 한 건 핑크 양말 하나가 아니에요. 양말 → 버스 → 지각 → 놀림이 <strong>도미노처럼 연쇄적으로</strong> 쌓인 거예요. 아침에 "오늘은 좀 짜증나는 날이구나"라고 알아차렸다면, 나머지에 덜 예민하게 반응할 수 있었을 거예요.'
+    },
+    {
+        id: 'daeun', emoji: '🎤', title: '다은이의 발표 시간', tag: '학교 · 발표 긴장',
+        stages: [
+            { label: '1단계', expected: 'green', content: '오늘 국어 시간에는 조사한 내용을 발표해요.\n다은이는 어젯밤 거울 앞에서 두 번이나 연습했어요.\n"준비했으니까 괜찮을 거야."\n노트를 한 번 더 펼쳐봤어요.', bodySignal: '😊 가슴이 살짝 두근거리지만 기분 좋은 떨림이에요.', tip: '설레는 떨림도 초록이에요. 준비한 만큼 몸이 알고 있어요.' },
+            { label: '2단계', expected: 'green', content: '첫 번째 친구가 발표를 시작했어요.\n목소리가 크고 자료도 멋져요. 박수가 쏟아졌어요.\n"우와, 잘한다..." 다은이는 자기 노트를 내려다봤어요.\n두 명 뒤가 다은이 차례예요.', bodySignal: '😐 손끝이 조금 차가워지고, 노트를 자꾸 만지작거려요.', tip: '아직 초록이에요. 다른 사람과 나를 비교하기 시작하는 순간을 기억해두세요.' },
+            { label: '3단계', expected: 'yellow', content: '"다음, 다은이!" 선생님이 이름을 불렀어요.\n앞으로 나가는데 다리가 후들거려요.\n노트를 펼쳤는데 첫 문장이 하나도 생각나지 않아요.\n종이가 파르르 떨려요.', bodySignal: '😖 목이 마르고, 손에 땀이 나요. 종이가 떨려요.', tip: '노랑 신호! 지금 숨을 한 번 고르면 다음 장면이 달라질 수 있어요.' },
+            { label: '4단계', expected: 'red', content: '더듬거리며 말을 시작했는데,\n뒤쪽에서 누군가 작게 웃는 소리가 들렸어요.\n다은이의 말이 뚝 끊겼어요.\n교실이 조용해지고, 얼굴이 화끈거려요.', bodySignal: '😳 머릿속이 하얘지고, 귀까지 뜨거워져요.', tip: '빨강이 켜졌어요. 이럴 때 몸이 굳는 건 아주 자연스러운 반응이에요.' },
+            { label: '5단계', expected: 'red', content: '자리로 돌아온 다은이는 책상에 엎드렸어요.\n짝꿍이 "괜찮아?" 하고 물었지만 고개만 저었어요.\n"다시는 발표 안 할래..."\n남은 수업 시간이 아주 길게 느껴졌어요.', bodySignal: '😞 몸이 무겁고, 아무 말도 하기 싫어요.', tip: '오늘 다은이의 마음이 조금이라도 나아진 순간은 언제였을까요? 짝꿍이 물어봐 준 그 순간일지도 몰라요.' }
+        ],
+        escapeStage: 2,
+        escapeOptions: [
+            { id: 'breath', emoji: '🧘', text: '시작하기 전에 숨을 세 번 크게 쉬고, 첫 문장만 천천히 읽기', strategy: '호흡으로 진정하기' },
+            { id: 'note', emoji: '📝', text: '노트의 첫 문장에 손가락을 짚고 거기서부터 시작하기', strategy: '준비물 활용하기' },
+            { id: 'ask', emoji: '🙋', text: '선생님께 "조금만 뒤에 발표해도 될까요?" 하고 부탁하기', strategy: '도움 요청하기' }
+        ],
+        escapeEnding: {
+            breath: '다은이는 노트를 들고 잠깐 멈췄어요.\n하나... 둘... 셋. 숨을 크게 들이마시고 천천히 내쉬었어요.\n떨리던 손이 조금 가라앉자 첫 문장이 떠올랐어요.\n"제가 조사한 주제는 바다거북입니다."\n한 문장을 말하고 나니, 그다음은 훨씬 쉬웠어요. 😊',
+            note: '다은이는 노트의 첫 줄에 손가락을 콕 짚었어요.\n"여기부터 읽으면 돼."\n손가락을 따라 한 줄씩 읽어 내려가니 마음이 차분해졌어요.\n중간부터는 고개를 들고 친구들을 볼 수도 있었어요. 😊',
+            ask: '다은이는 작은 목소리로 선생님께 말했어요.\n"선생님, 조금만 뒤에 해도 될까요?"\n선생님이 웃으며 "그래, 마음 준비되면 말해줘" 하셨어요.\n두 명 뒤에 다시 나갔을 때, 다은이는 훨씬 편안했어요.\n도움을 요청한 것도 용기였어요. 😊'
+        },
+        insight: '다은이의 긴장은 발표가 시작되면서 갑자기 생긴 게 아니에요. 앞 친구와 비교하던 2단계부터 <strong>조용히 올라가고 있었어요</strong>. 3단계에서 숨을 고르거나 도움을 요청했다면, 다른 장면이 펼쳐졌을 거예요.'
+    },
+    {
+        id: 'taeo', emoji: '⚽', title: '태오의 체육 시간', tag: '학교 · 실수와 비난',
+        stages: [
+            { label: '1단계', expected: 'green', content: '오늘 체육은 태오가 제일 좋아하는 피구예요.\n운동장에 나가는 발걸음이 통통 튀어요.\n"오늘은 끝까지 살아남아야지!"', bodySignal: '😊 몸에 힘이 나고, 웃음이 나와요.', tip: '좋아하는 활동 앞에서는 몸이 먼저 신나요. 초록!' },
+            { label: '2단계', expected: 'green', content: '팀을 나누는데 친구가 "태오 우리 팀!" 하고 불렀어요.\n"좋아, 잘해보자!" 태오가 손을 마주쳤어요.\n경기가 시작되고 공이 빠르게 오갔어요.', bodySignal: '😊 심장이 빨리 뛰지만 신나는 두근거림이에요.', tip: '같은 두근거림도 상황에 따라 초록일 수 있어요.' },
+            { label: '3단계', expected: 'yellow', content: '날아온 공을 잡으려다 손에서 놓쳤어요.\n태오가 아웃되자 같은 팀 친구가 한숨을 쉬었어요.\n"아 진짜~"\n태오의 귀가 빨갛게 달아올랐어요.', bodySignal: '😤 귀가 뜨거워지고, 주먹이 꽉 쥐어져요.', tip: '노랑 신호! 실수보다 그다음 선택이 결과를 바꿔요.' },
+            { label: '4단계', expected: 'yellow', content: '다시 들어간 태오에게 또 공이 왔어요.\n잘하고 싶은 마음에 손이 굳었고, 또 놓쳤어요.\n"야, 너 그냥 뒤에 있어."\n태오는 아무 말도 못 했어요.', bodySignal: '😣 어깨가 굳고, 발이 무거워져요. 목소리가 안 나와요.', tip: '노랑이 짙어지고 있어요. 여기서 한 마디만 해도 달라질 수 있어요.' },
+            { label: '5단계', expected: 'red', content: '경기가 끝나갈 무렵, 태오가 공을 발로 뻥 차버렸어요.\n공이 담장 밖으로 넘어갔어요.\n"태오야!" 선생님이 부르셨어요.\n태오는 고개를 숙인 채 서 있었어요.', bodySignal: '😫 온몸이 뜨겁고, 눈물이 날 것 같아요.', tip: '빨강까지 왔어요. 태오가 정말 하고 싶었던 말은 "나도 잘하고 싶었어"였을 거예요.' }
+        ],
+        escapeStage: 2,
+        escapeOptions: [
+            { id: 'itell', emoji: '🗣️', text: '"나도 잘하고 싶어. 그렇게 말하면 더 긴장돼" 라고 말하기', strategy: '나-전달법' },
+            { id: 'water', emoji: '🧘', text: '코트 밖에서 물 한 모금 마시고 숨 고르기', strategy: '잠깐 멈추기' },
+            { id: 'team', emoji: '🤝', text: '"다음 공은 같이 막자!" 하고 팀에게 먼저 제안하기', strategy: '협력 제안하기' }
+        ],
+        escapeEnding: {
+            itell: '태오가 친구를 보며 말했어요.\n"나도 잘하고 싶어. 그렇게 말하면 더 긴장돼."\n친구가 잠깐 멈칫하더니 "...미안, 나도 급했어" 했어요.\n다음 공이 왔을 때, 태오는 조금 덜 굳은 손으로 공을 잡았어요. 😊',
+            water: '태오는 잠깐 코트 밖으로 나가 물을 한 모금 마셨어요.\n"후... 한 번 놓친 거지, 못하는 건 아니야."\n숨을 고르고 다시 들어가니 시야가 넓어졌어요.\n이번엔 공이 오는 방향이 잘 보였어요. 😊',
+            team: '태오가 팀원들에게 손을 들며 말했어요.\n"다음 공은 같이 막자! 내가 왼쪽 볼게."\n친구들이 "오케이!" 하고 자리를 나눴어요.\n혼자 짊어지지 않으니 마음이 훨씬 가벼워졌어요. 😊'
+        },
+        insight: '태오를 힘들게 한 건 공을 놓친 실수 하나가 아니에요. 실수 + 친구의 한마디 + 잘해야 한다는 마음이 <strong>겹쳐서 쌓인 것</strong>이에요. 3단계에서 마음을 말했다면 팀 분위기도 달라졌을 거예요.'
+    },
+    {
+        id: 'soyul', emoji: '💬', title: '소율이의 단톡방', tag: '일상 · 온라인 관계',
+        stages: [
+            { label: '1단계', expected: 'green', content: '모둠 단톡방에 알림이 울렸어요.\n주말에 뭐 할지 이야기하는 중이에요.\n소율이도 신나서 "나 그 영화 보고 싶었어!" 라고 보냈어요.', bodySignal: '😊 손가락이 빠르게 움직이고, 입꼬리가 올라가요.', tip: '함께 이야기 나눌 때의 편안함, 초록이에요.' },
+            { label: '2단계', expected: 'yellow', content: '그런데 소율이 메시지 아래로\n다른 이야기가 주르륵 올라갔어요.\n아무도 소율이 말에 답하지 않았어요.\n"...못 봤나 보다."', bodySignal: '😔 가슴이 살짝 쿵 내려앉고, 화면을 자꾸 새로고침해요.', tip: '답이 없는 순간에 드는 마음도 신호등을 바꿔요.' },
+            { label: '3단계', expected: 'yellow', content: '조금 뒤, 친구들이 사진을 올렸어요.\n어제 셋이 만나서 찍은 사진이었어요.\n소율이만 없었어요.\n소율이는 화면을 한참 바라봤어요.', bodySignal: '😢 손이 차가워지고, 목이 뻐근해요. 화면만 계속 봐요.', tip: '노랑 신호! 지금 마음을 확인해보면 오해가 풀릴 수도 있어요.' },
+            { label: '4단계', expected: 'red', content: '밤이 늦었는데도 소율이는 계속 대화를 다시 읽었어요.\n"내가 뭘 잘못했나?"\n읽고 또 읽어도 답을 알 수 없었어요.\n눈이 뻑뻑하고 머리가 아파요.', bodySignal: '😖 눈이 아프고, 잠이 오지 않아요. 생각이 멈추지 않아요.', tip: '빨강! 혼자 계속 곱씹으면 마음이 더 무거워져요.' },
+            { label: '5단계', expected: 'red', content: '다음 날 학교에서 소율이는 아무렇지 않은 척했어요.\n친구들이 인사해도 짧게만 대답했어요.\n"괜찮아, 신경 안 써."\n하지만 속으로는 계속 그 사진이 떠올랐어요.', bodySignal: '😶 말수가 줄고, 아무렇지 않은 척하느라 더 지쳐요.', tip: '괜찮은 척하는 것도 빨강일 수 있어요. 소율이 마음이 조금 가벼워지려면 무엇이 필요했을까요?' }
+        ],
+        escapeStage: 2,
+        escapeOptions: [
+            { id: 'askthem', emoji: '💬', text: '"어제 만났구나! 다음엔 나도 부르면 좋겠어" 라고 솔직하게 보내기', strategy: '솔직하게 말하기' },
+            { id: 'offline', emoji: '📵', text: '폰을 잠깐 내려놓고 좋아하는 일 하러 가기', strategy: '거리 두기' },
+            { id: 'share', emoji: '🗣️', text: '가족이나 다른 친구에게 "나 좀 서운했어" 하고 말하기', strategy: '마음 나누기' }
+        ],
+        escapeEnding: {
+            askthem: '소율이는 한참 망설이다 메시지를 보냈어요.\n"어제 만났구나! 다음엔 나도 불러줘~"\n곧 답이 왔어요. "헐 미안!! 갑자기 정해져서 못 물어봤어. 다음엔 꼭!"\n생각보다 간단한 오해였어요.\n소율이의 마음이 스르르 풀렸어요. 😊',
+            offline: '소율이는 폰을 엎어놓고 방을 나왔어요.\n좋아하는 그림을 그리다 보니 시간이 훌쩍 지났어요.\n다시 폰을 봤을 때는 마음이 훨씬 담담했어요.\n"내일 물어보면 되지."\n한 걸음 떨어지니 생각도 정리됐어요. 😊',
+            share: '소율이는 언니에게 조심스럽게 말했어요.\n"나만 빼고 만난 것 같아서 좀 서운했어."\n언니가 "그럴 수 있지. 나도 그런 적 있어" 하고 들어줬어요.\n말하고 나니 가슴에 얹힌 게 조금 내려갔어요. 😊'
+        },
+        insight: '소율이의 마음이 무거워진 건 사진 한 장 때문만이 아니에요. 답이 없던 순간부터 <strong>혼자 짐작하고 곱씹은 시간</strong>이 쌓인 거예요. 노랑에서 확인하거나 잠깐 멀어졌다면 밤이 훨씬 편했을 거예요.'
+    },
+    {
+        id: 'hyunwoo', emoji: '🧸', title: '현우와 동생', tag: '가정 · 형제 갈등',
+        stages: [
+            { label: '1단계', expected: 'green', content: '현우는 두 달 동안 모은 블록으로 로봇을 완성했어요.\n팔도 움직이고 다리도 접혀요.\n"드디어 다 만들었다!"\n사진도 찍어뒀어요.', bodySignal: '😊 어깨가 쫙 펴지고, 뿌듯한 기분이 가득해요.', tip: '무언가를 해냈을 때의 뿌듯함, 초록이에요.' },
+            { label: '2단계', expected: 'green', content: '다섯 살 동생이 방으로 들어왔어요.\n"형아, 나도 볼래!"\n현우는 잠깐 고민하다 말했어요.\n"보는 건 되는데, 만지지는 마."', bodySignal: '😐 살짝 걱정되지만 아직 여유가 있어요.', tip: '미리 약속을 정하는 것도 좋은 방법이에요.' },
+            { label: '3단계', expected: 'yellow', content: '동생이 로봇 팔을 잡고 흔들기 시작했어요.\n"만지지 말랬잖아!"\n동생은 웃기만 하고 계속 흔들어요.\n현우의 심장이 쿵쿵 뛰어요.', bodySignal: '😰 심장이 빨리 뛰고, 목소리가 커져요.', tip: '노랑 신호! 로봇이 부서지기 전에 할 수 있는 일이 있어요.' },
+            { label: '4단계', expected: 'red', content: '툭. 로봇 팔이 빠지더니 바닥에 떨어져 산산이 흩어졌어요.\n현우는 자기도 모르게 동생을 확 밀쳤어요.\n동생이 엉덩방아를 찧고 울음을 터뜨렸어요.', bodySignal: '😫 온몸이 뜨거워지고, 손이 먼저 나가요.', tip: '빨강! 화가 폭발하면 몸이 생각보다 먼저 움직여요.' },
+            { label: '5단계', expected: 'red', content: '엄마가 달려와 현우를 혼냈어요.\n"동생을 밀면 어떡해!"\n현우는 부서진 조각들을 바라봤어요.\n"내 말은 아무도 안 들어주잖아..." 눈물이 뚝 떨어졌어요.', bodySignal: '😭 억울하고, 가슴이 답답해요. 아무 말도 하기 싫어요.', tip: '현우의 마음이 조금 나아지려면 누가 어떤 말을 해주면 좋았을까요?' }
+        ],
+        escapeStage: 2,
+        escapeOptions: [
+            { id: 'explain', emoji: '🤲', text: '"이건 약해서 잘 부서져. 같이 살살 보자" 하고 알려주기', strategy: '설명하고 부탁하기' },
+            { id: 'move', emoji: '📦', text: '로봇을 높은 선반으로 먼저 옮겨두기', strategy: '미리 지키기' },
+            { id: 'mom', emoji: '🙋', text: '"엄마, 동생이랑 같이 노는 방법 좀 알려주세요" 하고 도움 요청하기', strategy: '도움 요청하기' }
+        ],
+        escapeEnding: {
+            explain: '현우는 동생 손을 살며시 잡고 말했어요.\n"이거 진짜 약해. 부서지면 형아 슬퍼. 같이 살살 볼까?"\n동생이 고개를 끄덕이며 손을 뗐어요.\n둘은 나란히 앉아 로봇을 구경했어요.\n동생이 "형아 진짜 잘 만든다!" 하고 말해줬어요. 😊',
+            move: '현우는 재빨리 로봇을 들어 높은 선반에 올려놨어요.\n"이건 형아 보물이라 여기 둘 거야. 대신 이 블록으로 같이 만들자!"\n동생이 신나서 블록 상자를 열었어요.\n로봇도 안전하고, 동생도 즐거웠어요. 😊',
+            mom: '현우가 거실로 나가 엄마에게 말했어요.\n"엄마, 동생이 자꾸 만져서 부서질 것 같아요. 어떻게 해요?"\n엄마가 함께 방으로 와서 동생에게 설명해줬어요.\n"이건 형아가 오래 만든 거라 눈으로만 보는 거야."\n동생이 알겠다고 했어요. 혼자 참지 않아도 됐어요. 😊'
+        },
+        insight: '현우가 동생을 민 건 갑자기 일어난 일이 아니에요. "만지지 마"라고 말했는데도 <strong>들어주지 않는 시간이 쌓이며</strong> 마음이 올라갔어요. 3단계에서 어른의 도움을 요청했다면, 로봇도 마음도 지킬 수 있었을 거예요.'
+    },
+    {
+        id: 'chaewon', emoji: '⏰', title: '채원이의 바쁜 하루', tag: '일상 · 지침과 과부하',
+        stages: [
+            { label: '1단계', expected: 'green', content: '월요일 아침, 채원이는 오늘 할 일을 떠올렸어요.\n학교, 학원 두 곳, 그리고 숙제.\n"많긴 한데, 하나씩 하면 되지."\n가방을 메고 집을 나섰어요.', bodySignal: '😐 살짝 무겁지만 아직 할 만해요.', tip: '할 일이 많아도 계획이 있으면 초록일 수 있어요.' },
+            { label: '2단계', expected: 'yellow', content: '학교가 끝나자마자 학원 버스를 탔어요.\n점심에 먹은 게 별로 없어서 배가 고파요.\n가방에서 빵을 꺼내 급하게 먹었어요.\n하품이 자꾸 나와요.', bodySignal: '😪 하품이 나고, 눈꺼풀이 무거워져요.', tip: '몸이 보내는 피곤 신호도 노랑이에요.' },
+            { label: '3단계', expected: 'yellow', content: '학원 수업 중에 눈이 자꾸 감겨요.\n"채원아, 집중해야지." 선생님이 말했어요.\n채원이는 얼른 고개를 들었지만 글씨가 흐릿해요.\n어깨가 뻐근해요.', bodySignal: '😵 어깨가 뻐근하고, 글자가 눈에 안 들어와요.', tip: '노랑 신호! 여기서 잠깐 쉬어가면 남은 시간이 달라져요.' },
+            { label: '4단계', expected: 'red', content: '집에 돌아와 숙제를 펼쳤는데,\n같은 줄을 세 번이나 다시 읽었어요.\n"왜 하나도 안 읽히지..."\n채원이는 책을 탁 덮었어요. 울컥 눈물이 났어요.', bodySignal: '😢 머리가 지끈거리고, 눈물이 갑자기 나와요.', tip: '빨강! 지친 몸은 마음도 함께 무겁게 만들어요.' },
+            { label: '5단계', expected: 'red', content: '채원이는 그대로 침대에 누웠어요.\n"나 왜 이렇게 못하지."\n숙제도 못 했고, 잠도 안 와요.\n천장만 바라봤어요.', bodySignal: '😞 몸이 축 처지고, 아무것도 하고 싶지 않아요.', tip: '지쳤을 때 드는 "나는 왜 이러지"라는 생각은 피곤이 만들어낸 말일 때가 많아요.' }
+        ],
+        escapeStage: 2,
+        escapeOptions: [
+            { id: 'rest', emoji: '🛌', text: '"10분만 눈 감고 쉬자" 하고 짧게 쉬어가기', strategy: '짧게 쉬기' },
+            { id: 'priority', emoji: '📋', text: '할 일을 종이에 적고, 오늘 꼭 해야 할 것 하나만 고르기', strategy: '우선순위 정하기' },
+            { id: 'tell', emoji: '🗣️', text: '"오늘 너무 힘들어요. 하나만 줄이면 안 될까요?" 하고 말하기', strategy: '조절 요청하기' }
+        ],
+        escapeEnding: {
+            rest: '채원이는 쉬는 시간에 책상에 잠깐 엎드렸어요.\n딱 10분. 눈을 감고 숨을 천천히 쉬었어요.\n일어나니 머리가 한결 맑아졌어요.\n남은 수업이 훨씬 잘 들어왔어요. 😊',
+            priority: '채원이는 공책 귀퉁이에 할 일을 적었어요.\n숙제, 준비물, 독서록... 그중에 별표를 하나만 쳤어요.\n"오늘은 이것만 하자."\n하나를 끝내고 나니 오히려 다른 것도 조금 하게 됐어요. 😊',
+            tell: '채원이는 집에 와서 엄마에게 말했어요.\n"엄마, 오늘 너무 힘들어요. 독서록은 내일 하면 안 될까요?"\n엄마가 "그렇게 피곤했구나. 그래, 오늘은 쉬자" 하셨어요.\n말하고 나니 어깨가 가벼워졌어요. 😊'
+        },
+        insight: '채원이가 무너진 건 숙제가 어려워서가 아니에요. 아침부터 쉬지 못한 피곤이 <strong>차곡차곡 쌓인 것</strong>이에요. 몸이 보내는 노랑 신호를 알아차리고 짧게 쉬는 것도 훌륭한 멈추기 전략이에요.'
+    },
+    {
+        id: 'eungyeol', emoji: '🎨', title: '은결이의 미술 시간', tag: '학교 · 비교와 평가',
+        stages: [
+            { label: '1단계', expected: 'green', content: '미술 시간 주제는 "내가 좋아하는 풍경"이에요.\n은결이는 바다를 그리기로 했어요.\n작년 여름에 본 그 파란색을 떠올렸어요.', bodySignal: '😊 마음이 차분하고, 붓을 잡은 손이 편안해요.', tip: '좋아하는 걸 떠올릴 때 몸이 편안해져요. 초록!' },
+            { label: '2단계', expected: 'green', content: '파란색을 여러 겹 칠하니 진짜 바다 같아졌어요.\n"오, 괜찮은데?"\n시간 가는 줄 모르고 붓을 움직였어요.', bodySignal: '😌 어깨에 힘이 빠지고, 몰입이 잘 돼요.', tip: '몰입은 초록 상태에서 가장 잘 일어나요.' },
+            { label: '3단계', expected: 'yellow', content: '고개를 들었더니 옆자리 친구 그림이 보였어요.\n파도까지 세밀하게 그려져 있어요.\n"...내 건 왜 이렇게 밋밋하지."\n은결이의 붓이 멈췄어요.', bodySignal: '😔 손이 멈추고, 그림을 자꾸 가리게 돼요.', tip: '비교가 시작되면 즐겁던 일도 어려워져요.' },
+            { label: '4단계', expected: 'yellow', content: '지나가던 친구가 은결이 그림을 보고 말했어요.\n"어? 이게 바다야?" 하고 웃었어요.\n은결이의 얼굴이 굳었어요.\n붓을 든 손에 힘이 들어갔어요.', bodySignal: '😣 얼굴이 굳고, 붓을 꽉 쥐어요. 숨이 짧아져요.', tip: '노랑이 짙어졌어요. 지금이 방향을 바꿀 수 있는 순간이에요.' },
+            { label: '5단계', expected: 'red', content: '은결이는 도화지를 확 구겨서 버렸어요.\n"나는 원래 못 그려."\n남은 시간 동안 아무것도 그리지 않았어요.\n집에 갈 때까지 마음이 무거웠어요.', bodySignal: '😞 가슴이 답답하고, 아무것도 하기 싫어져요.', tip: '빨강! 오늘 은결이가 좋아했던 그 파란색은 사라지지 않았어요.' }
+        ],
+        escapeStage: 3,
+        escapeOptions: [
+            { id: 'mine', emoji: '🎨', text: '"나는 내 방식대로 그릴 거야" 하고 하던 색을 계속 칠하기', strategy: '나만의 기준 세우기' },
+            { id: 'itell', emoji: '🗣️', text: '"그렇게 말하면 속상해" 라고 친구에게 말하기', strategy: '나-전달법' },
+            { id: 'teacher', emoji: '🙋', text: '선생님께 "이 부분은 어떻게 하면 좋을까요?" 하고 물어보기', strategy: '도움 요청하기' }
+        ],
+        escapeEnding: {
+            mine: '은결이는 숨을 한 번 쉬고 다시 붓을 들었어요.\n"파도는 없어도 돼. 나는 이 파란색이 좋아."\n색을 한 겹 더 칠하니 깊은 바다가 됐어요.\n발표 시간에 선생님이 "이 색 정말 인상적이다" 하셨어요. 😊',
+            itell: '은결이가 친구를 보며 말했어요.\n"그렇게 말하면 속상해. 나는 이 그림 마음에 들거든."\n친구가 "아... 미안. 나쁜 뜻은 아니었어" 했어요.\n말하고 나니 다시 붓을 들 수 있었어요. 😊',
+            teacher: '은결이는 손을 들었어요.\n"선생님, 여기가 좀 밋밋한데 어떻게 하면 좋을까요?"\n선생님이 옆에 앉아 함께 봐주셨어요.\n"여기에 밝은 색을 살짝 얹어볼까?"\n한 번 해보니 그림이 확 살아났어요. 😊'
+        },
+        insight: '은결이의 마음을 무겁게 한 건 친구의 한마디만이 아니에요. 그 전부터 시작된 <strong>비교하는 마음</strong>이 먼저 노랑을 켰어요. 알아차렸을 때 나만의 기준을 세우거나 마음을 말하면, 좋아하던 일을 계속할 수 있어요.'
+    }
+];
+
+const STRATEGY_OPTIONS = [
+    { id: 'breathe', emoji: '🧘', text: '숨 크게 쉬기 (심호흡)' },
+    { id: 'pause', emoji: '⏸️', text: '잠깐 멈추고 5초 세기' },
+    { id: 'talk', emoji: '🗣️', text: '믿을 수 있는 사람에게 말하기' },
+    { id: 'walk', emoji: '🚶', text: '잠깐 자리에서 일어나기' },
+    { id: 'write', emoji: '📝', text: '마음을 글로 적기' },
+    { id: 'water', emoji: '💧', text: '물 한 잔 마시기' },
+    { id: 'count', emoji: '🔢', text: '속으로 천천히 열까지 세기' },
+    { id: 'stretch', emoji: '🙆', text: '어깨와 목을 쭉 펴고 기지개 켜기' },
+    { id: 'name', emoji: '🏷️', text: '지금 내 감정에 이름 붙여주기' },
+    { id: 'move', emoji: '🏃', text: '몸을 움직이거나 밖 공기 마시기' },
+    { id: 'music', emoji: '🎧', text: '좋아하는 음악 한 곡 듣기' },
+    { id: 'hug', emoji: '🤗', text: '가족이나 인형을 꼭 안아보기' }
+];
+
+// ═══════════════════════════════════════
+// 공통 함수
+// ═══════════════════════════════════════
+function showToast(msg, type='info') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = type==='error' ? 'rgba(239,68,68,0.95)' : type==='success' ? 'rgba(16,185,129,0.95)' : 'rgba(31,41,55,0.95)';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+window.showScreen = function(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(id);
+    if (target) { target.classList.add('active'); window.scrollTo(0,0); }
+};
+
+let confirmCallback = null;
+window.showConfirmModal = function(message, onConfirm) {
+    document.getElementById('confirmMessage').innerHTML = message;
+    document.getElementById('confirmModal').style.display = 'flex';
+    confirmCallback = onConfirm;
+    document.getElementById('confirmOkBtn').onclick = () => {
+        const cb = confirmCallback;
+        closeConfirmModal();
+        if (cb) cb();
+    };
+};
+window.closeConfirmModal = function() {
+    document.getElementById('confirmModal').style.display = 'none';
+    confirmCallback = null;
+    document.getElementById('confirmOkBtn').textContent = '확인';
+    document.getElementById('confirmOkBtn').style.background = 'var(--error)';
+};
+
+async function simpleHash(str) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str + 'sel-salt-2024');
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function copyToClipboard(text) {
+    try { await navigator.clipboard.writeText(text); showToast('✅ 코드가 복사되었습니다!'); } catch {
+        const ta = document.createElement('textarea'); ta.value = text;
+        ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { document.execCommand('copy'); showToast('✅ 코드가 복사되었습니다!'); } catch { showToast('📋 코드: ' + text + ' (직접 복사해주세요)'); }
+        document.body.removeChild(ta);
+    }
+}
+window.copyRoomCode = function() { copyToClipboard(currentRoomCode); };
+
+// ═══════════════════════════════════════
+// 방 만들기/입장
+// ═══════════════════════════════════════
+window.createRoom = async function() {
+    await authReady;
+    const name = document.getElementById('teacher-name').value.trim();
+    const pw = document.getElementById('teacher-pw').value.trim();
+    if (!name || !pw) { showToast('닉네임과 비밀번호를 입력해주세요.', 'error'); return; }
+    if (!/^\d{4}$/.test(pw)) { showToast('비밀번호는 숫자 4자리로 입력해주세요.', 'error'); return; }
+    currentRoomCode = String(Math.floor(Math.random() * 900000 + 100000));
+    const hashed = await simpleHash(pw);
+    const expiresAt = new Date(); expiresAt.setDate(expiresAt.getDate() + 30);
+    await DB.saveRoom(currentRoomCode, { teacherName: name, password: hashed, createdAt: new Date().toISOString(), expiresAt: expiresAt.toISOString() });
+    document.getElementById('display-room-code').textContent = currentRoomCode;
+    isTeacher = true;
+    showScreen('screen-room-created');
+};
+
+window.enterDashboard = function() {
+    document.getElementById('dash-room-code').textContent = currentRoomCode;
+    showScreen('screen-dashboard');
+    startDashboardListener();
+};
+
+window.joinAsTeacher = async function() {
+    await authReady;
+    const code = document.getElementById('teacher-join-code').value.trim();
+    const pw = document.getElementById('teacher-join-pw').value.trim();
+    if (!code || !pw) { showToast('방 코드와 비밀번호를 입력해주세요.', 'error'); return; }
+    const room = await DB.getRoom(code);
+    if (!room) { showToast('존재하지 않는 방입니다.', 'error'); return; }
+    if (room.expiresAt && new Date(room.expiresAt) < new Date()) { await DB.deleteRoom(code); showToast('만료된 방입니다.', 'error'); return; }
+    const hashed = await simpleHash(pw);
+    if (room.password !== hashed) { showToast('비밀번호가 틀렸습니다.', 'error'); return; }
+    currentRoomCode = code; isTeacher = true;
+    document.getElementById('dash-room-code').textContent = code;
+    showScreen('screen-dashboard');
+    startDashboardListener();
+};
+
+window.joinAsStudent = async function() {
+    await authReady;
+    const code = document.getElementById('student-room-code').value.trim();
+    const nick = document.getElementById('student-nickname').value.trim();
+    if (!code || !nick) { showToast('방 코드와 닉네임을 입력해주세요.', 'error'); return; }
+    const room = await DB.getRoom(code);
+    if (!room) { showToast('존재하지 않는 방입니다.', 'error'); return; }
+    if (room.expiresAt && new Date(room.expiresAt) < new Date()) { await DB.deleteRoom(code); showToast('만료된 방입니다.', 'error'); return; }
+
+    const existing = await DB.getStudent(code, nick);
+    if (existing) {
+        const escCount = (existing.escapedStories || []).length;
+        const storyCount = (existing.completedStories || []).length;
+        showConfirmModal(
+            `<strong>${nick}</strong>님, 이전에 참여한 기록이 있어요!<br><br>` +
+            `📖 완료한 이야기: ${storyCount}개<br>` +
+            `🎯 위기탈출 성공: ${escCount}회<br>` +
+            `🪞 나의 신호등: ${existing.mylightDone ? '완성!' : '미완성'}<br><br>` +
+            `이어서 할까요?`,
+            async () => {
+                currentRoomCode = code; currentNickname = nick; isTeacher = false; isSoloMode = false;
+                restoreStudentData(existing);
+                await DB.saveStudent(code, nick, { lastVisit: new Date().toISOString() });
+                showToast(`🎉 ${nick}님, 다시 오셨군요!`, 'success');
+                goToMain();
+            }
+        );
+        document.getElementById('confirmOkBtn').textContent = '이어하기';
+        document.getElementById('confirmOkBtn').style.background = 'var(--primary)';
+        return;
+    }
+
+    currentRoomCode = code; currentNickname = nick; isTeacher = false; isSoloMode = false;
+    resetAllState();
+    await DB.saveStudent(code, nick, { joinedAt: new Date().toISOString() });
+    showScreen('screen-story');
+};
+
+function restoreStudentData(data) {
+    completedStories = new Set(data.completedStories || []);
+    escapedStories = new Set(data.escapedStories || []);
+    escapeChoices = data.escapeChoices || {};
+    storyAnswers = data.storyAnswers || {};
+    whyDiff = data.whyDiff || {};
+    mylightDone = data.mylightDone || false;
+    mylightData = data.mylightData || {};
+    selectedStrategies = new Set(data.selectedStrategies || []);
+    if (mylightDone || mylightData.green || mylightData.yellow || mylightData.red || mylightData.promise) {
+        setTimeout(() => {
+            const g = document.getElementById('mylight-green'); if (g) g.value = mylightData.green || '';
+            const y = document.getElementById('mylight-yellow'); if (y) y.value = mylightData.yellow || '';
+            const r = document.getElementById('mylight-red'); if (r) r.value = mylightData.red || '';
+            const c = document.getElementById('mylight-strategy-custom'); if (c) c.value = mylightData.strategyCustom || '';
+            const p = document.getElementById('mylight-promise'); if (p) p.value = mylightData.promise || '';
+        }, 200);
+    } else {
+        // ⭐ 저장된 신호등이 없을 때도 입력칸을 비운다
+        //    (공용 태블릿에서 앞 사람이 적어 둔 글이 그대로 남아
+        //     이어하기 학생 이름으로 저장되던 문제)
+        ['mylight-green','mylight-yellow','mylight-red','mylight-strategy-custom','mylight-promise'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.value = '';
+        });
+    }
+}
+
+function resetAllState() {
+    completedStories = new Set(); escapedStories = new Set();
+    escapeChoices = {}; storyAnswers = {}; whyDiff = {}; mylightDone = false; mylightData = {};
+    selectedStrategies = new Set();
+    currentStoryId = ''; currentStage = 0; currentAnswers = [];
+    ['mylight-green','mylight-yellow','mylight-red','mylight-strategy-custom','mylight-promise'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+    });
+}
+
+window.startSoloMode = function() {
+    isSoloMode = true;
+    resetAllState();
+    currentNickname = '탐험가';
+    showScreen('screen-story');
+};
+
+// ═══════════════════════════════════════
+// 메인 화면
+// ═══════════════════════════════════════
+function goToMain() {
+    renderStoryGrid();
+    updateMylightButton();
+    updateCompleteButton();
+    renderStrategyOptions();
+    showScreen('screen-main');
+}
+window.goToMain = goToMain;
+
+function renderStoryGrid() {
+    const grid = document.getElementById('story-grid');
+    grid.innerHTML = STORIES.map(s => {
+        const done = completedStories.has(s.id);
+        const escaped = escapedStories.has(s.id);
+        return `<div class="story-item ${done ? 'completed' : ''} ${escaped ? 'escaped' : ''}" onclick="selectStory('${s.id}')">
+            ${escaped ? '<span class="escape-badge">🎯 탈출!</span>' : ''}
+            <span class="story-emoji">${s.emoji}</span>
+            <div class="story-title">${s.title}</div>
+            <div class="story-tag">${s.tag}</div>
+            ${done ? '<div style="font-size:11px; color:var(--success); margin-top:4px;">✅ 완료</div>' : ''}
+        </div>`;
+    }).join('');
+
+    const done = completedStories.size;
+    const escCount = escapedStories.size;
+    const pct = Math.round(done / STORIES.length * 100);
+    const sg = getSignalStats();
+    const sgTxt = sg.total > 0 ? ` · 🚦 읽은 장면 ${sg.total}개` : '';
+    document.getElementById('main-progress-text').textContent = `📖 ${done}/${STORIES.length} 이야기 완료 · 🎯 ${escCount}회 위기탈출 성공${sgTxt}`;
+    document.getElementById('main-progress-bar').style.width = pct + '%';
+}
+
+function updateMylightButton() {
+    const area = document.getElementById('mylight-btn-area');
+    if (mylightDone) {
+        area.innerHTML = `
+            <button class="btn btn-secondary" onclick="showScreen('screen-mylight')">✏️ 나의 신호등 수정하기</button>
+            <button class="btn btn-escape btn-small" onclick="showMyLightResult()" style="margin-top:6px; width:100%; max-width:400px;">🪞 나의 신호등 보기</button>
+            <div style="font-size:13px; color:var(--success); font-weight:700; text-align:center; margin-top:4px;">✅ 나의 신호등 완성!</div>`;
+    } else {
+        area.innerHTML = `<button class="btn btn-primary" onclick="showScreen('screen-mylight')">🪞 나만의 마음 신호등 만들기 →</button>`;
+    }
+}
+
+function updateCompleteButton() {
+    const btn = document.getElementById('btn-go-complete');
+    btn.style.display = (completedStories.size >= 2 || mylightDone) ? 'block' : 'none';
+}
+
+function renderStrategyOptions() {
+    const container = document.getElementById('strategy-options');
+    if (!container) return;
+    container.innerHTML = STRATEGY_OPTIONS.map(s =>
+        `<div class="escape-option ${selectedStrategies.has(s.id) ? 'selected' : ''}" onclick="toggleStrategy('${s.id}')">
+            ${s.emoji} ${s.text}
+        </div>`
+    ).join('');
+}
+
+window.toggleStrategy = function(id) {
+    if (selectedStrategies.has(id)) selectedStrategies.delete(id);
+    else selectedStrategies.add(id);
+    renderStrategyOptions();
+};
+
+// ═══════════════════════════════════════
+// 스토리 진행
+// ═══════════════════════════════════════
+window.selectStory = function(storyId) {
+    currentStoryId = storyId;
+    currentStage = 0;
+    currentAnswers = storyAnswers[storyId] ? [...storyAnswers[storyId]] : [];
+    renderStage();
+    showScreen('screen-play');
+};
+
+function renderStage() {
+    const story = STORIES.find(s => s.id === currentStoryId);
+    if (!story) return;
+    const stage = story.stages[currentStage];
+    const stageColor = stage.expected === 'green' ? 'stage-green' : stage.expected === 'yellow' ? 'stage-yellow' : 'stage-red';
+
+    document.getElementById('play-header').innerHTML = `
+        <h2 style="font-size:18px; margin-bottom:6px;">${story.emoji} ${story.title}</h2>
+        <span class="story-stage-label ${stageColor}">${stage.label} / ${story.stages.length}단계</span>
+    `;
+
+    const contentHTML = stage.content.split('\n').map(line => `<p>${line}</p>`).join('');
+    document.getElementById('play-content').innerHTML = `<div class="story-card">${contentHTML}</div>`;
+
+    const alreadyAnswered = currentAnswers[currentStage];
+    if (alreadyAnswered) {
+        showFeedbackForAnswer(alreadyAnswered);
+    } else {
+        document.getElementById('play-signal-area').style.display = 'block';
+        document.getElementById('play-feedback').style.display = 'none';
+        document.getElementById('play-feedback').innerHTML = '';
+        document.getElementById('play-escape-area').style.display = 'none';
+        document.getElementById('play-escape-area').innerHTML = '';
+        renderSignalButtons();
+        document.getElementById('play-nav-buttons').innerHTML = '';
+    }
+}
+
+function renderSignalButtons() {
+    document.getElementById('signal-buttons').innerHTML = `
+        <div class="signal-btn green" onclick="selectSignal('green')">
+            <span class="signal-icon">🟢</span>
+            <span class="signal-label">초록</span>
+            <span style="font-size:11px;color:var(--text-light);">편안해요</span>
+        </div>
+        <div class="signal-btn yellow" onclick="selectSignal('yellow')">
+            <span class="signal-icon">🟡</span>
+            <span class="signal-label">노랑</span>
+            <span style="font-size:11px;color:var(--text-light);">불편해요</span>
+        </div>
+        <div class="signal-btn red" onclick="selectSignal('red')">
+            <span class="signal-icon">🔴</span>
+            <span class="signal-label">빨강</span>
+            <span style="font-size:11px;color:var(--text-light);">힘들어요</span>
+        </div>
+    `;
+}
+
+window.selectSignal = function(color) {
+    document.querySelectorAll('.signal-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelector(`.signal-btn.${color}`).classList.add('selected');
+    currentAnswers[currentStage] = color;
+    storyAnswers[currentStoryId] = [...currentAnswers];
+    saveSignalProgress();
+    showFeedbackForAnswer(color);
+};
+
+// 이야기 속 색과 다르게 골랐을 때의 이유 (누르지 않아도 넘어갈 수 있다)
+window.pickWhyDiff = function(reason) {
+    if (!whyDiff[currentStoryId]) whyDiff[currentStoryId] = {};
+    const cur = whyDiff[currentStoryId][currentStage];
+    whyDiff[currentStoryId][currentStage] = (cur === reason) ? '' : reason;   // 다시 누르면 취소
+    document.querySelectorAll('#why-diff-area .why-btn').forEach(b => {
+        b.classList.toggle('selected', b.textContent === whyDiff[currentStoryId][currentStage]);
+    });
+    saveSignalProgress();
+};
+
+// 선택한 신호를 즉시 저장한다 (중간에 나가도 기록이 남도록)
+function sanitizeAnswers() {
+    const out = {};
+    Object.keys(storyAnswers).forEach(sid => {
+        out[sid] = Array.from(storyAnswers[sid] || [], v => v || null);
+    });
+    return out;
+}
+
+function getSignalStats() {
+    let total = 0, correct = 0, green = 0, yellow = 0, red = 0;
+    Object.keys(storyAnswers).forEach(sid => {
+        const story = STORIES.find(s => s.id === sid);
+        (storyAnswers[sid] || []).forEach((a, i) => {
+            if (!a) return;
+            total++;
+            if (a === 'green') green++; else if (a === 'yellow') yellow++; else if (a === 'red') red++;
+            if (story && story.stages[i] && story.stages[i].expected === a) correct++;
+        });
+    });
+    return { total, correct, green, yellow, red };
+}
+
+async function saveSignalProgress() {
+    if (isSoloMode || !currentRoomCode || !currentNickname) return;
+    try {
+        await DB.saveStudent(currentRoomCode, currentNickname, {
+            storyAnswers: sanitizeAnswers(), whyDiff: whyDiff,
+            lastStory: currentStoryId,
+            signalStats: getSignalStats(),
+            lastVisit: new Date().toISOString()
+        });
+    } catch(e) {}
+}
+
+function showFeedbackForAnswer(selectedColor) {
+    const story = STORIES.find(s => s.id === currentStoryId);
+    const stage = story.stages[currentStage];
+    const isMatch = selectedColor === stage.expected;
+    const colorLabel = selectedColor === 'green' ? '초록' : selectedColor === 'yellow' ? '노랑' : '빨강';
+    const expectedLabel = stage.expected === 'green' ? '초록' : stage.expected === 'yellow' ? '노랑' : '빨강';
+    const hero = story.title.split(/의 |와 /)[0];   // '하은이의 점심시간' → '하은이'
+
+    let feedbackHTML = '';
+    if (isMatch) {
+        feedbackHTML = `<div class="feedback-box" style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3);">
+            <div style="font-size:16px; font-weight:900; color:var(--success); margin-bottom:6px;">🚦 ${hero}의 몸 신호도 ${colorLabel}에 가까워요.</div>
+            <div style="font-size:14px; margin-bottom:8px;">${stage.bodySignal}</div>
+            <div class="feedback-tip">💡 ${stage.tip}</div>
+        </div>`;
+    } else {
+        const savedWhy = (whyDiff[currentStoryId] || {})[currentStage] || '';
+        feedbackHTML = `<div class="feedback-box" style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3);">
+            <div style="font-size:16px; font-weight:900; color:var(--warning); margin-bottom:6px;">🤔 ${colorLabel}이라고 느꼈군요.</div>
+            <div style="font-size:14px; margin-bottom:4px;">이 장면을 ${colorLabel}으로 느낀 데는 이유가 있을 거예요. 그래도 이야기 속 ${hero}를 보면 <strong>${expectedLabel}</strong>에 더 가까워 보여요.</div>
+            <div style="font-size:14px; margin-bottom:8px;">${stage.bodySignal}</div>
+            <div class="feedback-tip">💡 ${stage.tip}</div>
+            <div id="why-diff-area" style="margin-top:10px;">
+                <div style="font-size:13px; font-weight:900; margin-bottom:4px;">왜 ${colorLabel}으로 느꼈어요? (골라도 되고 안 골라도 돼요)</div>
+                ${WHY_DIFF_OPTIONS.map(o => `<button class="why-btn ${savedWhy === o ? 'selected' : ''}" onclick="pickWhyDiff('${o}')">${o}</button>`).join('')}
+            </div>
+        </div>`;
+    }
+    document.getElementById('play-feedback').innerHTML = feedbackHTML;
+    document.getElementById('play-feedback').style.display = 'block';
+    document.getElementById('play-signal-area').style.display = 'none';
+
+    // 위기탈출 분기 체크
+    const isEscapeStage = (currentStage === story.escapeStage);
+    const alreadyEscaped = escapedStories.has(currentStoryId);
+    const escapeArea = document.getElementById('play-escape-area');
+
+    if (isEscapeStage && !alreadyEscaped) {
+        escapeArea.style.display = 'block';
+        escapeArea.innerHTML = `
+            <div class="escape-box">
+                <div style="text-align:center; margin-bottom:12px;">
+                    <span style="font-size:28px;">🎯</span>
+                    <h3 style="font-size:17px; color:#065F46;">위기탈출 미션!</h3>
+                    <p style="font-size:14px; color:#047857;">노랑 신호를 알아차렸어요! 지금 행동을 바꾸면 결과가 달라질 수 있어요.</p>
+                </div>
+                <p style="font-size:14px; font-weight:900; margin-bottom:8px;">이 순간, 어떻게 하면 좋을까요?</p>
+                ${story.escapeOptions.map(opt =>
+                    `<div class="escape-option" onclick="selectEscapeOption('${opt.id}', this)">
+                        ${opt.emoji} ${opt.text}
+                    </div>`
+                ).join('')}
+                <div id="escape-submit" style="display:none; margin-top:12px; text-align:center;">
+                    <button class="btn btn-escape" onclick="executeEscape()">🎯 위기탈출 실행!</button>
+                </div>
+                <div style="text-align:center; margin-top:8px;">
+                    <button class="btn-small" style="background:none; border:none; color:var(--text-light); cursor:pointer; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700;" onclick="skipEscape()">
+                        (이야기 계속 보기 →)
+                    </button>
+                </div>
+            </div>
+        `;
+        document.getElementById('play-nav-buttons').innerHTML = '';
+    } else {
+        escapeArea.style.display = 'none';
+        escapeArea.innerHTML = '';
+        const isLast = currentStage >= story.stages.length - 1;
+        document.getElementById('play-nav-buttons').innerHTML = `
+            <button class="btn btn-primary" onclick="${isLast ? 'finishStory()' : 'nextStage()'}">
+                ${isLast ? '📊 결과 보기' : '다음 장면 →'}
+            </button>
+        `;
+    }
+}
+
+let selectedEscapeId = null;
+window.selectEscapeOption = function(optId, el) {
+    selectedEscapeId = optId;
+    document.querySelectorAll('#play-escape-area .escape-option').forEach(o => o.classList.remove('selected'));
+    const target = el || (typeof event !== 'undefined' && event ? event.currentTarget : null);
+    if (target) target.classList.add('selected');
+    const submit = document.getElementById('escape-submit');
+    if (submit) submit.style.display = 'block';
+};
+
+window.executeEscape = async function() {
+    const story = STORIES.find(s => s.id === currentStoryId);
+    if (!selectedEscapeId || !story.escapeEnding[selectedEscapeId]) return;
+
+    const option = story.escapeOptions.find(o => o.id === selectedEscapeId);
+    const ending = story.escapeEnding[selectedEscapeId];
+
+    escapedStories.add(currentStoryId);
+    escapeChoices[currentStoryId] = { optionId: selectedEscapeId, strategy: option.strategy, text: option.text };
+
+    // Firebase 저장
+    if (!isSoloMode) {
+        await DB.saveStudent(currentRoomCode, currentNickname, {
+            escapedStories: Array.from(escapedStories),
+            escapeChoices: escapeChoices
+        });
+    }
+
+    // 탈출 결과 표시
+    const endingHTML = ending.split('\n').map(line => `<p>${line}</p>`).join('');
+    document.getElementById('play-escape-area').style.display = 'none';
+    document.getElementById('play-content').innerHTML = `
+        <div class="card celebrate" style="background:linear-gradient(135deg, #ECFDF5, #D1FAE5); border:2px solid #10B981;">
+            <div style="text-align:center; margin-bottom:12px;">
+                <div style="font-size:40px;">🎉</div>
+                <h3 style="font-size:18px; color:#065F46;">위기탈출 성공!</h3>
+                <span class="badge" style="background:#D1FAE5; color:#065F46;">${option.emoji} ${option.strategy}</span>
+            </div>
+            <div class="story-card" style="border-left-color:#10B981;">
+                ${endingHTML}
+            </div>
+            <div style="margin-top:12px; padding:12px; background:rgba(16,185,129,0.1); border-radius:10px; font-size:14px; color:#047857;">
+                💡 <strong>노랑 신호에서 알아차렸기 때문에</strong> 이렇게 다른 결과가 가능했어요!
+            </div>
+        </div>
+    `;
+    document.getElementById('play-header').innerHTML = `
+        <h2 style="font-size:18px; margin-bottom:6px;">${story.emoji} ${story.title}</h2>
+        <span class="story-stage-label" style="background:#D1FAE5; color:#065F46;">🎯 위기탈출 엔딩</span>
+    `;
+    document.getElementById('play-feedback').style.display = 'none';
+    document.getElementById('play-nav-buttons').innerHTML = `
+        <button class="btn btn-escape" onclick="afterEscapeChoice()">📖 원래 이야기도 보기</button>
+        <button class="btn btn-secondary" onclick="finishStoryWithEscape()" style="margin-top:6px;">✅ 이 이야기 완료</button>
+    `;
+    selectedEscapeId = null;
+};
+
+window.afterEscapeChoice = function() {
+    // 탈출 후 원래 이야기의 다음 단계로 진행
+    currentStage = STORIES.find(s => s.id === currentStoryId).escapeStage + 1;
+    renderStage();
+};
+
+window.skipEscape = function() {
+    const story = STORIES.find(s => s.id === currentStoryId);
+    document.getElementById('play-escape-area').style.display = 'none';
+    const isLast = currentStage >= story.stages.length - 1;
+    document.getElementById('play-nav-buttons').innerHTML = `
+        <button class="btn btn-primary" onclick="${isLast ? 'finishStory()' : 'nextStage()'}">
+            ${isLast ? '📊 결과 보기' : '다음 장면 →'}
+        </button>
+    `;
+};
+
+window.finishStoryWithEscape = async function() {
+    completedStories.add(currentStoryId);
+    storyAnswers[currentStoryId] = [...currentAnswers];
+    if (!isSoloMode) {
+        await DB.saveStudent(currentRoomCode, currentNickname, {
+            completedStories: Array.from(completedStories),
+            storyAnswers: sanitizeAnswers(), whyDiff: whyDiff, lastStory: currentStoryId,
+            signalStats: getSignalStats(),
+            lastVisit: new Date().toISOString()
+        });
+    }
+    showToast('🎯 위기탈출 성공! 멋져요!', 'success');
+    goToMain();
+};
+
+window.nextStage = function() { currentStage++; renderStage(); window.scrollTo(0, 0); };
+
+window.finishStory = async function() {
+    const story = STORIES.find(s => s.id === currentStoryId);
+    completedStories.add(currentStoryId);
+    storyAnswers[currentStoryId] = [...currentAnswers];
+
+    let timelineHTML = '<div class="timeline">';
+    story.stages.forEach((stage, i) => {
+        const answer = currentAnswers[i] || stage.expected;
+        const escaped = (i === story.escapeStage && escapedStories.has(currentStoryId));
+        const colorClass = escaped ? 'tl-escape' : answer === 'green' ? 'tl-green' : answer === 'yellow' ? 'tl-yellow' : 'tl-red';
+        const colorLabel = escaped ? '🎯 탈출!' : answer === 'green' ? '초록' : answer === 'yellow' ? '노랑' : '빨강';
+        const colorBg = escaped ? '#D1FAE5' : answer === 'green' ? 'var(--green-bg)' : answer === 'yellow' ? 'var(--yellow-bg)' : 'var(--red-bg)';
+        const summary = stage.content.split('\n').slice(0,2).join(' ').substring(0,40) + '...';
+        timelineHTML += `<div class="timeline-item ${colorClass}">
+            <div style="font-size:12px;font-weight:900;color:var(--text-light);">${stage.label}</div>
+            <div style="font-size:13px;margin:4px 0;">${summary}</div>
+            <span class="timeline-choice" style="background:${colorBg};">내 선택: ${colorLabel}</span>
+        </div>`;
+    });
+    timelineHTML += '</div>';
+
+    document.getElementById('play-content').innerHTML = `
+        <h3 style="font-size:18px; margin-bottom:12px;">📊 ${story.title} — 감정 여정</h3>
+        ${timelineHTML}
+        <div class="card" style="background:rgba(124,58,237,0.05); border:1px solid rgba(124,58,237,0.2);">
+            <div style="font-size:15px; line-height:1.8;">${story.insight}</div>
+        </div>
+    `;
+    document.getElementById('play-header').innerHTML = '';
+    document.getElementById('play-signal-area').style.display = 'none';
+    document.getElementById('play-feedback').style.display = 'none';
+    document.getElementById('play-escape-area').style.display = 'none';
+    document.getElementById('play-nav-buttons').innerHTML = `
+        <button class="btn btn-primary" onclick="goToMain()" style="margin-top:16px;">📖 다른 이야기 보러 가기</button>
+    `;
+
+    if (!isSoloMode) {
+        await DB.saveStudent(currentRoomCode, currentNickname, {
+            completedStories: Array.from(completedStories),
+            storyAnswers: sanitizeAnswers(), whyDiff: whyDiff, lastStory: currentStoryId,
+            signalStats: getSignalStats(),
+            lastVisit: new Date().toISOString()
+        });
+    }
+};
+
+window.backToStorySelect = function() { goToMain(); };
+
+// ═══════════════════════════════════════
+// 나의 신호등 만들기
+// ═══════════════════════════════════════
+window.submitMyLight = async function() {
+    const green = document.getElementById('mylight-green').value.trim();
+    const yellow = document.getElementById('mylight-yellow').value.trim();
+    const red = document.getElementById('mylight-red').value.trim();
+    const custom = document.getElementById('mylight-strategy-custom').value.trim();
+    const promise = document.getElementById('mylight-promise').value.trim();
+
+    if (!green && !yellow && !red) { showToast('초록, 노랑, 빨강 중 하나는 꼭 적어주세요!', 'error'); return; }
+
+    mylightDone = true;
+    mylightData = {
+        green, yellow, red,
+        strategies: Array.from(selectedStrategies),
+        strategyCustom: custom,
+        promise
+    };
+
+    if (!isSoloMode) {
+        await DB.saveStudent(currentRoomCode, currentNickname, {
+            mylightDone: true,
+            mylightData: mylightData,
+            selectedStrategies: Array.from(selectedStrategies),
+            completedAt: new Date().toISOString()
+        });
+    }
+    showToast('🪞 나만의 마음 신호등이 완성됐어요!', 'success');
+    showMyLightResult();
+};
+
+window.showMyLightResult = function() {
+    const d = mylightData;
+    const strategyNames = (d.strategies || []).map(id => {
+        const s = STRATEGY_OPTIONS.find(o => o.id === id);
+        return s ? `${s.emoji} ${s.text}` : '';
+    }).filter(Boolean);
+    const allStrategies = [...strategyNames];
+    if (d.strategyCustom) allStrategies.push('✨ ' + esc(d.strategyCustom));
+
+    document.getElementById('mylight-card-area').innerHTML = `
+        <div class="traffic-light-card">
+            <div style="font-size:14px; margin-bottom:12px; opacity:0.8;">🪞 ${esc(currentNickname)}의 마음 신호등</div>
+            ${d.green ? `<div class="tl-light"><div class="tl-dot green"></div><div class="tl-text"><strong>편안할 때</strong><br>${esc(d.green)}</div></div>` : ''}
+            ${d.yellow ? `<div class="tl-light"><div class="tl-dot yellow"></div><div class="tl-text"><strong>불편해질 때</strong><br>${esc(d.yellow)}</div></div>` : ''}
+            ${d.red ? `<div class="tl-light"><div class="tl-dot red"></div><div class="tl-text"><strong>폭발할 때</strong><br>${esc(d.red)}</div></div>` : ''}
+            ${allStrategies.length > 0 ? `<div style="margin-top:12px; padding:12px; background:rgba(255,255,255,0.1); border-radius:10px; text-align:left;">
+                <div style="font-size:12px; opacity:0.8; margin-bottom:6px;">🛑 나의 멈추기 전략</div>
+                ${allStrategies.map(s => `<div style="font-size:13px; margin:3px 0;">${s}</div>`).join('')}
+            </div>` : ''}
+            ${d.promise ? `<div style="margin-top:12px; padding:10px; background:rgba(16,185,129,0.2); border-radius:10px; font-size:14px;">
+                💪 "${esc(d.promise)}"
+            </div>` : ''}
+        </div>
+    `;
+    showScreen('screen-mylight-result');
+};
+
+// ═══════════════════════════════════════
+// 완료 화면
+// ═══════════════════════════════════════
+window.goToComplete = function() {
+    const done = completedStories.size;
+    const escCount = escapedStories.size;
+    let pct = Math.round(done / STORIES.length * 100);
+    let msg = pct < 25 ? '🔥 좋은 시작이에요!' : pct < 50 ? '⭐ 벌써 여러 이야기를 읽었어요!' : pct < 100 ? '🎯 절반을 넘었어요!' : '🎊 모든 이야기를 완료했어요!';
+    const st = getSignalStats();
+    const accPct = st.total > 0 ? Math.round(st.correct / st.total * 100) : 0;
+
+    document.getElementById('complete-summary').innerHTML = `
+        <div style="font-size:40px; margin:12px 0;">🚦</div>
+        <p style="font-size:16px;">${done}/${STORIES.length} 이야기 완료 (${pct}%)</p>
+        <div class="progress-bar" style="margin:12px 0;">
+            <div class="progress-fill progress-green" style="width:${pct}%"></div>
+        </div>
+        <p style="font-size:18px; font-weight:900; color:var(--primary);">${msg}</p>
+        ${st.total > 0 ? `<div class="card" style="text-align:left; margin-top:12px; background:rgba(124,58,237,0.04);">
+            <p style="font-size:15px; font-weight:900; margin-bottom:6px;">🚦 나의 신호 읽기 기록</p>
+            <div class="stat-row"><span class="stat-label">읽어본 장면</span><span class="stat-value">${st.total}장면</span></div>
+            <div class="stat-row"><span class="stat-label">이야기 속 신호와 같았던 선택</span><span class="stat-value">${st.correct}번 (${accPct}%)</span></div>
+            <div class="stat-row"><span class="stat-label">🟢 초록 / 🟡 노랑 / 🔴 빨강</span><span class="stat-value">${st.green} / ${st.yellow} / ${st.red}</span></div>
+            <p style="font-size:12px; color:var(--text-light); margin-top:6px;">※ 다르게 골랐어도 괜찮아요. 같은 장면도 사람마다 다르게 느낄 수 있어요.</p>
+        </div>` : ''}
+        ${escCount > 0 ? `<div class="card" style="background:#ECFDF5; border:1px solid #10B981; text-align:left; margin-top:12px;">
+            <p style="font-size:15px; font-weight:900; color:#065F46; margin-bottom:8px;">🎯 위기탈출 ${escCount}회 성공!</p>
+            ${Object.entries(escapeChoices).map(([storyId, choice]) => {
+                const story = STORIES.find(s => s.id === storyId);
+                if (!story) return '';
+                return `<div style="font-size:13px; margin:4px 0;">
+                    ${story.emoji} ${story.title}: <strong>${esc(choice.strategy)}</strong>
+                </div>`;
+            }).join('')}
+        </div>` : ''}
+        <div class="card" style="text-align:left; margin-top:12px; background:rgba(124,58,237,0.05);">
+            <p style="font-size:15px; font-weight:900; margin-bottom:8px;">🧠 오늘 배운 것</p>
+            <p style="font-size:14px;">마음은 갑자기 폭발하지 않아요.<br>
+            🟢 초록 → 🟡 노랑 → 🔴 빨강,<br>
+            단계를 거쳐 올라간답니다.<br><br>
+            <strong>노랑 신호</strong>에서 알아차리면,<br>
+            멈추거나 도움을 요청하는 <strong>선택</strong>을 할 수 있어요!<br><br>
+            ${escCount > 0 ? '오늘 위기탈출에서 직접 경험했죠? 😊' : '다음에 위기탈출 미션도 도전해보세요! 🎯'}</p>
+        </div>
+        ${mylightDone
+            ? `<button class="btn btn-escape btn-small" onclick="showMyLightResult()" style="margin-top:12px; width:100%; max-width:400px;">🪞 나의 신호등 확인하기</button>`
+            : `<button class="btn btn-escape btn-small" onclick="showScreen('screen-mylight')" style="margin-top:12px; width:100%; max-width:400px;">🪞 나만의 마음 신호등 만들러 가기</button>`}
+        <button class="btn btn-secondary btn-small" onclick="downloadMyResult()" style="margin-top:8px; width:100%; max-width:400px;">📄 내 결과 저장하기</button>
+        ${done < STORIES.length ? `<p style="font-size:13px; color:var(--text-light); margin-top:10px;">아직 읽지 않은 이야기가 ${STORIES.length - done}개 남아 있어요!</p>` : ''}
+    `;
+    showScreen('screen-complete');
+};
+
+window.downloadMyResult = function() {
+    const st = getSignalStats();
+    const lines = [];
+    lines.push('내 마음 신호등 읽기 - 나의 기록');
+    lines.push('이름: ' + (currentNickname || '탐험가'));
+    lines.push('날짜: ' + new Date().toLocaleString('ko-KR'));
+    lines.push('');
+    lines.push('[완료한 이야기] ' + completedStories.size + '/' + STORIES.length);
+    STORIES.forEach(s => {
+        if (completedStories.has(s.id)) {
+            lines.push(' - ' + s.title + (escapedStories.has(s.id) ? ' (위기탈출 성공)' : ''));
+        }
+    });
+    lines.push('');
+    lines.push('[위기탈출 전략]');
+    const ec = Object.entries(escapeChoices);
+    if (ec.length === 0) lines.push(' - 아직 없어요');
+    ec.forEach(([sid, c]) => {
+        const s = STORIES.find(x => x.id === sid);
+        lines.push(' - ' + (s ? s.title : sid) + ': ' + c.strategy);
+    });
+    lines.push('');
+    lines.push('[신호 읽기 기록]');
+    lines.push(' - 읽어본 장면: ' + st.total + '장면');
+    lines.push(' - 이야기 속 신호와 같았던 선택: ' + st.correct + '번');
+    lines.push(' - 초록 ' + st.green + ' / 노랑 ' + st.yellow + ' / 빨강 ' + st.red);
+    lines.push('');
+    lines.push('[나만의 마음 신호등]');
+    lines.push(' - 초록(편안할 때): ' + (mylightData.green || '-'));
+    lines.push(' - 노랑(불편해질 때): ' + (mylightData.yellow || '-'));
+    lines.push(' - 빨강(폭발할 때): ' + (mylightData.red || '-'));
+    const strNames = (mylightData.strategies || []).map(id => {
+        const o = STRATEGY_OPTIONS.find(x => x.id === id);
+        return o ? o.text : '';
+    }).filter(Boolean);
+    if (mylightData.strategyCustom) strNames.push(mylightData.strategyCustom);
+    lines.push(' - 나의 멈추기 전략: ' + (strNames.length ? strNames.join(', ') : '-'));
+    lines.push(' - 나의 다짐: ' + (mylightData.promise || '-'));
+    const text = lines.join('\n');
+    try {
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '내마음신호등_' + (currentNickname || '탐험가') + '.txt';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast('📄 내 결과가 저장되었어요!', 'success');
+        return;
+    } catch(e) {}
+    try {
+        const w = window.open('', '_blank');
+        if (w) {
+            w.document.write('<meta charset="UTF-8"><title>내 마음 신호등 기록</title><pre style="font-family:sans-serif;font-size:15px;white-space:pre-wrap;padding:20px;">' + esc(text) + '</pre>');
+            w.document.close();
+            return;
+        }
+    } catch(e) {}
+    showToast('📄 결과를 화면에서 확인해주세요.', 'info');
+};
+
+window.backToMain = function() { goToMain(); showToast('📖 다른 이야기도 볼까요?', 'success'); };
+
+window.confirmGoHome = function() {
+    const done = completedStories.size;
+    const msg = done > 0
+        ? `처음 화면으로 돌아갈까요?<br><br>📖 완료: ${done}개 · 🎯 탈출: ${escapedStories.size}회<br>` +
+          (isSoloMode ? '⚠️ 혼자 체험 모드는 나가면 기록이 사라져요!' : '✅ 같은 닉네임으로 다시 들어오면 이어할 수 있어요!')
+        : '처음 화면으로 돌아갈까요?';
+    showConfirmModal(msg, () => {
+        if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+        showScreen('screen-start');
+    });
+};
+
+// ═══════════════════════════════════════
+// 교사 대시보드
+// ═══════════════════════════════════════
+function startDashboardListener() {
+    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+    unsubscribe = DB.onStudentsChange(currentRoomCode, (students) => {
+        dashboardData = students;
+        renderDashboard();
+    });
+}
+window.refreshDashboard = function() { startDashboardListener(); };
+
+// 이야기별·장면별로 우리 반이 고른 색과, 다르게 고른 이유를 표로 만든다
+function buildSceneDistribution(entries) {
+    const dot = { green: '🟢', yellow: '🟡', red: '🔴' };
+    let html = `<div class="card"><h3 style="font-size:16px; margin-bottom:6px;">🚦 장면별 신호등 분포</h3>
+        <p style="font-size:12px; color:var(--text-light); margin-bottom:8px;">이야기를 펼치면 장면마다 우리 반이 고른 색이 나와요. 이야기 속 색과 다르게 고른 장면이 함께 이야기 나누기 좋은 자리예요.</p>`;
+    let any = false;
+    STORIES.forEach(story => {
+        const rows = story.stages.map((st, i) => {
+            const c = { green: 0, yellow: 0, red: 0 };
+            const reasons = {};
+            entries.forEach(([, d]) => {
+                const a = d.storyAnswers && d.storyAnswers[story.id] && d.storyAnswers[story.id][i];
+                if (a && c[a] !== undefined) c[a]++;
+                const w = d.whyDiff && d.whyDiff[story.id] && d.whyDiff[story.id][i];
+                if (w) reasons[w] = (reasons[w] || 0) + 1;
+            });
+            const n = c.green + c.yellow + c.red;
+            if (!n) return '';
+            const reasonTxt = Object.entries(reasons).map(([k, v]) => `${esc(k)} ${v}명`).join(' · ');
+            return `<tr><td>${st.label}</td><td>${dot[st.expected]}</td><td>${c.green}</td><td>${c.yellow}</td><td>${c.red}</td><td style="text-align:left;">${reasonTxt || '-'}</td></tr>`;
+        }).join('');
+        if (!rows) return;
+        any = true;
+        html += `<details style="margin:6px 0;"><summary style="cursor:pointer; font-size:14px; font-weight:700;">${story.emoji} ${story.title}</summary>
+            <div style="overflow-x:auto;"><table class="scene-table"><tr><th>장면</th><th>이야기 속 색</th><th>🟢</th><th>🟡</th><th>🔴</th><th>다르게 고른 이유</th></tr>${rows}</table></div></details>`;
+    });
+    if (!any) html += `<p style="font-size:13px; color:var(--text-light);">아직 읽은 장면이 없습니다.</p>`;
+    html += `</div>`;
+    return html;
+}
+
+function computeStudentStats(d) {
+    let total = 0, correct = 0, green = 0, yellow = 0, red = 0;
+    const sa = d.storyAnswers || {};
+    Object.keys(sa).forEach(sid => {
+        const story = STORIES.find(s => s.id === sid);
+        (sa[sid] || []).forEach((a, i) => {
+            if (!a) return;
+            total++;
+            if (a === 'green') green++; else if (a === 'yellow') yellow++; else if (a === 'red') red++;
+            if (story && story.stages[i] && story.stages[i].expected === a) correct++;
+        });
+    });
+    return { total, correct, green, yellow, red };
+}
+
+function tokenizeWords(text) {
+    return String(text == null ? '' : text)
+        .replace(/[^가-힣a-zA-Z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length >= 2);
+}
+
+function buildWordCloud(texts) {
+    const freq = {};
+    texts.forEach(t => tokenizeWords(t).forEach(w => { freq[w] = (freq[w] || 0) + 1; }));
+    const items = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 30);
+    if (!items.length) return '<p style="font-size:14px;color:var(--text-light);">아직 작성된 내용이 없습니다.</p>';
+    const max = items[0][1];
+    const colors = ['#7C3AED', '#A78BFA', '#10B981', '#F59E0B', '#EF4444', '#5B21B6'];
+    return '<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;padding:8px 0;">' +
+        items.map(([w, c], i) => {
+            const size = 13 + Math.round((c / max) * 15);
+            return `<span style="font-size:${size}px;font-weight:900;color:${colors[i % colors.length]};line-height:1.5;">${esc(w)}</span>`;
+        }).join('') + '</div>';
+}
+
+function renderDashboard() {
+    const entries = Object.entries(dashboardData);
+    const total = entries.length;
+    const completed = entries.filter(([,d]) => d.completedAt).length;
+
+    let greenCount = 0, yellowCount = 0, redCount = 0, totalAnswers = 0, correctAnswers = 0;
+    let totalEscapes = 0;
+    let strategyCounts = {};
+    const promiseTexts = [];
+
+    entries.forEach(([,d]) => {
+        const s = computeStudentStats(d);
+        totalAnswers += s.total; correctAnswers += s.correct;
+        greenCount += s.green; yellowCount += s.yellow; redCount += s.red;
+        if (d.escapedStories) totalEscapes += d.escapedStories.length;
+        if (d.escapeChoices) {
+            Object.values(d.escapeChoices).forEach(c => {
+                strategyCounts[c.strategy] = (strategyCounts[c.strategy] || 0) + 1;
+            });
+        }
+        if (d.mylightData) {
+            if (d.mylightData.promise) promiseTexts.push(d.mylightData.promise);
+            if (d.mylightData.strategyCustom) promiseTexts.push(d.mylightData.strategyCustom);
+            if (d.mylightData.yellow) promiseTexts.push(d.mylightData.yellow);
+        }
+    });
+
+    const accPct = totalAnswers > 0 ? Math.round(correctAnswers / totalAnswers * 100) : 0;
+
+    let storyStats = STORIES.map(s => {
+        const count = entries.filter(([,d]) => d.completedStories && d.completedStories.includes(s.id)).length;
+        const escCount = entries.filter(([,d]) => d.escapedStories && d.escapedStories.includes(s.id)).length;
+        return { title: s.title, emoji: s.emoji, count, escCount };
+    });
+    const maxStory = Math.max(1, ...storyStats.map(s => s.count));
+    const maxStrategy = Math.max(1, ...Object.values(strategyCounts));
+
+    // 현황 탭
+    document.getElementById('tab-overview').innerHTML = `
+        <div class="card">
+            <h3 style="font-size:16px; margin-bottom:12px;">👥 참여 현황</h3>
+            <div class="stat-row"><span class="stat-label">참여 학생 수</span><span class="stat-value">${total}명</span></div>
+            <div class="stat-row"><span class="stat-label">나의 신호등 완성</span><span class="stat-value">${completed}명</span></div>
+            <div class="stat-row"><span class="stat-label">🎯 위기탈출 총 횟수</span><span class="stat-value" style="color:#10B981;">${totalEscapes}회</span></div>
+            <div class="stat-row"><span class="stat-label">🚦 읽은 장면 수</span><span class="stat-value">${totalAnswers}장면</span></div>
+        </div>
+        <div class="card">
+            <h3 style="font-size:16px; margin-bottom:12px;">🚦 전체 신호등 선택 분포</h3>
+            ${totalAnswers > 0 ? `
+                <div class="stat-row"><span class="stat-label">🟢 초록</span><span class="stat-value">${greenCount}회 (${Math.round(greenCount/totalAnswers*100)}%)</span></div>
+                <div class="stat-row"><span class="stat-label">🟡 노랑</span><span class="stat-value">${yellowCount}회 (${Math.round(yellowCount/totalAnswers*100)}%)</span></div>
+                <div class="stat-row"><span class="stat-label">🔴 빨강</span><span class="stat-value">${redCount}회 (${Math.round(redCount/totalAnswers*100)}%)</span></div>
+                <div style="display:flex;height:20px;border-radius:10px;overflow:hidden;margin-top:8px;">
+                    <div style="width:${greenCount/totalAnswers*100}%;background:var(--green);"></div>
+                    <div style="width:${yellowCount/totalAnswers*100}%;background:var(--yellow);"></div>
+                    <div style="width:${redCount/totalAnswers*100}%;background:var(--red);"></div>
+                </div>
+                <div class="stat-row" style="margin-top:10px;"><span class="stat-label">이야기 속 신호와 같았던 선택</span><span class="stat-value">${correctAnswers}/${totalAnswers} (${accPct}%)</span></div>
+                <p style="font-size:12px; color:var(--text-light); margin-top:6px;">※ 정답률이 아니라 <strong>학생들이 장면을 어떻게 느꼈는지</strong> 보는 지표입니다. 다르게 고른 장면을 함께 이야기해보세요.</p>
+            ` : '<p style="font-size:14px;color:var(--text-light);">아직 데이터가 없습니다.</p>'}
+        </div>
+        ${buildSceneDistribution(entries)}
+        ${Object.keys(strategyCounts).length > 0 ? `<div class="card">
+            <h3 style="font-size:16px; margin-bottom:12px;">🎯 위기탈출 전략 분포</h3>
+            ${Object.entries(strategyCounts).sort((a,b) => b[1]-a[1]).map(([name, cnt]) => `
+                <div style="margin:8px 0;">
+                    <div class="stat-row" style="border:none; padding:2px 0;"><span class="stat-label">${esc(name)}</span><span class="stat-value" style="color:#10B981;">${cnt}회</span></div>
+                    <div class="progress-bar" style="height:8px;"><div class="progress-fill" style="width:${Math.round(cnt/maxStrategy*100)}%; background:linear-gradient(90deg,#10B981,#34D399);"></div></div>
+                </div>
+            `).join('')}
+        </div>` : ''}
+        <div class="card">
+            <h3 style="font-size:16px; margin-bottom:12px;">📖 이야기별 완료 현황</h3>
+            ${storyStats.map(s => `
+                <div style="margin:8px 0;">
+                    <div class="stat-row" style="border:none; padding:2px 0;">
+                        <span class="stat-label">${s.emoji} ${s.title}</span>
+                        <span class="stat-value">${s.count}명 ${s.escCount > 0 ? `<span style="color:#10B981;">(🎯${s.escCount})</span>` : ''}</span>
+                    </div>
+                    <div class="progress-bar" style="height:8px;"><div class="progress-fill progress-green" style="width:${Math.round(s.count/maxStory*100)}%;"></div></div>
+                </div>
+            `).join('')}
+        </div>
+        <div class="card">
+            <h3 style="font-size:16px; margin-bottom:8px;">☁️ 학생들의 말 모음</h3>
+            <p style="font-size:12px; color:var(--text-light); margin-bottom:6px;">나의 신호등에 적은 노랑 신호·전략·다짐에서 자주 나온 말이에요.</p>
+            ${buildWordCloud(promiseTexts)}
+        </div>
+    `;
+
+    // 상세 탭
+    document.getElementById('tab-detail').innerHTML = `
+        <div class="card">
+            <h3 style="font-size:16px; margin-bottom:12px;">📋 학생별 상세 기록</h3>
+            ${entries.length === 0 ? '<p style="font-size:14px;color:var(--text-light);">아직 참여한 학생이 없습니다.</p>' :
+            entries.map(([name, data]) => {
+                const stories = data.completedStories || [];
+                const escapes = data.escapedStories || [];
+                const s = computeStudentStats(data);
+                return `<div class="card" style="padding:14px;">
+                    <div style="font-weight:900; font-size:15px; margin-bottom:6px;">${esc(name)} ${escapes.length > 0 ? `<span style="color:#10B981; font-size:12px;">🎯×${escapes.length}</span>` : ''}</div>
+                    <div style="font-size:13px; color:var(--text-light);">참여: ${data.joinedAt ? new Date(data.joinedAt).toLocaleString('ko-KR') : '-'}</div>
+                    ${data.lastVisit ? `<div style="font-size:13px; color:var(--text-light);">최근 활동: ${new Date(data.lastVisit).toLocaleString('ko-KR')}</div>` : ''}
+                    <div style="font-size:13px; color:var(--text-light);">완료 이야기: ${stories.length}개 · 읽은 장면: ${s.total}개 (🟢${s.green} 🟡${s.yellow} 🔴${s.red})</div>
+                    ${data.escapeChoices ? Object.entries(data.escapeChoices).map(([sid, c]) => {
+                        const st = STORIES.find(x => x.id === sid);
+                        return `<div style="font-size:12px; margin-top:4px; padding:6px; background:#ECFDF5; border-radius:6px;">🎯 ${st ? st.title : esc(sid)}: ${esc(c.strategy)}</div>`;
+                    }).join('') : ''}
+                    ${data.mylightData ? `<div style="font-size:12px; margin-top:4px; padding:6px; background:rgba(124,58,237,0.05); border-radius:6px;">
+                        🪞 초록: ${esc(data.mylightData.green) || '-'} | 노랑: ${esc(data.mylightData.yellow) || '-'} | 빨강: ${esc(data.mylightData.red) || '-'}
+                        ${data.mylightData.promise ? `<br>💪 "${esc(data.mylightData.promise)}"` : ''}
+                    </div>` : ''}
+                </div>`;
+            }).join('')}
+        </div>
+    `;
+}
+
+window.switchTab = function(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const target = document.getElementById(tabId);
+    if (target) target.classList.add('active');
+    const b = btn || (typeof event !== 'undefined' && event ? event.currentTarget : null);
+    if (b && b.classList) b.classList.add('active');
+};
+
+// ═══════════════════════════════════════
+// 내보내기
+// ═══════════════════════════════════════
+window.downloadExcel = function() {
+    const entries = Object.entries(dashboardData);
+    if (!entries.length) { showToast('내보낼 데이터가 없습니다.', 'error'); return; }
+    const headers = ['닉네임', '참여시간', '최근활동', '완료 이야기', '읽은 장면', '이야기 속 신호와 같은 선택', '초록', '노랑', '빨강', '위기탈출 횟수', '탈출 전략', '나의 초록', '나의 노랑', '나의 빨강', '멈추기 전략', '나의 다짐', '완료여부', '다르게 고른 이유'];
+    const wsData = [headers];
+    entries.forEach(([name, data]) => {
+        const escChoices = data.escapeChoices ? Object.values(data.escapeChoices).map(c => c.strategy).join(', ') : '';
+        const st = computeStudentStats(data);
+        const stratNames = (data.mylightData?.strategies || []).map(id => {
+            const o = STRATEGY_OPTIONS.find(x => x.id === id); return o ? o.text : '';
+        }).filter(Boolean);
+        if (data.mylightData?.strategyCustom) stratNames.push(data.mylightData.strategyCustom);
+        wsData.push([
+            name,
+            data.joinedAt ? new Date(data.joinedAt).toLocaleString('ko-KR') : '-',
+            data.lastVisit ? new Date(data.lastVisit).toLocaleString('ko-KR') : '-',
+            (data.completedStories || []).length,
+            st.total,
+            st.correct,
+            st.green,
+            st.yellow,
+            st.red,
+            (data.escapedStories || []).length,
+            escChoices,
+            data.mylightData?.green || '',
+            data.mylightData?.yellow || '',
+            data.mylightData?.red || '',
+            stratNames.join(', '),
+            data.mylightData?.promise || '',
+            data.completedAt ? '완료' : '미완료',
+            Object.entries(data.whyDiff || {}).map(([sid, m]) => {
+                const st = STORIES.find(x => x.id === sid);
+                return Object.entries(m || {}).filter(([, r]) => r).map(([i, r]) => `${st ? st.title : sid} ${Number(i) + 1}장면: ${r}`).join('; ');
+            }).filter(Boolean).join('; ')
+        ]);
+    });
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '참여결과');
+    XLSX.writeFile(wb, `SEL_내마음신호등_${currentRoomCode}.xlsx`);
+    showToast('📊 엑셀 파일이 다운로드됩니다!', 'success');
+};
+
+window.downloadPDF = function() {
+    const entries = Object.entries(dashboardData);
+    if (!entries.length) { showToast('내보낼 데이터가 없습니다.', 'error'); return; }
+
+    let pdfBody = '';
+    const total = entries.length;
+    const completed = entries.filter(([,d]) => d.completedAt).length;
+    const totalEscapes = entries.reduce((sum, [,d]) => sum + (d.escapedStories || []).length, 0);
+
+    let agg = { total: 0, correct: 0, green: 0, yellow: 0, red: 0 };
+    const strat = {};
+    entries.forEach(([,d]) => {
+        const st = computeStudentStats(d);
+        agg.total += st.total; agg.correct += st.correct;
+        agg.green += st.green; agg.yellow += st.yellow; agg.red += st.red;
+        Object.values(d.escapeChoices || {}).forEach(c => { strat[c.strategy] = (strat[c.strategy] || 0) + 1; });
+    });
+
+    pdfBody += `<div class="card"><h3>📊 참여 현황</h3><p>참여 ${total}명 / 나의 신호등 완성 ${completed}명 / 위기탈출 ${totalEscapes}회 / 읽은 장면 ${agg.total}개</p></div>`;
+
+    pdfBody += `<div class="card"><h3>🚦 신호등 선택 분포</h3>`;
+    if (agg.total > 0) {
+        pdfBody += `<table><tr><th>구분</th><th>초록</th><th>노랑</th><th>빨강</th><th>합계</th><th>이야기 속 신호와 같은 선택</th></tr>`;
+        pdfBody += `<tr><td>선택 수</td><td>${agg.green}</td><td>${agg.yellow}</td><td>${agg.red}</td><td>${agg.total}</td><td>${agg.correct} (${Math.round(agg.correct/agg.total*100)}%)</td></tr></table>`;
+    } else {
+        pdfBody += `<p>아직 데이터가 없습니다.</p>`;
+    }
+    pdfBody += `</div>`;
+
+    const stratList = Object.entries(strat).sort((a,b) => b[1]-a[1]);
+    if (stratList.length) {
+        pdfBody += `<div class="card"><h3>🎯 위기탈출 전략 분포</h3><table><tr><th>전략</th><th>선택 수</th></tr>`;
+        stratList.forEach(([n, c]) => { pdfBody += `<tr><td>${esc(n)}</td><td>${c}</td></tr>`; });
+        pdfBody += `</table></div>`;
+    }
+
+    pdfBody += `<div class="card"><h3>📖 이야기별 완료 현황</h3><table><tr><th>이야기</th><th>완료 인원</th><th>위기탈출</th></tr>`;
+    STORIES.forEach(st => {
+        const c = entries.filter(([,d]) => (d.completedStories||[]).includes(st.id)).length;
+        const e2 = entries.filter(([,d]) => (d.escapedStories||[]).includes(st.id)).length;
+        pdfBody += `<tr><td>${st.title}</td><td>${c}명</td><td>${e2}명</td></tr>`;
+    });
+    pdfBody += `</table></div>`;
+
+    pdfBody += `<div class="card"><h3>📋 학생별 상세 기록</h3>`;
+    pdfBody += `<table><tr><th>닉네임</th><th>완료</th><th>장면</th><th>초록/노랑/빨강</th><th>탈출</th><th>전략</th><th>나의 초록</th><th>나의 노랑</th><th>나의 빨강</th><th>다짐</th></tr>`;
+    entries.forEach(([name, data]) => {
+        const escChoices = data.escapeChoices ? Object.values(data.escapeChoices).map(c => esc(c.strategy)).join(', ') : '-';
+        const st = computeStudentStats(data);
+        pdfBody += `<tr><td>${esc(name)}</td>`;
+        pdfBody += `<td>${(data.completedStories||[]).length}개</td>`;
+        pdfBody += `<td>${st.total}</td>`;
+        pdfBody += `<td>${st.green}/${st.yellow}/${st.red}</td>`;
+        pdfBody += `<td>${(data.escapedStories||[]).length}회</td>`;
+        pdfBody += `<td>${escChoices}</td>`;
+        pdfBody += `<td>${esc(data.mylightData?.green)||'-'}</td>`;
+        pdfBody += `<td>${esc(data.mylightData?.yellow)||'-'}</td>`;
+        pdfBody += `<td>${esc(data.mylightData?.red)||'-'}</td>`;
+        pdfBody += `<td>${esc(data.mylightData?.promise)||'-'}</td></tr>`;
+    });
+    pdfBody += `</table></div>`;
+
+    try {
+        const pw = window.open('', '_blank');
+        if (pw) {
+            pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>SEL 대시보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>*{font-family:'Noto Sans KR',sans-serif;margin:0;padding:0;box-sizing:border-box;}body{padding:24px;font-size:14px;color:#1F2937;line-height:1.6;}.print-header{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #7C3AED;}.print-header h2{color:#7C3AED;font-size:20px;}.card{border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin:12px 0;page-break-inside:avoid;}table{width:100%;border-collapse:collapse;margin:8px 0;}th,td{border:1px solid #E5E7EB;padding:6px 8px;text-align:left;font-size:11px;}th{background:#F3F4F6;font-weight:700;}h3{color:#7C3AED;font-size:16px;margin:12px 0 8px;}.print-guide{background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;text-align:center;}@media print{.print-guide{display:none;}}</style></head><body>
+<div class="print-guide">💡 <strong>PDF로 저장:</strong> "대상"을 <strong>"PDF로 저장"</strong>으로 선택하세요.</div>
+<div class="print-header"><h2>🚦 내 마음 신호등 읽기 — 대시보드</h2><p>방 코드: ${currentRoomCode} | ${new Date().toLocaleString('ko-KR')}</p></div>
+${pdfBody}<scr`+`ipt>setTimeout(function(){window.print();},1000);</scr`+`ipt></body></html>`);
+            pw.document.close();
+            showToast('📄 새 창에서 PDF로 저장하세요.', 'success');
+            return;
+        }
+    } catch(e) {}
+    try { showToast('📄 Ctrl+P로 PDF 저장해주세요.', 'info'); setTimeout(() => window.print(), 500); } catch(e) {}
+};
+
+// ═══════════════════════════════════════
+// TTS
+// ═══════════════════════════════════════
+let isSpeaking = false;
+
+function buildTTSScript(section) {
+    const entries = Object.entries(dashboardData);
+    const total = entries.length;
+    const completed = entries.filter(([,d]) => d.completedAt).length;
+    let agg = { total: 0, correct: 0, green: 0, yellow: 0, red: 0 };
+    let escapes = 0;
+    const strat = {};
+    entries.forEach(([,d]) => {
+        const s = computeStudentStats(d);
+        agg.total += s.total; agg.correct += s.correct;
+        agg.green += s.green; agg.yellow += s.yellow; agg.red += s.red;
+        escapes += (d.escapedStories || []).length;
+        Object.values(d.escapeChoices || {}).forEach(c => { strat[c.strategy] = (strat[c.strategy] || 0) + 1; });
+    });
+
+    if (section === 'overview') {
+        if (!total) return '아직 참여한 학생이 없습니다.';
+        return `참여 현황입니다. 현재 ${total}명이 참여했고, 그중 ${completed}명이 나만의 마음 신호등을 완성했습니다. 위기탈출 성공은 모두 ${escapes}회입니다.`;
+    }
+    if (section === 'signal') {
+        if (!agg.total) return '아직 신호등 선택 데이터가 없습니다.';
+        return `신호등 선택 분포입니다. 초록 ${agg.green}회, 노랑 ${agg.yellow}회, 빨강 ${agg.red}회를 골랐습니다. 전체 ${agg.total}번의 선택 가운데 ${agg.correct}번이 이야기 속 신호와 같았습니다. 다르게 고른 장면은 함께 이야기 나누기 좋은 자료입니다.`;
+    }
+    if (section === 'strategy') {
+        const list = Object.entries(strat).sort((a,b) => b[1] - a[1]);
+        if (!list.length) return '아직 위기탈출 전략 데이터가 없습니다.';
+        return '위기탈출 전략 분포입니다. ' + list.map(([n,c]) => `${n} ${c}회`).join(', ') + '. 우리 반이 가장 많이 고른 전략은 ' + list[0][0] + '입니다.';
+    }
+    if (section === 'students') {
+        if (!entries.length) return '아직 참여한 학생이 없습니다.';
+        return '학생별 요약입니다. ' + entries.map(([n,d]) => `${n} 학생, 완료 ${(d.completedStories||[]).length}개, 위기탈출 ${(d.escapedStories||[]).length}회`).join('. ') + '.';
+    }
+    return ['overview','signal','strategy'].map(s => buildTTSScript(s)).join(' ');
+}
+
+window.speakSection = function(section) {
+    try { window.speechSynthesis.cancel(); } catch(e) {}
+    const utt = new SpeechSynthesisUtterance(buildTTSScript(section));
+    utt.lang = 'ko-KR'; utt.rate = 0.9;
+    utt.onend = () => { isSpeaking = false; };
+    window.speechSynthesis.speak(utt);
+    isSpeaking = true;
+};
+window.speakDashboard = function() { window.speakSection('all'); };
+window.stopSpeaking = function() { try { window.speechSynthesis.cancel(); } catch(e) {} isSpeaking = false; };
+window.previewTTS = function(section) {
+    document.getElementById('ttsPreviewText').innerHTML = esc(buildTTSScript(section)).replace(/\n/g, '<br>');
+    document.getElementById('ttsPreviewModal').style.display = 'flex';
+};
+window.closeTTSPreview = function() { document.getElementById('ttsPreviewModal').style.display = 'none'; };
+
+// ═══════════════════════════════════════
+// 데이터 초기화
+// ═══════════════════════════════════════
+window.confirmResetData = function() {
+    // ⭐ 수정: 방 코드·비밀번호는 남기고 학생 기록만 지우도록 안내 문구를 실제 동작에 맞춤
+    showConfirmModal('모든 학생 기록이 삭제됩니다.<br>방 코드와 비밀번호는 그대로 유지되어 다시 수업할 수 있습니다.<br>이 작업은 되돌릴 수 없습니다.', async () => {
+        if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+        await DB.deleteStudentsOnly(currentRoomCode); // ⭐ 수정: deleteRoom → deleteStudentsOnly (방 문서 보존)
+        dashboardData = {};
+        showToast('🗑️ 데이터가 초기화되었습니다.', 'success');
+        showScreen('screen-start');
+    });
+};
+
+</script>
+</body>
+</html>

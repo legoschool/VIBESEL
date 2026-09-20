@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>선택 앞에서 행동 조절하기</title>
+<style>
+:root{--main:#7C3AED;--bg:#F5F3FF;--text:#1F2937;--dim:#6B7280;--ok:#10B981;--warn:#F59E0B;--bad:#EF4444;--think:#3B82F6}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;padding:16px}
+.wrap{max-width:560px;margin:0 auto}
+.screen{display:none}.screen.on{display:block}
+.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:0 2px 12px rgba(124,58,237,.08)}
+h1{font-size:25px;color:var(--main);text-align:center;margin-bottom:6px}
+h2{font-size:20px;color:var(--main);margin-bottom:10px}
+h3{font-size:16px;margin-bottom:8px}
+p.sub{text-align:center;color:var(--dim);font-size:15px;margin-bottom:12px}
+.btn{display:block;width:100%;padding:14px;margin:8px 0;border:none;border-radius:12px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer}
+.btn-main{background:var(--main);color:#fff}
+.btn-sub{background:#EDE9FE;color:var(--main)}
+.btn-line{background:#fff;color:var(--dim);border:1px solid #E5E7EB;font-size:14px;padding:9px;width:auto;display:inline-block;margin-right:6px}
+input,textarea{width:100%;padding:12px;border:1px solid #DDD6FE;border-radius:10px;font-size:15px;font-family:inherit;margin:6px 0 12px}
+textarea{min-height:62px;resize:vertical}
+label{font-size:15px;font-weight:700}
+.scene{background:#FAFAFA;border-left:4px solid var(--main);border-radius:10px;padding:14px;font-size:15px;margin:10px 0}
+.feel{font-size:15px;font-weight:700;color:var(--bad);margin:8px 0}
+.urge{font-size:14px;color:var(--dim);margin-bottom:10px}
+.choice{display:block;width:100%;text-align:left;padding:14px;margin:8px 0;border:2px solid #E5E7EB;border-radius:12px;background:#fff;font-size:15px;font-family:inherit;cursor:pointer;line-height:1.6}
+.choice:hover{border-color:var(--main);background:#FAF9FF}
+.result{border-radius:12px;padding:14px;margin-top:10px;font-size:15px}
+.result.positive{background:#ECFDF5;border:1px solid #A7F3D0}
+.result.negative{background:#FEF2F2;border:1px solid #FECACA}
+.result.neutral{background:#FFFBEB;border:1px solid #FDE68A}
+.badge{display:inline-block;padding:5px 11px;border-radius:999px;font-size:13px;font-weight:700;color:#fff;margin-bottom:8px}
+.ack{font-size:14px;color:var(--dim);margin-top:8px}
+.note{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:12px;font-size:14px;margin-top:12px}
+.tally{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+.tally div{flex:1;min-width:110px;text-align:center;border-radius:12px;padding:12px;background:#F9FAFB;border:1px solid #F3F4F6}
+.tally b{display:block;font-size:26px}
+.tally span{font-size:13px;color:var(--dim)}
+.stat{display:flex;justify-content:space-around;text-align:center;margin:12px 0}
+.stat b{display:block;font-size:30px;color:var(--main)}
+.stat span{font-size:13px;color:var(--dim)}
+.bar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:14px}
+.bar i{display:block;height:16px;border-radius:4px;font-style:normal}
+.row{border-bottom:1px solid #F3F4F6;padding:10px 0;font-size:14px}
+.row b{color:var(--main)}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--text);color:#fff;padding:11px 20px;border-radius:999px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+.top{margin-bottom:10px}
+.step{font-size:13px;color:var(--dim);text-align:right}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 1. 시작 -->
+  <section class="screen on" id="s-start">
+    <div class="card">
+      <h1 id="t-title"></h1>
+      <p class="sub" id="t-sub"></p>
+      <p class="sub" id="t-meta"></p>
+      <button class="btn btn-main" onclick="go('teacher')">방 만들기 (선생님)</button>
+      <button class="btn btn-sub" onclick="go('student')">방 코드로 참여하기 (학생)</button>
+      <button class="btn btn-sub" onclick="solo()">혼자 해보기</button>
+      <div class="note">틀린 선택은 없습니다. 고른 뒤에 무슨 일이 생기는지 보는 활동입니다.</div>
+      <p class="sub" id="db-state" style="font-size:13px;margin:10px 0 0">저장소 확인 중</p>
+    </div>
+  </section>
+
+  <!-- 2. 방 입장 -->
+  <section class="screen" id="s-join">
+    <div class="card">
+      <h2 id="join-title"></h2>
+      <div id="join-teacher" style="display:none">
+        <p class="sub">아래 방 코드를 칠판에 적어 주세요.</p>
+        <h1 id="new-code" style="font-size:44px;letter-spacing:6px"></h1>
+        <button class="btn btn-main" onclick="openDash()">대시보드 열기</button>
+        <p class="sub" style="margin-top:18px">지난 시간에 만든 방을 다시 열려면</p>
+        <input id="in-dash" inputmode="numeric" maxlength="6" placeholder="예: 482913">
+        <button class="btn btn-sub" onclick="reopenDash()">그 방 대시보드 열기</button>
+      </div>
+      <div id="join-student" style="display:none">
+        <label>방 코드 (6자리)</label>
+        <input id="in-code" inputmode="numeric" maxlength="6" placeholder="예: 482913">
+        <label>닉네임 (실명 말고)</label>
+        <input id="in-nick" maxlength="10" placeholder="예: 파랑새7">
+        <button class="btn btn-main" onclick="joinRoom()">들어가기</button>
+      </div>
+      <button class="btn btn-line" onclick="home()">처음으로</button>
+    </div>
+  </section>
+
+  <!-- 3. 상황 -->
+  <section class="screen" id="s-play">
+    <div class="top"><button class="btn btn-line" onclick="home()">처음으로</button><span class="step" id="step-label"></span></div>
+    <div class="card">
+      <h2 id="sit-title"></h2>
+      <div class="scene" id="sit-scene"></div>
+      <div class="feel" id="sit-feel"></div>
+      <div class="urge" id="sit-urge"></div>
+      <div id="sit-choices"></div>
+      <div id="sit-after"></div>
+    </div>
+  </section>
+
+  <!-- 4. 마무리 -->
+  <section class="screen" id="s-wrap">
+    <div class="card">
+      <h2>내 선택을 모아 보면</h2>
+      <p class="sub" id="wrap-count"></p>
+      <div class="tally" id="wrap-tally"></div>
+      <div id="wrap-msg"></div>
+      <h3 style="margin-top:16px">다음에 비슷한 일이 생기면</h3>
+      <textarea id="my-plan" placeholder="예: 바로 소리치지 말고, 숨 세 번 쉬고 '나 지금 속상해'라고 말하기"></textarea>
+      <button class="btn btn-main" onclick="submitPlan()">내 다짐 내기</button>
+      <button class="btn btn-line" onclick="restart()">다시 해보기</button>
+    </div>
+  </section>
+
+  <!-- 5. 완료 -->
+  <section class="screen" id="s-done">
+    <div class="card" style="text-align:center">
+      <h2 id="done-title"></h2>
+      <div id="done-body" style="text-align:left"></div>
+      <button class="btn btn-sub" onclick="copyMine()">내 결과 복사하기</button>
+      <button class="btn btn-line" onclick="restart()">다시 해보기</button>
+      <button class="btn btn-line" onclick="home()">처음으로</button>
+    </div>
+  </section>
+
+  <!-- 6. 교사 대시보드 -->
+  <section class="screen" id="s-dash">
+    <div class="card">
+      <h2>교사 대시보드</h2>
+      <p class="sub">방 코드 <b id="dash-code"></b></p>
+      <div class="stat"><div><b id="n-join">0</b><span>참여</span></div><div><b id="n-done">0</b><span>다짐 제출</span></div></div>
+      <h3>우리 반의 선택 유형</h3><div id="dash-bars"></div>
+      <h3 style="margin-top:16px">제출한 다짐</h3><div id="dash-rows"></div>
+      <button class="btn btn-sub" onclick="copyAll()">전체 결과 복사하기</button>
+      <button class="btn btn-line" onclick="home()">처음으로</button>
+    </div>
+  </section>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+/* ═══════════════════════════════════════════════
+   여기만 고치면 우리 반 앱이 됩니다
+   ═══════════════════════════════════════════════ */
+const CONFIG = {
+  제목: '선택 앞에서 행동 조절하기',
+  부제: '화가 확 올라오는 순간, 무엇을 고르느냐에 따라 다음 장면이 달라집니다',
+  학년: '초등 4학년',
+  소요시간: '15~20분',
+  풀문항수: 5,        // 아래 상황 중 몇 개를 풀지
+  섞기: true,          // false 면 적힌 순서대로
+  마무리말: '내 다짐을 적었어요'
+};
+
+/* 선택 유형 네 가지. label 을 바꾸면 화면과 대시보드에 같이 반영됩니다 */
+const TYPE_ACK = {
+    'impulse': '그 마음이 크면 바로 반응하고 싶어지는 게 자연스러워요. 그다음에 어떤 일이 생기는지 한번 볼까요?',
+    'pause': '일단 멈춘 거예요. 멈춘 다음에 이 마음을 어디에 둘지가 남아 있어요.',
+    'think': '한 발 물러서서 다른 길을 찾아봤어요.',
+    'wise': '마음을 그대로 마주하고 말로 꺼냈어요.'
+};
+
+const TYPE_LABELS = {
+    'impulse': { emoji: '⚡', label: '바로 반응하기', color: '#EF4444', tag: 'tag-impulse' },
+    'pause': { emoji: '⏸️', label: '잠깐 멈추기', color: '#F59E0B', tag: 'tag-pause' },
+    'think': { emoji: '💭', label: '한 발 물러서기', color: '#3B82F6', tag: 'tag-think' },
+    'wise': { emoji: '🌟', label: '마주하고 말하기', color: '#10B981', tag: 'tag-wise' }
+};
+
+/* 상황들. scene 은 장면, choices 의 type 은 위 네 유형 중 하나,
+   result 는 그 선택 뒤에 벌어지는 일, followUp 은 이어지는 두 번째 장면입니다. */
+const SITUATIONS_R1 = [
+    {
+        id: 'pencil',
+        emoji: '🖍️',
+        title: '색연필 사건',
+        scene: '미술 시간 직전, 내 색연필 세트에서 빨간색과 파란색이 없어졌어요. 옆자리 수아가 허락도 없이 쓰고 있어요!',
+        feeling: '😠 화가 확 올라와요!',
+        impulse: '당장 빼앗고 소리 지르고 싶어요',
+        choices: [
+            { text: '🗣️ "내 색연필인데, 쓰기 전에 말해줬으면 좋겠어"라고 말한다', type: 'wise', result: '수아가 "미안, 급해서 그랬어" 하며 돌려줬어요. 다음부터는 먼저 물어보겠대요.', preview: 'positive' },
+            { text: '😤 "야! 그거 내 거야!" 하고 확 빼앗는다', type: 'impulse', result: '색연필은 돌아왔지만 수아 얼굴이 빨개지며 울기 시작했어요. 분위기가 싸해졌어요.', preview: 'negative' },
+            { text: '🤐 아무 말도 안 하고 다른 색으로 그린다', type: 'pause', result: '속으로는 계속 화가 나서 그림에 집중이 안 돼요. 나중에도 이런 일이 반복될 수도 있어요.', preview: 'neutral' },
+            { text: '✋ 심호흡 세 번 하고, 차분히 "다 쓰면 돌려줘" 한다', type: 'think', result: '마음을 가라앉히고 말하니 수아도 편하게 "응, 금방 쓸게!" 하고 돌려줬어요.', preview: 'positive' }
+        ],
+        followUp: {
+            scene: '수업이 끝나고 자리를 정리하는데, 수아가 내 쪽을 힐끔 보고 있어요.',
+            q: '지금 나는 어떻게 할까요?',
+            options: [
+                { text: '🖍️ "다음엔 물어보고 빌려가면 돼" 하고 웃어준다', result: '수아가 마음을 놓고 "응, 고마워"라고 했어요. 다음 날 수아가 먼저 지우개를 빌려줬어요.' },
+                { text: '🙂 "아까는 나도 좀 세게 말했어"라고 먼저 말한다', result: '수아도 "나도 미안" 했어요. 먼저 말을 건네니 마음이 훨씬 가벼워졌어요.' }
+            ]
+        }
+    },
+    {
+        id: 'promise',
+        emoji: '🤝',
+        title: '약속을 어긴 친구',
+        scene: '오늘 방과 후에 같이 놀기로 한 친구 민준이가 갑자기 "미안, 다른 친구랑 약속 생겼어"라고 해요.',
+        feeling: '😢 서운하고 배신당한 기분이에요',
+        impulse: '"그럼 앞으로 나랑 절교야!"라고 소리치고 싶어요',
+        choices: [
+            { text: '💔 "그럼 앞으로 너랑 안 놀아!" 하고 돌아선다', type: 'impulse', result: '민준이도 상처받아서 둘 다 며칠간 말을 안 했어요. 사실 민준이는 미안해하고 있었는데...', preview: 'negative' },
+            { text: '💬 "나 좀 서운해. 다음에는 먼저 말해줘"라고 솔직히 말한다', type: 'wise', result: '민준이가 "정말 미안, 갑자기 연락이 와서..." 하며 다음 주에 꼭 같이 놀자고 약속했어요.', preview: 'positive' },
+            { text: '😞 "괜찮아..."라고 하고 혼자 집에 간다', type: 'pause', result: '괜찮다고 했지만 집에 와서도 계속 서운해요. 마음을 말하지 않으면 점점 쌓일 수 있어요.', preview: 'neutral' },
+            { text: '📱 다른 친구에게 연락해서 같이 논다', type: 'think', result: '기분 전환도 되고, 다른 친구와도 더 친해졌어요. 나중에 민준이에게 서운했다고 말할 기회도 생겼어요.', preview: 'positive' }
+        ],
+        followUp: {
+            scene: '다음 날 아침, 민준이가 교실 문 앞에서 나를 기다리고 있어요.',
+            q: '민준이에게 뭐라고 할까요?',
+            options: [
+                { text: '💬 "어제 서운했어. 그래도 오늘은 같이 놀자"라고 말한다', result: '민준이가 크게 고개를 끄덕였어요. 마음을 말하고 나니 서운함이 오래가지 않았어요.' },
+                { text: '🙂 "어제 무슨 일 있었어?" 하고 먼저 물어본다', result: '민준이가 사정을 이야기해 줬어요. 이유를 알고 나니 마음이 한결 편해졌어요.' }
+            ]
+        }
+    },
+    {
+        id: 'grade',
+        emoji: '📝',
+        title: '시험 점수',
+        scene: '열심히 공부한 시험인데 생각보다 점수가 안 나왔어요. 옆자리 친구는 높은 점수를 받고 좋아하고 있어요.',
+        feeling: '😔 실망스럽고 자신이 없어져요',
+        impulse: '시험지를 구겨버리고 싶고, 공부가 소용없다고 느껴져요',
+        choices: [
+            { text: '📄 시험지를 구기며 "나는 공부해도 소용없어"라고 한다', type: 'impulse', result: '나중에 시험지를 펴서 오답을 확인하고 싶었는데 너무 구겨져 있었어요. 자책감만 더 커졌어요.', preview: 'negative' },
+            { text: '🔍 틀린 문제를 다시 보며 "어디서 헷갈렸지?" 확인한다', type: 'wise', result: '보니까 실수가 3개나 있었어요! 다음에는 검토 시간을 두면 더 잘할 수 있을 것 같아요.', preview: 'positive' },
+            { text: '😶 점수를 아무한테도 보여주지 않고 가방에 넣는다', type: 'pause', result: '지금 당장 마음은 편하지만, 어디가 약한지 모르면 다음에도 같은 실수를 할 수 있어요.', preview: 'neutral' },
+            { text: '👨‍🏫 선생님께 "어떻게 하면 더 잘할 수 있을까요?" 물어본다', type: 'think', result: '선생님이 공부 방법을 알려주셨고, "열심히 한 건 보여. 다음엔 분명 나아질 거야"라고 격려해 주셨어요.', preview: 'positive' }
+        ],
+        followUp: {
+            scene: '집에 와서 시험지를 책상 위에 올려놨어요.',
+            q: '오늘 저녁, 나는 무엇을 해볼까요?',
+            options: [
+                { text: '📒 틀린 문제 3개만 골라서 다시 풀어본다', result: '3개 중 2개는 금방 이해됐어요. 작게 시작하니 부담이 훨씬 적었어요.' },
+                { text: '🗣️ 가족에게 "오늘 좀 속상했어"라고 말한다', result: '말하고 나니 마음이 가벼워졌고, 함께 다음 공부 계획을 세워봤어요.' }
+            ]
+        }
+    },
+    {
+        id: 'game',
+        emoji: '🎮',
+        title: '게임 중 짜증',
+        scene: '체육 시간 피구에서 우리 팀이 계속 지고 있어요. 같은 팀 친구가 "너 때문에 지잖아!"라고 했어요.',
+        feeling: '😡 억울하고 분해요',
+        impulse: '공을 세게 던지거나, 게임을 포기하고 싶어요',
+        choices: [
+            { text: '🏀 공을 억울한 친구한테 세게 던진다', type: 'impulse', result: '공이 너무 세게 갔고, 친구가 다쳐서 선생님한테 불려 갔어요. 더 억울해졌어요.', preview: 'negative' },
+            { text: '🚶 "그럼 안 해!" 하고 벤치로 간다', type: 'pause', result: '혼자 앉아있으니 더 속상해요. 포기하면 기분이 나아질 줄 알았는데 아니었어요.', preview: 'neutral' },
+            { text: '💪 "그래도 해보자! 작전을 바꿔볼까?" 하고 제안한다', type: 'wise', result: '친구가 놀라며 "그래, 어떤 작전?" 하고 물었고, 새 작전으로 1점을 따냈어요!', preview: 'positive' },
+            { text: '🧘 크게 숨을 쉬고 "속상하지만, 이건 게임이야"라고 마음속으로 말한다', type: 'think', result: '마음이 조금 가라앉고, 나머지 게임에 더 집중할 수 있었어요.', preview: 'positive' }
+        ],
+        followUp: {
+            scene: '경기가 끝나고 팀 친구들이 하나둘 흩어지고 있어요.',
+            q: '나는 어떻게 할까요?',
+            options: [
+                { text: '🤝 "다음엔 같이 작전 짜보자" 하고 손을 내민다', result: '친구가 머쓱하게 웃으며 손을 잡았어요. 다음 경기에서는 서로를 응원했어요.' },
+                { text: '🗣️ "아까 그 말은 좀 속상했어"라고 솔직히 말한다', result: '친구가 "미안, 지고 있어서 나도 조급했어"라고 했어요. 서로 마음을 알게 됐어요.' }
+            ]
+        }
+    },
+    {
+        id: 'sibling',
+        emoji: '🏠',
+        title: '동생의 실수',
+        scene: '아끼던 레고 작품을 동생이 실수로 떨어뜨려서 부서졌어요. 동생은 겁먹은 눈으로 나를 올려다보고 있어요.',
+        feeling: '😤 화가 나지만 동생의 겁먹은 얼굴도 보여요',
+        impulse: '소리 지르고 동생 방에서 쫓아내고 싶어요',
+        choices: [
+            { text: '😡 "나가!! 다시는 내 방에 들어오지 마!" 소리친다', type: 'impulse', result: '동생이 울면서 나갔고, 엄마한테 혼나게 됐어요. 레고도 부서지고, 마음도 아프고...', preview: 'negative' },
+            { text: '😮‍💨 크게 한숨 쉬고 "일부러 그런 건 아니지?" 물어본다', type: 'wise', result: '동생이 "미안해, 만져보고 싶었어..."라고 했어요. 같이 다시 만들기로 했어요.', preview: 'positive' },
+            { text: '🚪 말없이 방을 나가서 혼자 있는다', type: 'pause', result: '잠시 혼자 있으니 화가 좀 가라앉았어요. 돌아와서 더 차분하게 대화할 수 있었어요.', preview: 'neutral' },
+            { text: '🧱 "같이 다시 만들어보자. 이번엔 더 멋지게!" 한다', type: 'think', result: '동생이 활짝 웃으며 도와줬어요. 오히려 전보다 더 멋진 작품이 됐어요!', preview: 'positive' }
+        ],
+        followUp: {
+            scene: '저녁이 되어 동생이 방문 앞을 서성이고 있어요.',
+            q: '나는 어떻게 할까요?',
+            options: [
+                { text: '🧱 "같이 만들래?" 하고 불러본다', result: '동생이 환하게 웃으며 들어왔어요. 함께 만드는 동안 더 가까워졌어요.' },
+                { text: '📏 "다음엔 만지기 전에 나한테 물어봐 줘"라고 약속을 정한다', result: '동생이 새끼손가락을 걸었어요. 약속이 생기니 마음이 편해졌어요.' }
+            ]
+        }
+    }
+];
+
+const SITUATIONS_R2 = [
+    {
+        id: 'lunch',
+        emoji: '🍱',
+        title: '급식 줄 새치기',
+        scene: '배가 고파서 급식 줄에 한참 서 있었는데, 뒤에 있던 태윤이가 슬쩍 내 앞으로 끼어들었어요. 태윤이는 못 본 척 앞만 보고 있어요.',
+        feeling: '😤 억울하고 짜증이 올라와요',
+        impulse: '어깨를 밀치며 "야, 뒤로 가!"라고 소리치고 싶어요',
+        choices: [
+            { text: '💢 태윤이 어깨를 밀치며 "뒤로 가!"라고 소리친다', type: 'impulse', result: '태윤이가 넘어질 뻔했고 급식실이 시끄러워져 둘 다 선생님께 불려 갔어요.', preview: 'negative' },
+            { text: '🗣️ "나 여기 먼저 서 있었어. 뒤로 가줄래?"라고 또박또박 말한다', type: 'wise', result: '태윤이가 "아, 몰랐어. 미안" 하며 뒤로 갔어요. 말로 해결되니 마음도 덜 상했어요.', preview: 'positive' },
+            { text: '😶 아무 말 없이 그냥 뒤에 서 있는다', type: 'pause', result: '당장은 조용히 지나갔지만, 밥을 먹는 내내 억울한 마음이 남았어요.', preview: 'neutral' },
+            { text: '🤔 "혹시 급한 일 있어?" 하고 먼저 물어본다', type: 'think', result: '태윤이가 "청소 당번이라 빨리 먹어야 해서..."라고 했어요. 사정을 알고 나니 마음이 조금 풀렸어요.', preview: 'positive' }
+        ],
+        followUp: {
+            scene: '급식을 다 먹고 나오는데 태윤이와 눈이 마주쳤어요.',
+            q: '지금 나는 어떻게 할까요?',
+            options: [
+                { text: '👋 가볍게 눈인사하고 지나간다', result: '어색함이 조금 풀렸어요. 다음 날 태윤이가 먼저 말을 걸어왔어요.' },
+                { text: '💬 "아까 일은 이제 괜찮아"라고 말해준다', result: '태윤이가 "고마워" 하며 웃었어요. 마음의 매듭이 풀렸어요.' }
+            ]
+        }
+    },
+    {
+        id: 'chat',
+        emoji: '💬',
+        title: '단톡방에 올라온 말',
+        scene: '반 단톡방에 누군가 서연이의 발표를 흉내 내며 놀리는 글을 올렸어요. 여러 명이 "ㅋㅋㅋ"를 달고 있어요. 서연이는 아직 아무 말이 없어요.',
+        feeling: '😟 웃긴 것 같기도 하고, 마음이 불편하기도 해요',
+        impulse: '나도 "ㅋㅋ"를 하나 달고 싶은 마음이 올라와요',
+        choices: [
+            { text: '😅 나도 "ㅋㅋㅋ" 하나 달고 넘어간다', type: 'impulse', result: '놀리는 글이 더 늘어났어요. 다음 날 서연이는 학교에 오지 않았어요.', preview: 'negative' },
+            { text: '📵 아무것도 하지 않고 조용히 단톡방을 나간다', type: 'pause', result: '내 마음은 조금 편해졌지만, 단톡방에서는 놀리는 말이 계속 이어졌어요.', preview: 'neutral' },
+            { text: '✋ "이건 좀 아닌 것 같아. 그만하자"라고 쓴다', type: 'wise', result: '몇 명이 "맞아, 그만하자"라고 이어 썼고 글은 곧 지워졌어요. 서연이가 따로 고맙다고 했어요.', preview: 'positive' },
+            { text: '💌 서연이에게 개인 메시지로 "괜찮아?"라고 물어본다', type: 'think', result: '서연이가 "사실 좀 속상했어"라고 답했어요. 혼자가 아니라는 걸 알게 됐어요.', preview: 'positive' }
+        ],
+        followUp: {
+            scene: '다음 날 아침, 그 글을 올린 친구가 "장난이었는데 뭐가 문제야?"라고 물어요.',
+            q: '나는 뭐라고 답할까요?',
+            options: [
+                { text: '🙂 "장난인 건 알아. 그런데 서연이는 안 웃었대"라고 말한다', result: '친구가 잠시 말이 없다가 "몰랐어"라고 했어요. 그리고 서연이에게 사과했어요.' },
+                { text: '🤝 "그 사람 앞에서도 할 수 있는 말인지 생각해보자"라고 말한다', result: '친구가 고개를 끄덕였어요. 우리 반 단톡방 규칙을 함께 정하게 됐어요.' }
+            ]
+        }
+    },
+    {
+        id: 'team',
+        emoji: '🧩',
+        title: '모둠에서 무시당했을 때',
+        scene: '모둠 발표 아이디어를 냈는데 "그건 별로야" 한마디에 아무도 더 듣지 않고 다른 이야기로 넘어갔어요.',
+        feeling: '😞 무시당한 것 같아 얼굴이 화끈해요',
+        impulse: '"그럼 너희끼리 해!" 하고 자리를 뜨고 싶어요',
+        choices: [
+            { text: '🚪 "그럼 너희끼리 해!" 하고 자리를 뜬다', type: 'impulse', result: '모둠 활동이 멈췄고 결국 선생님이 오셨어요. 하고 싶었던 말은 끝내 못 했어요.', preview: 'negative' },
+            { text: '🤐 그냥 입을 다물고 시키는 것만 한다', type: 'pause', result: '다툼은 없었지만, 발표가 끝날 때까지 마음 한구석이 답답했어요.', preview: 'neutral' },
+            { text: '🗣️ "내 생각도 30초만 들어줄래?"라고 다시 말한다', type: 'wise', result: '모두 조용해졌고, 설명을 들은 친구들이 "오, 그거 괜찮은데?"라고 했어요.', preview: 'positive' },
+            { text: '📝 아이디어를 종이에 그려서 보여준다', type: 'think', result: '말로 할 때보다 훨씬 잘 전달됐어요. 모둠 발표에 내 아이디어가 들어갔어요.', preview: 'positive' }
+        ],
+        followUp: {
+            scene: '발표 준비가 끝나고 모둠 친구가 "아까 내가 좀 세게 말했지?"라고 물어요.',
+            q: '나는 어떻게 답할까요?',
+            options: [
+                { text: '🙂 "응, 조금 속상했어. 물어봐 줘서 고마워"라고 솔직히 말한다', result: '친구가 "다음엔 끝까지 들을게"라고 했어요. 서로 조심하기로 했어요.' },
+                { text: '🤝 "다음엔 한 사람씩 돌아가며 말해볼까?"라고 제안한다', result: '모둠 규칙이 생겼고, 다음 활동에서는 모두가 한 번씩 이야기했어요.' }
+            ]
+        }
+    },
+    {
+        id: 'homework',
+        emoji: '🎮',
+        title: '숙제 앞의 유혹',
+        scene: '숙제를 펴는 순간 친구에게 메시지가 왔어요. "지금 접속하면 같이 할 수 있어! 딱 30분만!"',
+        feeling: '😆 신나면서도 마음 한쪽이 찜찜해요',
+        impulse: '"에라 모르겠다" 하고 지금 바로 게임을 켜고 싶어요',
+        choices: [
+            { text: '🕹️ 일단 게임부터 켠다. 숙제는 나중에!', type: 'impulse', result: '30분이 두 시간이 됐어요. 밤늦게 숙제를 하느라 잠이 부족했어요.', preview: 'negative' },
+            { text: '📵 메시지를 안 본 척하고 폰을 엎어둔다', type: 'pause', result: '숙제는 끝냈지만 내내 신경이 쓰였어요. 답을 안 한 것도 마음에 걸렸어요.', preview: 'neutral' },
+            { text: '⏰ "숙제 끝내고 7시에 접속할게!"라고 답하고 타이머를 맞춘다', type: 'wise', result: '숙제를 40분 만에 끝내고 마음 편히 게임을 했어요. 친구도 기다려줬어요.', preview: 'positive' },
+            { text: '📋 숙제를 세 덩어리로 나누고 한 덩어리만 먼저 한다', type: 'think', result: '시작이 가벼워지니 나머지도 술술 됐어요. 생각보다 빨리 끝났어요.', preview: 'positive' }
+        ],
+        followUp: {
+            scene: '다음 주에도 비슷한 메시지가 왔어요.',
+            q: '이번에는 어떻게 할까요?',
+            options: [
+                { text: '⏱️ 지난번에 통했던 방법을 그대로 써본다', result: '한 번 성공해 본 방법이라 훨씬 쉬웠어요. 나만의 규칙이 생겼어요.' },
+                { text: '📝 "숙제 먼저, 게임 나중"을 책상에 붙여둔다', result: '눈에 보이니 고민하는 시간이 줄었어요. 결정이 빨라졌어요.' }
+            ]
+        }
+    },
+    {
+        id: 'bump',
+        emoji: '🏃',
+        title: '복도에서 쿵!',
+        scene: '복도를 걷다가 뛰어오던 형과 부딪혀 들고 있던 준비물이 바닥에 쏟아졌어요. 형은 뒤도 안 보고 가버렸어요.',
+        feeling: '😠 아프고, 무시당한 것 같아 화가 나요',
+        impulse: '뒤에서 "야!" 하고 크게 소리치고 싶어요',
+        choices: [
+            { text: '📣 뒤에서 "야! 사과 안 해?" 하고 소리친다', type: 'impulse', result: '복도가 시끌시끌해졌고 형은 오히려 화를 냈어요. 준비물은 그대로 바닥에 있었어요.', preview: 'negative' },
+            { text: '😶 아무 말 없이 준비물을 주워 담는다', type: 'pause', result: '조용히 정리했지만 교실에 들어와서도 억울한 마음이 가시지 않았어요.', preview: 'neutral' },
+            { text: '✋ 숨을 크게 한 번 쉬고 "잠시만요!" 하고 부른 뒤 상황을 말한다', type: 'wise', result: '형이 돌아와 "미안, 급해서 못 봤어" 하고 같이 주워줬어요.', preview: 'positive' },
+            { text: '🧑‍🏫 준비물을 먼저 챙기고, 선생님께 상황을 말씀드린다', type: 'think', result: '선생님이 복도 안전 규칙을 다시 안내해 주셨어요. 뛰는 친구가 줄었어요.', preview: 'positive' }
+        ],
+        followUp: {
+            scene: '며칠 뒤, 이번엔 내가 급해서 복도를 뛰게 됐어요.',
+            q: '나는 어떻게 할까요?',
+            options: [
+                { text: '🚶 그날 일이 떠올라 속도를 늦춘다', result: '부딪힐 뻔한 동생을 피할 수 있었어요. 겪어본 일이 나를 멈추게 했어요.' },
+                { text: '🙋 급한 이유를 말하고 먼저 지나가도 되는지 묻는다', result: '친구가 웃으며 길을 비켜줬어요. 말 한마디로 부딪힘을 피했어요.' }
+            ]
+        }
+    }
+];
+
+const 상황목록 = [].concat(SITUATIONS_R1, SITUATIONS_R2);
+
+/* ═══════════════════════════════════════════════
+   여기부터는 고치지 않아도 됩니다
+   ═══════════════════════════════════════════════ */
+
+const EMO_DEX = {
+  apiKey:"AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s", authDomain:"emo-dex.firebaseapp.com",
+  projectId:"emo-dex", storageBucket:"emo-dex.firebasestorage.app",
+  messagingSenderId:"994736049700", appId:"1:994736049700:web:8233fa7b68cd6e0cccd2b1"
+};
+const injected  = (typeof __firebase_config !== 'undefined' && __firebase_config) ? __firebase_config : null;
+const fbConfig  = injected ? (typeof injected === 'string' ? JSON.parse(injected) : injected) : EMO_DEX;
+const APP_ID    = (typeof __app_id !== 'undefined' && __app_id) ? __app_id : 'sel-lesson-09-lite';
+const AUTH_TOKEN= (typeof __initial_auth_token !== 'undefined') ? __initial_auth_token : null;
+
+let db = null, online = false, 저장소 = '';
+const memory = {};
+
+async function initDB(){
+  try{
+    const app = initializeApp(fbConfig);
+    const auth = getAuth(app);
+    db = getFirestore(app);
+    await Promise.race([
+      AUTH_TOKEN ? signInWithCustomToken(auth, AUTH_TOKEN) : signInAnonymously(auth),
+      new Promise(function(_, rej){ setTimeout(function(){ rej('timeout'); }, 6000); })
+    ]);
+    online = true;
+  }catch(e){ online = false; }
+  저장소 = online ? (injected ? '캔버스 내장' : 'emo-dex') : '이 기기에만 (다른 기기와 수합 안 됨)';
+  console.log('[DB] ' + 저장소);
+  var el = document.getElementById('db-state');
+  if (el) el.textContent = '저장소: ' + 저장소;
+}
+const ready = initDB();
+
+function studentDoc(code, nick){ return doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students', nick); }
+function studentCol(code){ return collection(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students'); }
+
+async function save(code, nick, data){
+  await ready;
+  if (online){ try { await setDoc(studentDoc(code, nick), data, {merge:true}); return; } catch(e){} }
+  memory[code] = memory[code] || {};
+  memory[code][nick] = Object.assign({}, memory[code][nick], data);
+}
+
+/* 상태 */
+var 방코드 = '', 닉네임 = '', 학생들 = {}, 내다짐 = null;
+var 순서 = [], 현재 = 0, 유형수 = {}, 답함 = false;
+
+function $(id){ return document.getElementById(id); }
+function esc(v){ return String(v==null?'':v).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function toast(msg){ var t = $('toast'); t.textContent = msg; t.classList.add('on'); setTimeout(function(){ t.classList.remove('on'); }, 1600); }
+
+function go(name){
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); });
+  if (name === 'teacher' || name === 'student'){
+    $('s-join').classList.add('on');
+    $('join-title').textContent = (name === 'teacher') ? '방 만들기' : '방 코드로 참여하기';
+    $('join-teacher').style.display = (name === 'teacher') ? 'block' : 'none';
+    $('join-student').style.display = (name === 'student') ? 'block' : 'none';
+    if (name === 'teacher'){ 방코드 = String(Math.floor(Math.random()*900000+100000)); $('new-code').textContent = 방코드; }
+    window.scrollTo(0,0); return;
+  }
+  var map = { start:'s-start', play:'s-play', wrap:'s-wrap', done:'s-done', dash:'s-dash' };
+  $(map[name]).classList.add('on');
+  window.scrollTo(0,0);
+}
+function home(){ go('start'); }
+
+function 시작하기(){
+  순서 = 상황목록.map(function(_, i){ return i; });
+  if (CONFIG.섞기){
+    for (var i = 순서.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t = 순서[i]; 순서[i] = 순서[j]; 순서[j] = t;
+    }
+  }
+  순서 = 순서.slice(0, Math.max(1, Math.min(CONFIG.풀문항수, 상황목록.length)));
+  현재 = 0; 유형수 = {};
+  Object.keys(TYPE_LABELS).forEach(function(k){ 유형수[k] = 0; });
+  drawSit();
+  go('play');
+}
+function solo(){ 방코드 = ''; 닉네임 = '나'; 시작하기(); }
+function restart(){ 시작하기(); }
+
+async function joinRoom(){
+  var c = $('in-code').value.trim(), n = $('in-nick').value.trim();
+  if (!/^[0-9]{6}$/.test(c)) { toast('방 코드 6자리를 숫자로 입력해 주세요'); return; }
+  if (!n) { toast('닉네임을 입력해 주세요'); return; }
+  방코드 = c; 닉네임 = n;
+  await save(c, n, { nick:n, joinedAt: Date.now() });
+  시작하기();
+}
+
+/* 상황 풀기 */
+function drawSit(){
+  답함 = false;
+  var s = 상황목록[순서[현재]];
+  $('step-label').textContent = (현재+1) + ' / ' + 순서.length;
+  $('sit-title').textContent = (s.emoji || '') + ' ' + s.title;
+  $('sit-scene').innerHTML = s.scene;
+  $('sit-feel').textContent = s.feeling || '';
+  $('sit-urge').textContent = s.impulse ? ('마음속 목소리: ' + s.impulse) : '';
+  $('sit-after').innerHTML = '';
+  $('sit-choices').innerHTML = s.choices.map(function(c, i){
+    return '<button class="choice" onclick="choose(' + i + ')">' + esc(c.text) + '</button>';
+  }).join('');
+}
+function choose(i){
+  if (답함) return;
+  답함 = true;
+  var s = 상황목록[순서[현재]];
+  var c = s.choices[i];
+  유형수[c.type] = (유형수[c.type] || 0) + 1;
+  var T = TYPE_LABELS[c.type] || { emoji:'', label:c.type, color:'#6B7280' };
+  $('sit-choices').innerHTML = '<div class="choice" style="border-color:' + T.color + ';background:#FAFAFA">' + esc(c.text) + '</div>';
+  $('sit-after').innerHTML =
+    '<div class="result ' + (c.preview || 'neutral') + '">' +
+    '<span class="badge" style="background:' + T.color + '">' + T.emoji + ' ' + esc(T.label) + '</span>' +
+    '<div>' + esc(c.result) + '</div>' +
+    (TYPE_ACK[c.type] ? '<div class="ack">' + esc(TYPE_ACK[c.type]) + '</div>' : '') +
+    '</div>' +
+    (s.followUp ? '<button class="btn btn-main" onclick="showFollow()">그다음에는</button>'
+                : nextButton());
+}
+function nextButton(){
+  var 마지막 = (현재 + 1 >= 순서.length);
+  return '<button class="btn btn-main" onclick="' + (마지막 ? 'showWrap()' : 'nextSit()') + '">' +
+         (마지막 ? '내 선택 모아 보기' : '다음 상황') + '</button>';
+}
+function showFollow(){
+  var s = 상황목록[순서[현재]];
+  var f = s.followUp;
+  $('sit-after').innerHTML =
+    '<div class="scene">' + f.scene + '</div>' +
+    '<p style="font-size:15px;font-weight:700">' + esc(f.q) + '</p>' +
+    f.options.map(function(o, i){
+      return '<button class="choice" onclick="chooseFollow(' + i + ')">' + esc(o.text) + '</button>';
+    }).join('');
+  window.scrollTo(0, document.body.scrollHeight);
+}
+function chooseFollow(i){
+  var s = 상황목록[순서[현재]];
+  var o = s.followUp.options[i];
+  $('sit-after').innerHTML =
+    '<div class="scene">' + s.followUp.scene + '</div>' +
+    '<div class="choice" style="border-color:#7C3AED;background:#FAF9FF">' + esc(o.text) + '</div>' +
+    '<div class="result positive">' + esc(o.result) + '</div>' + nextButton();
+}
+function nextSit(){ 현재++; drawSit(); window.scrollTo(0,0); }
+
+function showWrap(){
+  $('wrap-count').textContent = '상황 ' + 순서.length + '개를 풀었습니다.';
+  $('wrap-tally').innerHTML = Object.keys(TYPE_LABELS).map(function(k){
+    var T = TYPE_LABELS[k];
+    return '<div><b style="color:' + T.color + '">' + (유형수[k]||0) + '</b><span>' + T.emoji + ' ' + esc(T.label) + '</span></div>';
+  }).join('');
+  var 최다 = Object.keys(유형수).sort(function(a,b){ return (유형수[b]||0)-(유형수[a]||0); })[0];
+  $('wrap-msg').innerHTML = (유형수[최다] ? '<div class="result neutral">오늘 가장 많이 고른 것은 <b>' +
+    esc(TYPE_LABELS[최다].label) + '</b>입니다. ' + esc(TYPE_ACK[최다] || '') + '</div>' : '');
+  go('wrap');
+}
+
+async function submitPlan(){
+  var plan = $('my-plan').value.trim();
+  if (!plan) { toast('다음에 어떻게 할지 한 줄 써 주세요'); return; }
+  내다짐 = { nick: 닉네임, types: Object.assign({}, 유형수), plan: plan, doneAt: Date.now() };
+  if (방코드) await save(방코드, 닉네임, 내다짐);
+  $('done-title').textContent = CONFIG.마무리말;
+  $('done-body').innerHTML = '<div class="result positive">' + esc(plan) + '</div>';
+  go('done');
+}
+function copyMine(){
+  if (!내다짐) { toast('먼저 다짐을 내 주세요'); return; }
+  var t = Object.keys(TYPE_LABELS).map(function(k){ return TYPE_LABELS[k].label + ' ' + (내다짐.types[k]||0); }).join(', ');
+  copy('선택 앞에서 행동 조절하기\n' + t + '\n다짐: ' + 내다짐.plan);
+}
+
+/* 교사 대시보드 */
+function reopenDash(){
+  var c = $('in-dash').value.trim();
+  if (!/^[0-9]{6}$/.test(c)) { toast('방 코드 6자리를 숫자로 입력해 주세요'); return; }
+  방코드 = c; openDash();
+}
+function openDash(){
+  $('dash-code').textContent = 방코드;
+  go('dash');
+  ready.then(function(){
+    if (!online){ $('dash-rows').innerHTML = '<p class="sub">연결이 안 되어 이 기기 기록만 보입니다.</p>'; return; }
+    onSnapshot(studentCol(방코드), function(snap){
+      학생들 = {};
+      snap.forEach(function(d){ 학생들[d.id] = d.data(); });
+      drawDash();
+    });
+  });
+}
+function drawDash(){
+  var list = Object.keys(학생들).map(function(k){ return 학생들[k]; });
+  var done = list.filter(function(s){ return s.doneAt; });
+  $('n-join').textContent = list.length;
+  $('n-done').textContent = done.length;
+
+  var sum = {};
+  Object.keys(TYPE_LABELS).forEach(function(k){ sum[k] = 0; });
+  done.forEach(function(s){ Object.keys(sum).forEach(function(k){ sum[k] += (s.types && s.types[k]) || 0; }); });
+  var max = Math.max.apply(null, Object.keys(sum).map(function(k){ return sum[k]; }).concat([1]));
+  $('dash-bars').innerHTML = Object.keys(TYPE_LABELS).map(function(k){
+    var T = TYPE_LABELS[k];
+    return '<div class="bar"><span style="width:110px">' + T.emoji + ' ' + esc(T.label) + '</span>' +
+      '<i style="width:' + Math.round(sum[k]/max*150) + 'px;background:' + T.color + '"></i><span>' + sum[k] + '</span></div>';
+  }).join('');
+  $('dash-rows').innerHTML = done.length
+    ? done.map(function(s){ return '<div class="row"><b>' + esc(s.nick) + '</b><br>' + esc(s.plan) + '</div>'; }).join('')
+    : '<p class="sub">아직 제출한 다짐이 없습니다.</p>';
+}
+function copyAll(){
+  var done = Object.keys(학생들).map(function(k){ return 학생들[k]; }).filter(function(s){ return s.doneAt; });
+  if (!done.length) { toast('복사할 기록이 없습니다'); return; }
+  copy('방 ' + 방코드 + ' · ' + done.length + '명\n\n' +
+    done.map(function(s){
+      var t = Object.keys(TYPE_LABELS).map(function(k){ return (s.types && s.types[k]) || 0; }).join('/');
+      return [s.nick, t, s.plan].join('\t');
+    }).join('\n'));
+}
+function copy(text){
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(function(){ toast('복사했습니다'); }, function(){ fallback(text); });
+  else fallback(text);
+}
+function fallback(text){
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); toast('복사했습니다'); }
+  catch(e){ window.prompt('직접 복사하세요 (Ctrl+C)', text); }
+  document.body.removeChild(ta);
+}
+
+/* 시작 */
+$('t-title').textContent = CONFIG.제목;
+$('t-sub').textContent = CONFIG.부제;
+$('t-meta').textContent = CONFIG.학년 + ' · 약 ' + CONFIG.소요시간;
+document.title = CONFIG.제목;
+
+Object.assign(window, { go:go, home:home, solo:solo, restart:restart, joinRoom:joinRoom,
+  choose:choose, showFollow:showFollow, chooseFollow:chooseFollow, nextSit:nextSit,
+  showWrap:showWrap, submitPlan:submitPlan, copyMine:copyMine,
+  openDash:openDash, reopenDash:reopenDash, copyAll:copyAll });
+console.log('[SEL] ' + CONFIG.제목 + ' 간소화판 ready (상황 ' + 상황목록.length + '개)');
+</script>
+</body>
+</html>

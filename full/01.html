@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>감정에도 이름이 있다</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+    --primary: #7C3AED;
+    --primary-light: #A78BFA;
+    --primary-dark: #5B21B6;
+    --gradient: linear-gradient(135deg, #7C3AED 0%, #A78BFA 50%, #C4B5FD 100%);
+    --gradient-bg: linear-gradient(135deg, #EDE9FE 0%, #F5F3FF 50%, #FFFFFF 100%);
+    --success: #10B981;
+    --error: #EF4444;
+    --warning: #F59E0B;
+    --text: #1F2937;
+    --text-light: #6B7280;
+    --bg-card: rgba(255,255,255,0.95);
+    --sad: #74B9FF;
+    --angry: #FF6B6B;
+    --fear: #A29BFE;
+    --joy: #FFEAA7;
+}
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Noto Sans KR', sans-serif; }
+body {
+    background: var(--gradient-bg);
+    min-height:100vh;
+    font-weight:700;
+    font-size:18px;
+    line-height:1.7;
+    color: var(--text);
+}
+h1,h2,h3 { font-weight:900; }
+
+.container { max-width:500px; margin:0 auto; padding:16px; }
+@media(min-width:769px){ .container { max-width:600px; } }
+@media(max-width:768px){
+    body { font-size:16px; padding:8px; }
+    .container { max-width:100%; padding:12px; }
+    .btn { min-height:48px; font-size:16px; }
+    input,textarea { min-height:44px; font-size:16px; }
+}
+
+/* 화면 전환 */
+.screen { display:none; }
+.screen.active { display:block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* 버튼 */
+.btn {
+    padding:16px 24px; border-radius:16px; font-size:17px; font-weight:900;
+    font-family:'Noto Sans KR',sans-serif; border:none; cursor:pointer;
+    min-height:52px; transition:all 0.2s; width:100%; max-width:400px;
+    display:block; margin:8px auto; text-align:center;
+}
+.btn-primary { background:var(--gradient); color:#fff; box-shadow:0 4px 15px rgba(124,58,237,0.3); }
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(124,58,237,0.4); }
+.btn-primary:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+.btn-secondary { background:rgba(124,58,237,0.1); color:var(--primary); border:2px solid var(--primary-light); }
+.btn-small { padding:10px 16px; font-size:14px; min-height:40px; width:auto; display:inline-block; margin:4px; }
+.btn-danger { background:var(--error); color:#fff; }
+
+/* 입력 */
+input, textarea {
+    min-height:48px; font-size:16px; font-family:'Noto Sans KR',sans-serif;
+    font-weight:700; border:2px solid #E5E7EB; border-radius:12px;
+    padding:12px 16px; width:100%; box-sizing:border-box;
+}
+input:focus, textarea:focus { border-color:var(--primary); outline:none; box-shadow:0 0 0 3px rgba(124,58,237,0.1); }
+textarea { min-height:80px; resize:vertical; }
+
+/* 카드 */
+.card {
+    background:var(--bg-card); border-radius:20px; padding:24px;
+    margin:12px 0; box-shadow:0 2px 12px rgba(0,0,0,0.06);
+}
+
+/* 안심 문구 */
+.privacy-notice {
+    background:rgba(124,58,237,0.05); border:1px solid rgba(124,58,237,0.15);
+    border-radius:12px; padding:14px; font-size:13px; font-weight:400;
+    color:var(--text-light); line-height:1.6; margin-top:16px;
+}
+
+/* 네비게이션 */
+.nav-buttons { display:flex; gap:8px; margin-bottom:12px; }
+.nav-btn {
+    padding:8px 14px; border-radius:10px; font-size:14px; font-weight:700;
+    border:none; cursor:pointer; background:rgba(124,58,237,0.08); color:var(--primary);
+    font-family:'Noto Sans KR',sans-serif;
+}
+.nav-btn:hover { background:rgba(124,58,237,0.15); }
+
+/* 배지 */
+.badge {
+    display:inline-block; padding:6px 14px; border-radius:20px;
+    font-size:14px; font-weight:700; background:rgba(124,58,237,0.1); color:var(--primary);
+}
+
+/* 선택지 */
+.choice-btn {
+    padding:16px; border:2px solid #E5E7EB; border-radius:14px;
+    background:#fff; cursor:pointer; transition:all 0.2s; text-align:left;
+    width:100%; display:block; margin:8px 0; font-family:'Noto Sans KR',sans-serif;
+    font-size:16px; font-weight:700; color:var(--text);
+}
+.choice-btn:hover { border-color:var(--primary-light); background:rgba(124,58,237,0.03); }
+.choice-btn.selected {
+    border-color:var(--primary); background:rgba(124,58,237,0.08);
+    box-shadow:0 0 0 3px rgba(124,58,237,0.15); transform:scale(1.02);
+}
+.choice-btn.selected::after { content:' ✓'; color:var(--primary); font-weight:900; }
+.choice-btn.correct { border-color:var(--success); background:rgba(16,185,129,0.08); }
+.choice-btn.mine { border-color:var(--primary); background:rgba(124,58,237,0.06); }
+.choice-tag { display:inline-block; margin-left:8px; font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; background:rgba(124,58,237,0.12); color:var(--primary); vertical-align:middle; }
+.choice-tag.common { background:rgba(16,185,129,0.15); color:#065F46; }
+
+/* 토스트 */
+.toast {
+    position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px);
+    background:rgba(31,41,55,0.95); color:#fff; padding:14px 28px; border-radius:14px;
+    font-size:15px; font-weight:700; z-index:10000; opacity:0; transition:all 0.3s;
+    max-width:90%; text-align:center;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* 모달 */
+.modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
+    z-index:9000; align-items:center; justify-content:center; padding:20px;
+}
+.modal-overlay.show { display:flex; }
+.modal-content {
+    background:#fff; border-radius:20px; padding:28px; max-width:400px;
+    width:100%; text-align:center; animation:fadeIn 0.2s;
+}
+.modal-icon { font-size:48px; margin-bottom:12px; }
+.modal-message { font-size:16px; line-height:1.6; margin-bottom:20px; color:var(--text); }
+.modal-buttons { display:flex; gap:10px; justify-content:center; }
+
+/* 감정 가계도 */
+.emotion-root {
+    display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0;
+}
+.emotion-root-btn {
+    padding:20px; border-radius:16px; text-align:center; cursor:pointer;
+    border:3px solid transparent; transition:all 0.3s; font-weight:900; font-size:16px;
+    font-family:'Noto Sans KR',sans-serif;
+}
+.emotion-root-btn:hover { transform:scale(1.03); }
+.emotion-root-btn.active { border-color:var(--primary); transform:scale(1.05); box-shadow:0 4px 15px rgba(0,0,0,0.1); }
+
+.emotion-mid {
+    display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; justify-content:center;
+}
+.emotion-mid-btn {
+    padding:10px 16px; border-radius:12px; cursor:pointer; border:2px solid #E5E7EB;
+    background:#fff; transition:all 0.2s; font-weight:700; font-size:15px;
+    font-family:'Noto Sans KR',sans-serif;
+}
+.emotion-mid-btn:hover { border-color:var(--primary-light); }
+.emotion-mid-btn.active { border-color:var(--primary); background:rgba(124,58,237,0.08); }
+
+.emotion-detail-card {
+    background:#fff; border-radius:16px; padding:20px; margin:12px 0;
+    border:2px solid #E5E7EB; animation:fadeIn 0.3s;
+}
+.emotion-child-grid { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+.emotion-child-btn {
+    padding:8px 14px; border-radius:10px; cursor:pointer; border:2px solid #E5E7EB;
+    background:#fff; transition:all 0.2s; font-weight:700; font-size:14px;
+    font-family:'Noto Sans KR',sans-serif;
+}
+.emotion-child-btn:hover { border-color:var(--primary-light); background:rgba(124,58,237,0.04); }
+.emotion-child-btn.collected { border-color:var(--success); background:rgba(16,185,129,0.08); }
+.emotion-child-btn.collected::before { content:'✓ '; color:var(--success); }
+.emotion-child-btn.just-collected { animation:collectSparkle 0.6s ease-out; }
+@keyframes collectSparkle {
+    0% { transform:scale(1); box-shadow:0 0 0 rgba(16,185,129,0); }
+    50% { transform:scale(1.1); box-shadow:0 0 20px rgba(16,185,129,0.5); }
+    100% { transform:scale(1); box-shadow:0 0 0 rgba(16,185,129,0); }
+}
+
+/* 게임 */
+.game-progress { display:flex; gap:4px; margin:12px 0; }
+.game-dot {
+    width:28px; height:28px; border-radius:50%; background:#E5E7EB; display:flex;
+    align-items:center; justify-content:center; font-size:12px; font-weight:900;
+    transition:all 0.3s;
+}
+.game-dot.correct { background:var(--success); color:#fff; }
+.game-dot.diff { background:#CBD5E1; color:#334155; }
+.game-dot.current { background:var(--primary); color:#fff; animation:pulse 1s infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+
+.game-situation {
+    background:linear-gradient(135deg,#FEF3C7,#FDE68A); border-radius:16px;
+    padding:20px; margin:16px 0; border:2px solid #F59E0B;
+}
+.game-feedback {
+    padding:16px; border-radius:14px; margin:12px 0; font-size:15px;
+    animation:fadeIn 0.3s;
+}
+.game-feedback.correct { background:rgba(16,185,129,0.1); border:2px solid var(--success); color:#065F46; }
+.game-feedback.similar { background:rgba(245,158,11,0.1); border:2px solid var(--warning); color:#92400E; }
+
+/* 도감 */
+.dex-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:12px 0; }
+.dex-item {
+    padding:10px 6px; border-radius:12px; text-align:center; font-size:13px;
+    font-weight:700; border:2px solid #E5E7EB; background:#fff;
+    transition:all 0.2s; cursor:pointer;
+}
+.dex-item.collected { border-color:var(--success); background:rgba(16,185,129,0.05); }
+.dex-item.locked { opacity:0.4; }
+.dex-item .dex-emoji { font-size:24px; display:block; margin-bottom:4px; }
+
+/* 처방전 */
+.prescription {
+    background:linear-gradient(135deg,#F0FDF4,#DCFCE7); border-radius:16px;
+    padding:20px; border:2px solid var(--success); margin:16px 0;
+}
+
+/* 탭 */
+.tab-bar { display:flex; gap:4px; margin-bottom:16px; flex-wrap:wrap; }
+.tab-btn {
+    flex:1; min-width:70px; padding:10px 8px; border-radius:10px; border:none;
+    cursor:pointer; font-size:13px; font-weight:700; background:#E5E7EB;
+    color:var(--text-light); transition:all 0.2s; font-family:'Noto Sans KR',sans-serif;
+}
+.tab-btn.active { background:var(--primary); color:#fff; }
+.tab-content { display:none; }
+.tab-content.active { display:block; animation:fadeIn 0.2s; }
+
+/* 대시보드 차트 */
+.chart-bar-container { margin:8px 0; }
+.chart-bar-label { font-size:14px; font-weight:700; margin-bottom:4px; }
+.chart-bar-track { height:28px; background:#E5E7EB; border-radius:8px; overflow:hidden; position:relative; }
+.chart-bar-fill { height:100%; border-radius:8px; transition:width 0.5s; display:flex; align-items:center; padding-left:8px; color:#fff; font-size:13px; font-weight:900; }
+
+/* 인쇄 */
+@media print {
+    body * { visibility:hidden; }
+    #dashboard-content, #dashboard-content * { visibility:visible; }
+    #dashboard-content { position:absolute; left:0; top:0; width:100%; }
+    .btn,.nav-buttons,.tab-bar,#toast,.modal-overlay { display:none !important; }
+    .card { break-inside:avoid; box-shadow:none; border:1px solid #ddd; }
+}
+
+/* 스토리 카드 */
+.story-card {
+    background:linear-gradient(135deg,#EDE9FE,#F5F3FF); border-radius:16px;
+    padding:20px; margin:12px 0; border:2px solid var(--primary-light);
+    line-height:1.8; font-size:16px; font-weight:500;
+}
+.story-emoji { font-size:48px; text-align:center; margin-bottom:12px; }
+
+/* 레벨 표시 */
+.level-badge {
+    display:inline-block; padding:6px 16px; border-radius:20px; font-size:15px;
+    font-weight:900; color:#fff; margin-bottom:8px;
+}
+.level-1 { background:var(--success); }
+.level-2 { background:var(--warning); }
+.level-3 { background:var(--error); }
+
+/* 힌트 버튼 */
+.hint-btn {
+    padding:10px 16px; border:2px dashed var(--primary-light); border-radius:12px;
+    background:rgba(124,58,237,0.04); color:var(--primary); font-size:14px;
+    font-weight:700; cursor:pointer; width:100%; margin:8px 0; text-align:center;
+    font-family:'Noto Sans KR',sans-serif;
+}
+
+/* 스코어 */
+.score-display {
+    background:var(--gradient); color:#fff; border-radius:14px; padding:12px 20px;
+    text-align:center; font-size:20px; font-weight:900; margin:8px 0;
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ==================== 시작 화면 ==================== -->
+<div class="screen active" id="screen-start">
+    <div style="text-align:center; padding:20px 0;">
+        <div style="font-size:64px; margin-bottom:8px;">🏷️</div>
+        <h1 style="font-size:26px; color:var(--primary); margin-bottom:8px;">감정에도 이름이 있다</h1>
+        <p style="font-size:16px; color:var(--text-light); font-weight:500; margin-bottom:12px;">
+            "짜증나요" 안에 숨어있는<br>진짜 마음의 이름을 찾아보아요
+        </p>
+        <span class="badge">⏱️ 예상 소요시간: 약 15~20분</span>
+    </div>
+    <div class="card" style="text-align:center;">
+        <button class="btn btn-primary" onclick="showScreen('screen-login')">👩‍🏫 방 만들기 / 입장하기</button>
+        <button class="btn btn-secondary" onclick="startSoloMode()">🌟 혼자 체험하기</button>
+    </div>
+    <div class="privacy-notice">
+        🔐 <strong>안심하세요!</strong><br>
+        우리가 사용하는 방 코드는 오직 입장할 때만 필요한 숫자일 뿐,
+        여러분이 누구인지 알려주는 이름표가 아니랍니다.
+        입장 코드는 숫자로만 구성되어 있어 개인정보를 포함하지 않습니다.
+        닉네임을 만들 때 개인정보를 포함하지 않도록 만들어 주세요.
+        여러분의 익명성은 소중히 보호됩니다.
+    </div>
+</div>
+
+<!-- ==================== 로그인/입장 ==================== -->
+<div class="screen" id="screen-login">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-start')">← 처음으로</button>
+    </div>
+    <div style="text-align:center; margin-bottom:20px;">
+        <div style="font-size:48px;">🏷️</div>
+        <h2 style="color:var(--primary);">참여 방법 선택</h2>
+    </div>
+    <button class="btn btn-primary" onclick="showScreen('screen-create-room')" style="margin-bottom:8px;">👩‍🏫 방 만들기 (교사용)</button>
+    <button class="btn btn-secondary" onclick="showScreen('screen-teacher-join')" style="margin-bottom:8px;">🔑 교사로 접속하기</button>
+    <button class="btn btn-secondary" onclick="showScreen('screen-student-join')">🧒 학생으로 참여하기</button>
+    <div class="privacy-notice">
+        🔐 <strong>안심하세요!</strong> 닉네임에 실명이나 개인정보를 포함하지 않도록 만들어 주세요.
+    </div>
+</div>
+
+<!-- ==================== 방 만들기 ==================== -->
+<div class="screen" id="screen-create-room">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button>
+        <button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <h2 style="text-align:center; color:var(--primary); margin-bottom:16px;">👩‍🏫 방 만들기</h2>
+        <label style="font-size:15px;">교사 닉네임</label>
+        <input type="text" id="create-teacher-name" placeholder="예: 김선생님" maxlength="10" style="margin:6px 0 12px;">
+        <label style="font-size:15px;">관리자 비밀번호 (숫자 4자리)</label>
+        <input type="password" id="create-password" placeholder="••••" maxlength="4" inputmode="numeric" pattern="[0-9]*" style="margin:6px 0 16px;">
+        <button class="btn btn-primary" onclick="createRoom()">방 만들기</button>
+    </div>
+</div>
+
+<!-- ==================== 방 생성 완료 ==================== -->
+<div class="screen" id="screen-room-created">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:48px; margin-bottom:8px;">🎉</div>
+        <h2 style="color:var(--primary); margin-bottom:12px;">방이 만들어졌어요!</h2>
+        <p style="font-size:15px; color:var(--text-light); margin-bottom:16px;">아래 코드를 학생들에게 알려주세요</p>
+        <div style="background:var(--gradient); color:#fff; border-radius:16px; padding:20px; margin-bottom:12px;">
+            <div style="font-size:14px; opacity:0.9;">방 코드</div>
+            <div id="display-room-code" style="font-size:40px; font-weight:900; letter-spacing:8px;"></div>
+        </div>
+        <button class="btn btn-secondary" onclick="copyRoomCode()">📋 코드 복사하기</button>
+        <button class="btn btn-primary" onclick="goToDashboard()" style="margin-top:8px;">📊 대시보드로 이동</button>
+    </div>
+</div>
+
+<!-- ==================== 교사 접속 ==================== -->
+<div class="screen" id="screen-teacher-join">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button>
+        <button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <h2 style="text-align:center; color:var(--primary); margin-bottom:16px;">🔑 교사로 접속</h2>
+        <label style="font-size:15px;">방 코드 (6자리)</label>
+        <input type="text" id="teacher-room-code" placeholder="123456" maxlength="6" inputmode="numeric" style="margin:6px 0 12px;">
+        <label style="font-size:15px;">비밀번호</label>
+        <input type="password" id="teacher-password" placeholder="••••" maxlength="4" inputmode="numeric" style="margin:6px 0 16px;">
+        <button class="btn btn-primary" onclick="joinAsTeacher()">접속하기</button>
+    </div>
+</div>
+
+<!-- ==================== 학생 참여 ==================== -->
+<div class="screen" id="screen-student-join">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button>
+        <button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <h2 style="text-align:center; color:var(--primary); margin-bottom:16px;">🧒 학생으로 참여</h2>
+        <label style="font-size:15px;">방 코드 (6자리)</label>
+        <input type="text" id="student-room-code" placeholder="123456" maxlength="6" inputmode="numeric" style="margin:6px 0 12px;">
+        <label style="font-size:15px;">닉네임</label>
+        <input type="text" id="student-nickname" placeholder="예: 행복한곰" maxlength="10" style="margin:6px 0 16px;">
+        <button class="btn btn-primary" onclick="joinAsStudent()">참여하기</button>
+    </div>
+    <div class="privacy-notice">
+        🔐 닉네임에 실명이나 개인정보를 포함하지 않도록 만들어 주세요.
+    </div>
+</div>
+
+<!-- ==================== 스토리 화면 ==================== -->
+<div class="screen" id="screen-story">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <div style="text-align:center; margin-bottom:12px;">
+            <span id="story-welcome" style="font-size:18px; color:var(--primary);"></span>
+        </div>
+        <div class="story-card">
+            <div class="story-emoji">📖</div>
+            <p style="font-size:16px; font-weight:500; line-height:1.9; color:var(--text);">
+                국어 시간, 민준이는 교과서를 넘기다 갑자기 책을 덮었어요. 옆자리 친구가 무심코 던진 한마디에 얼굴이 굳고, 연필을 세게 쥐었어요.
+            </p>
+            <p style="font-size:16px; font-weight:500; line-height:1.9; color:var(--text); margin-top:12px;">
+                선생님이 조심스럽게 물었어요. <strong>"지금 어떤 기분이야?"</strong>
+            </p>
+            <p style="font-size:16px; font-weight:500; line-height:1.9; color:var(--text); margin-top:12px;">
+                민준이는 짧게 대답했어요.<br>
+                <em>"그냥 기분 나빠요."</em><br>
+                <em>"짜증나요."</em><br>
+                <em>"모르겠어요."</em>
+            </p>
+            <p style="font-size:16px; font-weight:500; line-height:1.9; color:var(--text); margin-top:12px;">
+                민준이의 말은 틀리지 않아요. 하지만 <strong>"기분 나쁨"</strong> 안에는 서운함도, 억울함도, 부끄러움도 숨어있을 수 있어요.
+                감정에 정확한 이름을 붙여주면, 그 마음이 조금 작아지고, 다룰 수 있게 된답니다. 마치 어두운 방에서 불을 켜면 무서웠던 그림자의 정체를 알 수 있는 것처럼요! 🔦
+            </p>
+        </div>
+        <div style="margin:16px 0;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:15px;">
+                <input type="checkbox" id="story-check" onchange="onStoryCheck()" style="width:20px; height:20px; min-height:20px;">
+                이야기를 다 읽었어요 ✅
+            </label>
+        </div>
+        <button class="btn btn-primary" id="story-next-btn" disabled onclick="goToMainContent()">다음으로 →</button>
+    </div>
+</div>
+
+<!-- ==================== 메인 학습 화면 ==================== -->
+<div class="screen" id="screen-main">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div style="text-align:center; margin-bottom:16px;">
+        <h2 style="color:var(--primary);">🏷️ 감정에도 이름이 있다</h2>
+        <p id="main-welcome" style="font-size:15px; color:var(--text-light);"></p>
+    </div>
+
+    <!-- 메인 탭 -->
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchMainTab('tree')">🌳 감정 가계도</button>
+        <button class="tab-btn" onclick="switchMainTab('factory')">🏭 이름표 공장</button>
+        <button class="tab-btn" onclick="switchMainTab('dex')">📖 감정 도감</button>
+    </div>
+
+    <!-- 탭1: 감정 가계도 -->
+    <div class="tab-content active" id="tab-tree">
+        <div class="card">
+            <h3 style="margin-bottom:8px;">🌳 감정 가계도 탐험</h3>
+            <p style="font-size:14px; color:var(--text-light); font-weight:500; margin-bottom:12px;">
+                감정에도 가족이 있어요! 큰 감정을 눌러 작은 감정들을 만나보세요.
+            </p>
+            <div class="emotion-root" id="emotion-root"></div>
+            <div id="emotion-mid-area"></div>
+            <div id="emotion-detail-area"></div>
+        </div>
+    </div>
+
+    <!-- 탭2: 이름표 공장 게임 -->
+    <div class="tab-content" id="tab-factory">
+        <div class="card">
+            <h3 style="margin-bottom:8px;">🏭 감정 이름표 공장</h3>
+            <p style="font-size:14px; color:var(--text-light); font-weight:500; margin-bottom:12px;">
+                상황을 읽고, 많은 친구들이 느낄 만한 감정 이름표를 붙여 보세요. 다른 감정을 골라도 괜찮아요. 왜 그런지 이야기해 줄게요.
+            </p>
+            <div id="game-area"></div>
+        </div>
+    </div>
+
+    <!-- 탭3: 감정 도감 -->
+    <div class="tab-content" id="tab-dex">
+        <div class="card">
+            <h3 style="margin-bottom:4px;">📖 내가 모은 감정 도감</h3>
+            <p id="dex-count" style="font-size:14px; color:var(--text-light); font-weight:500; margin-bottom:12px;"></p>
+            <div id="dex-grid" class="dex-grid"></div>
+        </div>
+    </div>
+
+    <!-- 마음 기록 버튼 -->
+    <div id="prescription-btn-area" style="text-align:center; margin-top:16px;">
+        <button class="btn btn-primary" onclick="openPrescription()">📝 감정 처방전 만들기 →</button>
+    </div>
+</div>
+
+<!-- ==================== 감정 처방전 ==================== -->
+<div class="screen" id="screen-prescription">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-main')">← 뒤로</button>
+        <button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div class="card">
+        <h2 style="text-align:center; color:var(--primary); margin-bottom:16px;">📝 나만의 감정 처방전</h2>
+        <p style="font-size:15px; color:var(--text-light); font-weight:500; text-align:center; margin-bottom:16px;">
+            오늘 새로 알게 된 감정에 처방전을 써 보아요!
+        </p>
+
+        <div style="background:rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.25); border-radius:12px; padding:14px; font-size:14px; font-weight:500; line-height:1.7; margin-bottom:16px;">
+            💡 <strong>이렇게 쓰면 좋아요</strong><br>
+            · 감정 이름은 오늘 도감에서 새로 만난 감정 중 하나로<br>
+            · 언제 느꼈는지는 한 장면처럼 자세히<br>
+            · 처방은 <strong>그때 기분이 조금 나아지게 해 준 것</strong>으로
+        </div>
+
+        <label style="font-size:15px;">오늘 발견한 감정 이름은?</label>
+        <input type="text" id="rx-emotion" placeholder="예: 서운함, 뿌듯함..." style="margin:6px 0 12px;">
+        <div id="rx-chips" style="margin-bottom:12px;"></div>
+
+        <label style="font-size:15px;">그 감정은 언제 느꼈어?</label>
+        <textarea id="rx-when" placeholder="예: 친구가 약속을 어겼을 때..." style="margin:6px 0 4px;"></textarea>
+        <div style="font-size:13px; color:var(--text-light); font-weight:500; margin-bottom:12px;">✏️ 예: "쉬는 시간에 친구들이 나만 빼고 이야기했을 때"</div>
+
+        <label style="font-size:15px;">그 감정이 들 때, 나를 위한 처방은?</label>
+        <textarea id="rx-cure" placeholder="예: 친구에게 솔직하게 말해보기..." style="margin:6px 0 4px;"></textarea>
+        <div style="font-size:13px; color:var(--text-light); font-weight:500; margin-bottom:16px;">✏️ 예: "숨을 길게 세 번 쉬고, 하고 싶은 말을 종이에 먼저 적어 보기"</div>
+
+        <button class="btn btn-primary" onclick="submitPrescription()">처방전 완성하기 ✨</button>
+    </div>
+</div>
+
+<!-- ==================== 완료 화면 ==================== -->
+<div class="screen" id="screen-complete">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="backToMain()">← 다시 탐험하기</button>
+        <button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:64px; margin-bottom:12px;">🎉</div>
+        <h2 style="color:var(--primary); margin-bottom:12px;">멋지게 해냈어요!</h2>
+        <div id="complete-summary"></div>
+        <div class="prescription" id="complete-prescription" style="display:none; text-align:left;"></div>
+        <div style="margin-top:16px; display:flex; flex-direction:column; gap:8px; align-items:center;">
+            <button class="btn btn-primary" onclick="backToMain()">🔄 도감 더 채우러 가기</button>
+            <button class="btn btn-secondary" onclick="retryFromComplete()">🏭 이름표 공장 다시 도전하기</button>
+            <button class="btn btn-secondary" onclick="downloadSoloResult()" id="solo-download-btn" style="display:none;">📄 내 결과 저장하기</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== 교사 대시보드 ==================== -->
+<div class="screen" id="screen-dashboard">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+        <button class="nav-btn" onclick="refreshDashboard()">🔄 새로고침</button>
+    </div>
+    <div style="text-align:center; margin-bottom:12px;">
+        <h2 style="color:var(--primary);">📊 교사 대시보드</h2>
+        <p style="font-size:14px; color:var(--text-light);">방 코드: <strong id="dash-room-code"></strong></p>
+    </div>
+
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchDashTab('overview')">📊 현황</button>
+        <button class="tab-btn" onclick="switchDashTab('detail')">📋 상세기록</button>
+        <button class="tab-btn" onclick="switchDashTab('export')">📥 내보내기</button>
+        <button class="tab-btn" onclick="switchDashTab('tts')">🔊 TTS</button>
+    </div>
+
+    <div id="dashboard-content">
+        <!-- 현황 탭 -->
+        <div class="tab-content active" id="dash-tab-overview">
+            <div class="card" id="dash-participation"></div>
+            <div class="card" id="dash-game-stats"></div>
+            <div class="card" id="dash-distribution"></div>
+            <div class="card" id="dash-emotion-cloud"></div>
+        </div>
+
+        <!-- 상세기록 탭 -->
+        <div class="tab-content" id="dash-tab-detail">
+            <div class="card" id="dash-student-list"></div>
+        </div>
+
+        <!-- 내보내기 탭 -->
+        <div class="tab-content" id="dash-tab-export">
+            <div class="card" style="text-align:center;">
+                <h3 style="margin-bottom:16px;">📥 데이터 내보내기</h3>
+                <button class="btn btn-primary" onclick="downloadExcel()" style="margin-bottom:8px;">📊 엑셀 다운로드</button>
+                <button class="btn btn-secondary" onclick="downloadPDF()">📄 PDF 다운로드</button>
+            </div>
+        </div>
+
+        <!-- TTS 탭 -->
+        <div class="tab-content" id="dash-tab-tts">
+            <div class="card">
+                <h3 style="margin-bottom:12px;">🔊 음성 읽기 (교사 전용)</h3>
+                <div id="tts-sections"></div>
+                <button class="btn btn-small btn-danger" onclick="stopSpeaking()" style="margin-top:8px;">⏹️ 정지</button>
+            </div>
+        </div>
+    </div>
+
+    <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:12px; padding:14px; margin-top:16px; text-align:center;">
+        <p style="font-size:14px; color:var(--error);">⚠️ 수업이 끝나면 데이터 초기화를 눌러주세요. 학생 기록만 지워지고 방 코드는 그대로 쓸 수 있어요. (방은 30일 후 자동 삭제)</p>
+        <button class="btn btn-small btn-danger" onclick="confirmReset()" style="margin-top:8px;">🗑️ 데이터 초기화</button>
+    </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- 커스텀 확인 모달 -->
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal-content">
+        <div class="modal-icon">⚠️</div>
+        <div class="modal-message" id="confirmMessage"></div>
+        <div class="modal-buttons">
+            <button class="btn btn-small btn-secondary" onclick="closeConfirmModal()">취소</button>
+            <button class="btn btn-small btn-danger" id="confirmOkBtn">확인</button>
+        </div>
+    </div>
+</div>
+
+<!-- 힌트 모달 -->
+<div class="modal-overlay" id="hintModal">
+    <div class="modal-content" style="text-align:left;">
+        <div id="hintContent"></div>
+        <button class="btn btn-primary btn-small" onclick="closeHintModal()" style="margin-top:12px; width:100%;">확인</button>
+    </div>
+</div>
+
+<!-- 도감 상세 모달 -->
+<div class="modal-overlay" id="dexDetailModal">
+    <div class="modal-content" style="text-align:left;">
+        <div id="dexDetailContent"></div>
+        <button class="btn btn-primary btn-small" onclick="closeDexDetail()" style="margin-top:12px; width:100%;">확인</button>
+    </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<!-- ==================== JavaScript ==================== -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+// ═══════════════════════════════════════════════════════
+// 🔥 Firebase 초기화 - emo-dex 프로젝트 고정
+// ═══════════════════════════════════════════════════════
+const firebaseConfig = {
+    apiKey: "AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s",
+    authDomain: "emo-dex.firebaseapp.com",
+    projectId: "emo-dex",
+    storageBucket: "emo-dex.firebasestorage.app",
+    messagingSenderId: "994736049700",
+    appId: "1:994736049700:web:8233fa7b68cd6e0cccd2b1",
+    measurementId: "G-6YLB5C6VNR"
+};
+const APP_ID = 'sel-lesson-02';
+
+let fbApp, auth, db;
+let useFirebase = false;
+let currentUser = null;
+
+async function initFirebase() {
+    try {
+        fbApp = initializeApp(firebaseConfig);
+        auth = getAuth(fbApp);
+        db = getFirestore(fbApp);
+        await Promise.race([
+            new Promise((resolve) => {
+                onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; resolve(user); } });
+                signInAnonymously(auth).catch(() => resolve(null));
+            }),
+            new Promise((_, rej) => setTimeout(() => rej('timeout'), 5000))
+        ]);
+        useFirebase = !!currentUser;
+        console.log(useFirebase ? '[DB] ☁️ Firebase 온라인' : '[DB] 💾 로컬 모드');
+    } catch(e) {
+        useFirebase = false;
+        console.log('[DB] 💾 로컬 메모리 모드');
+    }
+}
+
+let authReady = initFirebase();
+const localDB = {};
+
+function roomRef(code) { return doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code); }
+function studentRef(code, nick) { return doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students', nick); }
+function studentsCol(code) { return collection(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students'); }
+
+const DB = {
+    async saveRoom(code, data) {
+        if (useFirebase) { await setDoc(roomRef(code), data, { merge: true }); }
+        else { localDB['room_' + code] = { ...(localDB['room_' + code] || {}), ...data }; }
+    },
+    async getRoom(code) {
+        if (useFirebase) { const s = await getDoc(roomRef(code)); return s.exists() ? s.data() : null; }
+        else { return localDB['room_' + code] || null; }
+    },
+    async saveStudent(code, nick, data) {
+        if (useFirebase) { await setDoc(studentRef(code, nick), data, { merge: true }); }
+        else {
+            if (!localDB['stu_' + code]) localDB['stu_' + code] = {};
+            localDB['stu_' + code][nick] = { ...(localDB['stu_' + code]?.[nick] || {}), ...data };
+        }
+    },
+    async getStudent(code, nick) {
+        if (useFirebase) { const s = await getDoc(studentRef(code, nick)); return s.exists() ? s.data() : null; }
+        else { return localDB['stu_' + code]?.[nick] || null; }
+    },
+    async getAllStudents(code) {
+        if (useFirebase) {
+            const snap = await getDocs(studentsCol(code));
+            const r = {}; snap.forEach(d => r[d.id] = d.data()); return r;
+        } else { return localDB['stu_' + code] || {}; }
+    },
+    async deleteRoom(code) {
+        if (useFirebase) {
+            const snap = await getDocs(studentsCol(code));
+            const ps = []; snap.forEach(d => ps.push(deleteDoc(d.ref)));
+            await Promise.all(ps);
+            await deleteDoc(roomRef(code));
+        } else { delete localDB['room_' + code]; delete localDB['stu_' + code]; }
+    },
+    // ⭐ 학생 기록만 지우고 방 문서(비밀번호·만료일)는 남긴다 — 같은 방 코드로 다음 반 수업을 이어가기 위함
+    async deleteStudentsOnly(code) {
+        if (useFirebase) {
+            try {
+                const snap = await getDocs(studentsCol(code));
+                const ps = []; snap.forEach(d => ps.push(deleteDoc(d.ref)));
+                await Promise.all(ps);
+                return true;
+            } catch (e) { console.log('[DB] deleteStudentsOnly fail'); return false; }
+        }
+        if (localDB['stu_' + code]) localDB['stu_' + code] = {};
+        return true;
+    },
+    onStudentsChange(code, cb) {
+        if (useFirebase) {
+            return onSnapshot(studentsCol(code), (snap) => {
+                const r = {}; snap.forEach(d => r[d.id] = d.data()); cb(r);
+            });
+        } else {
+            const iv = setInterval(() => cb(localDB['stu_' + code] || {}), 2000);
+            return () => clearInterval(iv);
+        }
+    }
+};
+
+// ═══════════════════════════════════════════════════════
+// 상태 변수
+// ═══════════════════════════════════════════════════════
+let isSoloMode = false;
+let soloData = {};
+let currentRoomCode = '';
+let currentNickname = '';
+let isTeacher = false;
+let dashboardData = {};
+let unsubscribe = null;
+
+// 게임 상태
+let gameLevel = 1;
+let gameQuestion = 0;
+let gameScore = 0;
+let bestScore = 0;
+let gameStreak = 0;
+let gameResults = [];
+let collectedEmotions = new Set();
+let currentGameQuestions = { 1: [], 2: [], 3: [] };
+let seenQuestions = { 1: new Set(), 2: new Set(), 3: new Set() };
+let totalGamesPlayed = 0;
+
+// ═══════════════════════════════════════════════════════
+// 감정 데이터
+// ═══════════════════════════════════════════════════════
+const EMOTIONS = {
+    sad: {
+        name: '슬픔', emoji: '😢', color: '#74B9FF', bg: '#EBF5FF',
+        children: {
+            sorry: { name: '서운함', emoji: '😞', feeling: '기대와 달라서 마음이 아픈 느낌', situation: '친구가 약속을 어겼을 때',
+                children: { disappointed: { name: '섭섭함', emoji: '😔', feeling: '가까운 사람이 내 마음을 몰라줄 때', situation: '친구가 나만 빼고 놀기로 했을 때',
+                        body: '가슴이 답답해지고 말수가 줄어들어요', situation2: '내 생일을 친구가 깜빡 잊었을 때', care: '"나 조금 섭섭했어"라고 마음을 말로 꺼내 보기' },
+                    betrayed: { name: '배신감', emoji: '💔', feeling: '믿었던 사람이 나를 속인 느낌', situation: '비밀을 지켜주기로 한 친구가 다른 애한테 말했을 때',
+                        body: '얼굴이 화끈거리고 심장이 빨리 뛰어요', situation2: '함께 지키기로 한 약속을 혼자만 어겼을 때', care: '믿을 수 있는 어른이나 다른 친구에게 그 일을 이야기하기' },
+                    letdown: { name: '실망', emoji: '😩', feeling: '기대했던 것이 이루어지지 않은 느낌', situation: '열심히 준비한 발표가 잘 안됐을 때',
+                        body: '어깨가 축 처지고 힘이 빠져요', situation2: '기대하던 대회 결과가 생각과 달랐을 때', care: '잘한 부분 한 가지를 찾아 스스로에게 말해 주기' }}},
+            lonely: { name: '외로움', emoji: '🥺', feeling: '혼자 남겨진 것 같은 느낌', situation: '쉬는 시간에 같이 놀 친구가 없을 때',
+                children: { forlorn: { name: '쓸쓸함', emoji: '🌧️', feeling: '주변이 텅 빈 것처럼 허전한 느낌', situation: '집에 아무도 없는 날',
+                        body: '몸이 조금 춥게 느껴지고 조용해져요', situation2: '친구들이 모두 학원에 가고 나만 남았을 때', care: '좋아하는 음악을 틀거나 가족에게 먼저 연락해 보기' },
+                    isolated: { name: '고독함', emoji: '🏝️', feeling: '세상에 나만 혼자인 것 같은 느낌', situation: '전학 와서 아무도 모르는 교실에 앉았을 때',
+                        body: '주변 소리가 멀게 들리고 말이 잘 안 나와요', situation2: '내가 좋아하는 것을 아무도 모를 때', care: '나와 비슷한 것을 좋아하는 친구를 한 명 찾아보기' },
+                    excluded: { name: '소외감', emoji: '👥', feeling: '나만 빠진 것 같은 느낌', situation: '친구들이 나만 모르는 이야기를 할 때',
+                        body: '눈을 어디에 둘지 몰라 고개를 숙이게 돼요', situation2: '모둠을 짤 때 마지막까지 남았을 때', care: '"나도 같이 하고 싶어"라고 한마디 건네 보기' }}},
+            empty: { name: '허무함', emoji: '💭', feeling: '아무 의미 없는 것 같은 느낌', situation: '열심히 했는데 결과가 없을 때',
+                children: { hollow: { name: '공허함', emoji: '🕳️', feeling: '마음에 구멍이 뚫린 것 같은 느낌', situation: '소중한 물건을 잃어버렸을 때',
+                        body: '배 속이 텅 빈 것처럼 허전해요', situation2: '오래 기다린 일이 끝나고 아무것도 안 남은 것 같을 때', care: '작은 일 하나를 끝내 보며 마음을 다시 채우기' },
+                    helpless: { name: '무력감', emoji: '😶', feeling: '내가 할 수 있는 게 없다는 느낌', situation: '아무리 노력해도 성적이 안 오를 때',
+                        body: '손발이 무겁고 아무것도 하기 싫어져요', situation2: '아무리 말해도 상황이 하나도 바뀌지 않을 때', care: '아주 작은 한 걸음(딱 5분만 해 보기)부터 시작하기' },
+                    deflated: { name: '허탈함', emoji: '😮‍💨', feeling: '기대가 한순간에 무너진 느낌', situation: '기다리던 소풍이 비 때문에 취소됐을 때',
+                        body: '한숨이 나오고 온몸에 힘이 빠져요', situation2: '준비한 발표가 시간이 없어 취소됐을 때', care: '준비하며 배운 것을 적어 두고 다음 기회에 쓰기' }}}
+        }
+    },
+    angry: {
+        name: '화남', emoji: '😠', color: '#FF6B6B', bg: '#FFF0F0',
+        children: {
+            annoyed: { name: '짜증남', emoji: '😤', feeling: '사소한 것에 신경이 쓰이는 느낌', situation: '동생이 자꾸 방에 들어올 때',
+                children: { bothered: { name: '귀찮음', emoji: '😒', feeling: '하기 싫은 일을 해야 할 때의 느낌', situation: '숙제하기 싫은데 해야 할 때',
+                        body: '몸이 무겁고 자꾸 미루게 돼요', situation2: '방 정리를 해야 하는데 손이 안 갈 때', care: '타이머를 3분만 맞추고 일단 시작해 보기' },
+                    frustrated: { name: '답답함', emoji: '😖', feeling: '뜻대로 안 돼서 갑갑한 느낌', situation: '설명해도 상대방이 이해를 못 할 때',
+                        body: '가슴이 꽉 막힌 것 같고 목소리가 커져요', situation2: '문제를 여러 번 풀어도 답이 안 나올 때', care: '잠시 멈추고 물 한 잔 마신 뒤 다시 보기' },
+                    irritated: { name: '성가심', emoji: '🙄', feeling: '계속 방해받는 느낌', situation: '집중하는데 누가 자꾸 말을 걸 때',
+                        body: '눈살이 찌푸려지고 어깨가 올라가요', situation2: '옆에서 계속 책상을 두드릴 때', care: '"조금만 조용히 해 줄래?"라고 부드럽게 부탁하기' }}},
+            unfair: { name: '억울함', emoji: '😭', feeling: '잘못하지 않았는데 탓을 들을 때의 느낌', situation: '내가 안 했는데 내 탓이라고 할 때',
+                children: { indignant: { name: '분함', emoji: '💢', feeling: '부당한 대우를 받아 화가 나는 느낌', situation: '규칙을 지켰는데 벌을 받았을 때',
+                        body: '주먹에 힘이 들어가고 눈물이 핑 돌아요', situation2: '내가 한 일을 다른 사람이 했다고 할 때', care: '무슨 일이 있었는지 순서대로 적어서 차분히 설명하기' },
+                    resentful: { name: '원망', emoji: '😾', feeling: '누군가가 원인이라고 느끼는 감정', situation: '부모님이 동생만 편들 때',
+                        body: '속이 부글거리고 그 사람이 자꾸 떠올라요', situation2: '나만 계속 심부름을 하게 될 때', care: '"나는 이럴 때 서운해"라고 나를 주어로 말해 보기' },
+                    upset: { name: '속상함', emoji: '😢', feeling: '마음이 아프고 울고 싶은 느낌', situation: '열심히 만든 작품이 망가졌을 때',
+                        body: '코끝이 시큰하고 목이 메어요', situation2: '아끼던 물건을 잃어버렸을 때', care: '울어도 괜찮다고 스스로에게 말해 주기' }}},
+            furious: { name: '분노', emoji: '🔥', feeling: '참을 수 없이 화가 치밀어 오르는 느낌', situation: '누군가 일부러 나를 괴롭힐 때',
+                children: { rage: { name: '격분', emoji: '💥', feeling: '화가 폭발하는 느낌', situation: '소중한 것을 일부러 부순 사람을 봤을 때',
+                        body: '얼굴이 뜨거워지고 숨이 가빠져요', situation2: '오랫동안 참아 온 일이 또 반복될 때', care: '그 자리에서 열 걸음 걸어 나와 숨을 길게 열 번 쉬기' },
+                    hatred: { name: '증오', emoji: '⚡', feeling: '너무 싫어서 보기도 싫은 느낌', situation: '나를 계속 괴롭히는 사람이 있을 때',
+                        body: '몸이 굳고 그 사람 쪽을 보기도 싫어져요', situation2: '반복해서 놀림을 당했을 때', care: '혼자 견디지 말고 선생님이나 부모님께 꼭 알리기' },
+                    hostile: { name: '적개심', emoji: '🛡️', feeling: '상대가 나를 위협한다고 느끼는 감정', situation: '누군가 내 친구를 괴롭힐 때',
+                        body: '몸에 힘이 들어가고 잔뜩 경계하게 돼요', situation2: '누군가 내 물건을 함부로 다룰 때', care: '부딪치기 전에 한 발 물러나 도움을 요청하기' }}}
+        }
+    },
+    fear: {
+        name: '두려움', emoji: '😨', color: '#A29BFE', bg: '#F0EFFF',
+        children: {
+            anxious: { name: '불안함', emoji: '😰', feeling: '앞으로 나쁜 일이 일어날 것 같은 느낌', situation: '시험 전날 밤',
+                children: { nervous: { name: '초조함', emoji: '😬', feeling: '마음이 안정되지 않고 조급한 느낌', situation: '발표 순서를 기다릴 때',
+                        body: '손에 땀이 나고 다리를 떨게 돼요', situation2: '내 차례가 다가와 시계를 자꾸 볼 때', care: '숨을 4초 들이쉬고 6초 내쉬기를 세 번 하기' },
+                    tense: { name: '긴장됨', emoji: '🫣', feeling: '몸과 마음이 단단하게 굳은 느낌', situation: '처음 만나는 사람들 앞에 설 때',
+                        body: '어깨와 목이 뻣뻣해지고 입이 말라요', situation2: '중요한 시합 직전에 서 있을 때', care: '어깨를 크게 올렸다가 툭 떨어뜨리기' },
+                    restless: { name: '조마조마', emoji: '🫨', feeling: '결과가 어떨지 계속 신경 쓰이는 느낌', situation: '시험 결과 발표를 기다릴 때',
+                        body: '가슴이 콩닥거리고 안절부절못해요', situation2: '통지표를 받기 바로 직전일 때', care: '기다리는 동안 좋아하는 일에 손을 움직여 보기' }}},
+            worried: { name: '걱정됨', emoji: '😟', feeling: '나쁜 일이 생길까봐 마음이 무거운 느낌', situation: '아픈 가족이 있을 때',
+                children: { concern: { name: '근심', emoji: '🤔', feeling: '해결이 안 되는 문제가 마음에 걸리는 느낌', situation: '친구가 학교에 안 나올 때',
+                        body: '머릿속이 복잡하고 잠이 잘 안 와요', situation2: '친구가 며칠째 기운이 없어 보일 때', care: '지금 내가 할 수 있는 일 한 가지만 정해 보기' },
+                    apprehension: { name: '염려', emoji: '💭', feeling: '누군가에 대해 걱정하는 마음', situation: '부모님이 다투셨을 때',
+                        body: '마음이 자꾸 그쪽으로 향하고 한숨이 나와요', situation2: '가족이 병원에 갔다는 말을 들었을 때', care: '"괜찮아?"라고 안부를 먼저 물어보기' },
+                    doubt: { name: '우려', emoji: '⚠️', feeling: '좋지 않은 방향으로 갈까봐 불안한 느낌', situation: '새 학기에 반이 바뀔 때',
+                        body: '생각이 자꾸 앞서가고 배가 살살 아파요', situation2: '처음 가 보는 곳에 혼자 가야 할 때', care: '걱정되는 일을 적고, 진짜 그럴지 옆에 함께 써 보기' }}},
+            scared: { name: '무서움', emoji: '😱', feeling: '위험하다고 느껴 피하고 싶은 느낌', situation: '어두운 길을 혼자 걸을 때',
+                children: { terror: { name: '공포', emoji: '👻', feeling: '몸이 얼어붙는 느낌', situation: '무서운 영화를 봤을 때',
+                        body: '몸이 얼어붙고 소리가 잘 안 나와요', situation2: '캄캄한 곳에 갑자기 혼자 남았을 때', care: '밝은 곳으로 나와 믿는 사람 곁에 있기' },
+                    creepy: { name: '섬뜩함', emoji: '🥶', feeling: '소름이 돋는 느낌', situation: '이상한 소리가 들렸을 때',
+                        body: '팔에 소름이 돋고 등이 서늘해져요', situation2: '아무도 없는 집에서 삐걱 소리가 났을 때', care: '불을 켜고 소리의 정체를 함께 확인해 보기' },
+                    chilling: { name: '오싹함', emoji: '😵', feeling: '등골이 서늘해지는 느낌', situation: '무서운 이야기를 들었을 때',
+                        body: '등골이 서늘하고 자꾸 뒤를 돌아보게 돼요', situation2: '밤에 무서운 영상을 본 뒤 자려고 누웠을 때', care: '자기 전에는 편안한 이야기나 음악으로 바꾸기' }}}
+        }
+    },
+    joy: {
+        name: '기쁨', emoji: '😊', color: '#FDCB6E', bg: '#FFFBEB',
+        children: {
+            happy: { name: '행복함', emoji: '🥰', feeling: '마음이 따뜻하고 좋은 느낌', situation: '가족과 함께 좋은 시간을 보낼 때',
+                children: { delighted: { name: '즐거움', emoji: '😆', feeling: '신나고 재미있는 느낌', situation: '좋아하는 친구들과 놀 때',
+                        body: '입꼬리가 올라가고 몸이 가벼워져요', situation2: '체육 시간에 좋아하는 경기를 할 때', care: '이 순간을 기억하도록 한 문장으로 적어 두기' },
+                    cheerful: { name: '유쾌함', emoji: '😁', feeling: '기분 좋게 웃음이 나는 느낌', situation: '재미있는 동영상을 봤을 때',
+                        body: '웃음이 터지고 목소리가 커져요', situation2: '친구와 서로 웃긴 이야기를 주고받을 때', care: '그 재미를 다른 친구에게도 나눠 주기' },
+                    excited: { name: '신남', emoji: '🤩', feeling: '기대되고 들뜨는 느낌', situation: '소풍 전날',
+                        body: '심장이 두근거리고 가만히 있기 힘들어요', situation2: '기다리던 여행 가방을 싸는 밤에', care: '기대되는 것 세 가지를 적어 보기' }}},
+            proud: { name: '뿌듯함', emoji: '💪', feeling: '잘 해냈다는 만족감', situation: '어려운 문제를 혼자 풀었을 때',
+                children: { accomplished: { name: '자랑스러움', emoji: '🏆', feeling: '나 자신이 대견한 느낌', situation: '대회에서 상을 탔을 때',
+                        body: '가슴이 펴지고 저절로 미소가 지어져요', situation2: '오래 미뤄 둔 일을 드디어 끝냈을 때', care: '스스로에게 "잘했어"라고 소리 내어 말해 주기' },
+                    fulfilled: { name: '보람', emoji: '🌟', feeling: '의미 있는 일을 했다는 뿌듯함', situation: '후배를 도와줬을 때',
+                        body: '마음이 따뜻해지고 든든한 기분이 들어요', situation2: '동생에게 문제 푸는 법을 알려줬을 때', care: '내가 누구에게 도움이 되었는지 떠올려 보기' },
+                    achieved: { name: '성취감', emoji: '🎯', feeling: '목표를 이뤘다는 기쁨', situation: '오래 연습한 피아노곡을 완주했을 때',
+                        body: '온몸에 힘이 나고 다음이 기대돼요', situation2: '목표한 만큼 책을 다 읽었을 때', care: '다음 목표를 조금만 더 크게 정해 보기' }}},
+            grateful: { name: '감사함', emoji: '🙏', feeling: '고마운 마음이 가득한 느낌', situation: '힘들 때 누군가 도와줬을 때',
+                children: { thankful: { name: '고마움', emoji: '💝', feeling: '따뜻한 마음이 전해지는 느낌', situation: '선생님이 칭찬해 주셨을 때',
+                        body: '마음이 몽글몽글하고 눈이 마주치면 웃게 돼요', situation2: '친구가 내 준비물을 대신 챙겨 줬을 때', care: '"고마워"를 그날 안에 직접 전하기' },
+                    moved: { name: '감격', emoji: '🥹', feeling: '감동으로 눈물이 날 것 같은 느낌', situation: '졸업식에서 상을 받았을 때',
+                        body: '코끝이 찡하고 눈물이 고여요', situation2: '가족이 나를 위해 준비한 편지를 읽을 때', care: '그 마음을 편지나 그림으로 답해 보기' },
+                    overwhelmed: { name: '벅참', emoji: '✨', feeling: '기쁨이 넘쳐서 가슴이 벅찬 느낌', situation: '응원하던 팀이 우승했을 때',
+                        body: '가슴이 꽉 차고 숨이 크게 쉬어져요', situation2: '오래 연습한 무대가 끝나고 박수를 받을 때', care: '함께한 사람들에게 이 기분을 나눠 말해 주기' }}}
+        }
+    }
+};
+
+// 세부감정(36개) 색인 — 도감 수집 대상은 이 목록으로만 판정한다
+const DETAIL_INFO = {};
+Object.entries(EMOTIONS).forEach(([rk, root]) => {
+    Object.entries(root.children).forEach(([mk, mid]) => {
+        Object.entries(mid.children).forEach(([ck, child]) => {
+            DETAIL_INFO[ck] = { rootKey: rk, midKey: mk, name: child.name, emoji: child.emoji };
+        });
+    });
+});
+const DETAIL_KEYS = Object.keys(DETAIL_INFO);
+const DETAIL_TOTAL = DETAIL_KEYS.length;
+
+// 게임 문제 데이터 — 레벨별 문제 풀(pool). 한 판에는 이 중 5문제가 무작위로 뽑힌다.
+const GAME_QUESTIONS = {
+    // why: 그 상황에서 그 감정이 흔한 까닭 한 줄 / alt: 다른 보기를 골랐을 때 "그럴 수도 있는 이유" 한 줄
+    1: [ // 레벨 1: 기본감정 구분
+        { situation: '😊 친구가 생일 선물을 깜짝으로 준비해줬어요!', answer: 'joy', options: ['sad','angry','fear','joy'],
+          why: '생각지도 못한 선물은 마음을 환하게 해요.',
+          alt: { sad: '갑자기 받은 선물이 부담스러워 마음이 가라앉을 수도 있어요.', angry: '깜짝 놀라게 해서 살짝 화가 날 수도 있어요.', fear: '어떻게 답해야 할지 몰라 두려울 수도 있어요.' } },
+        { situation: '😢 좋아하는 강아지가 이사를 가버렸어요.', answer: 'sad', options: ['sad','angry','fear','joy'],
+          why: '소중한 존재와 헤어지면 마음이 텅 비어요.',
+          alt: { angry: '아무 말도 없이 떠나서 화가 날 수도 있어요.', fear: '다시 못 볼까 봐 두려울 수도 있어요.', joy: '좋은 집으로 갔다면 다행이다 싶어 기쁠 수도 있어요.' } },
+        { situation: '😠 동생이 내 일기장을 몰래 읽었어요!', answer: 'angry', options: ['sad','angry','fear','joy'],
+          why: '내 비밀이 허락 없이 열렸으니까요.',
+          alt: { sad: '믿었던 동생이라 슬플 수도 있어요.', fear: '비밀이 퍼질까 봐 두려울 수도 있어요.', joy: '동생이 나한테 관심이 있구나 싶어 웃음이 날 수도 있어요.' } },
+        { situation: '😨 내일이 전학 첫날이에요. 아무도 모르는 교실에 가야 해요.', answer: 'fear', options: ['sad','angry','fear','joy'],
+          why: '아는 사람이 아무도 없는 교실은 처음이니까요.',
+          alt: { joy: '새 친구를 만날 생각에 설레어 기쁨을 고를 수도 있어요.', sad: '정든 친구들과 헤어진 슬픔이 아직 남아 있을 수도 있어요.', angry: '갑자기 학교를 옮기게 되어 화가 날 수도 있어요.' } },
+        { situation: '😊 반에서 내가 만든 작품이 선정되었어요!', answer: 'joy', options: ['sad','angry','fear','joy'],
+          why: '애쓴 것을 알아봐 주면 마음이 벅차요.',
+          alt: { fear: '모두 앞에 나가야 할까 봐 두려울 수도 있어요.', sad: '친한 친구 작품이 떨어졌다면 마음이 무거울 수도 있어요.', angry: '더 잘한 친구가 있는데 왜 나일까 싶어 불편할 수도 있어요.' } },
+        { situation: '😢 정성껏 키우던 화분이 하루 만에 시들어 버렸어요.', answer: 'sad', options: ['sad','angry','fear','joy'],
+          why: '정성을 들인 것이 사라지면 마음이 축 처져요.',
+          alt: { angry: '내가 뭘 잘못했나 싶어 화가 날 수도 있어요.', fear: '다른 화분도 그렇게 될까 봐 걱정될 수도 있어요.', joy: '새 씨앗을 심을 기회라고 생각하면 설렐 수도 있어요.' } },
+        { situation: '😠 급식 줄을 서 있는데 누가 앞으로 쓱 끼어들었어요.', answer: 'angry', options: ['sad','angry','fear','joy'],
+          why: '순서를 지킨 사람이 손해를 보니까요.',
+          alt: { sad: '나는 눈에 안 보이나 싶어 서글플 수도 있어요.', fear: '말했다가 싸움이 날까 봐 두려울 수도 있어요.', joy: '많이 배고팠나 보다 하고 웃어넘길 수도 있어요.' } },
+        { situation: '😨 밤에 혼자 집에 있는데 창밖에서 이상한 소리가 났어요.', answer: 'fear', options: ['sad','angry','fear','joy'],
+          why: '무슨 소리인지 모르는 채 혼자 있으니까요.',
+          alt: { angry: '잠을 깨워서 화가 날 수도 있어요.', sad: '혼자라는 게 쓸쓸할 수도 있어요.', joy: '무슨 일인지 궁금해서 가슴이 두근거릴 수도 있어요.' } },
+        { situation: '😊 한 달 동안 연습한 리코더 곡을 실수 없이 끝까지 불었어요.', answer: 'joy', options: ['sad','angry','fear','joy'],
+          why: '한 달의 연습이 결실을 맺었으니까요.',
+          alt: { fear: '다음에도 잘해야 할 것 같아 걱정될 수도 있어요.', sad: '연습이 끝나서 허전할 수도 있어요.', angry: '왜 이렇게 오래 걸렸나 싶어 답답할 수도 있어요.' } },
+        { situation: '😢 가장 친한 친구가 다음 달에 다른 학교로 전학을 가요.', answer: 'sad', options: ['sad','angry','fear','joy'],
+          why: '매일 보던 친구를 못 보게 되니까요.',
+          alt: { angry: '나한테 미리 말해 주지 않았다면 화가 날 수도 있어요.', fear: '혼자 남을까 봐 두려울 수도 있어요.', joy: '새 학교에서 잘 지내길 바라는 마음이 앞설 수도 있어요.' } },
+        { situation: '😠 내 책상에 누군가 낙서를 잔뜩 해 놓았어요.', answer: 'angry', options: ['sad','angry','fear','joy'],
+          why: '내 물건을 허락 없이 건드렸으니까요.',
+          alt: { sad: '나를 싫어하는 사람이 있나 싶어 슬플 수도 있어요.', fear: '또 그럴까 봐 두려울 수도 있어요.', joy: '낙서가 재미있는 그림이었다면 웃음이 날 수도 있어요.' } },
+        { situation: '😨 오늘 처음으로 혼자 버스를 타고 학원에 가야 해요.', answer: 'fear', options: ['sad','angry','fear','joy'],
+          why: '처음 하는 일은 어떻게 될지 모르니까요.',
+          alt: { joy: '혼자 해낸다는 생각에 설렐 수도 있어요.', sad: '같이 가 줄 사람이 없어 쓸쓸할 수도 있어요.', angry: '왜 나 혼자 가야 하나 싶어 불만이 생길 수도 있어요.' } },
+        { situation: '😊 우리 모둠이 힘을 합쳐 마지막 과제를 끝냈어요!', answer: 'joy', options: ['sad','angry','fear','joy'],
+          why: '함께 애쓴 끝에 끝냈으니까요.',
+          alt: { sad: '이제 모둠이 흩어진다고 생각하면 아쉬울 수도 있어요.', angry: '내가 더 많이 했다고 느끼면 억울할 수도 있어요.', fear: '발표가 남았다면 긴장될 수도 있어요.' } },
+        { situation: '😢 아끼던 인형을 놀이터에 두고 왔는데 찾을 수 없었어요.', answer: 'sad', options: ['sad','angry','fear','joy'],
+          why: '아끼던 것을 다시 찾을 수 없으니까요.',
+          alt: { angry: '왜 두고 왔을까 하고 스스로에게 화가 날 수도 있어요.', fear: '혼날까 봐 두려울 수도 있어요.', joy: '누군가 잘 데려갔길 바라며 마음을 놓을 수도 있어요.' } },
+    ],
+    2: [ // 레벨 2: 중간감정 구분
+        { situation: '🥺 친구들이 모두 단체 채팅방에 있는데 나만 초대를 안 받았어요.', answer: 'lonely', parent: 'sad', options: ['sorry','lonely','empty'],
+          why: '모두 있는 자리에 나만 없으니까요.',
+          alt: { sorry: '서운함도 느낄 수 있어요. 친구들이 나를 잊은 것 같으니까요.', empty: '허무함을 고를 수도 있어요. 그동안 친하게 지낸 게 소용없는 것 같으니까요.' } },
+        { situation: '😤 엄마가 게임 시간을 또 줄이겠다고 했어요.', answer: 'annoyed', parent: 'angry', options: ['annoyed','unfair','furious'],
+          why: '하고 싶은 걸 자꾸 막으니 신경이 쓰여요.',
+          alt: { unfair: '억울함도 들 수 있어요. 약속을 지켰는데 또 줄이니까요.', furious: '분노까지 갈 수도 있어요. 여러 번 반복됐다면요.' } },
+        { situation: '😟 내일 시험인데 전혀 준비가 안 됐어요.', answer: 'anxious', parent: 'fear', options: ['anxious','worried','scared'],
+          why: '내일 결과가 어떻게 될지 모르니까요.',
+          alt: { worried: '걱정됨도 비슷해요. 다만 걱정됨은 다른 사람이나 일을 향할 때 더 많이 써요.', scared: '무서움을 고를 수도 있어요. 시험지를 받는 순간이 무섭게 느껴지기도 하니까요.' } },
+        { situation: '💪 매일 연습했던 줄넘기를 드디어 100개 넘게 했어요!', answer: 'proud', parent: 'joy', options: ['happy','proud','grateful'],
+          why: '매일 연습해서 해냈으니까요.',
+          alt: { happy: '행복함도 맞아요. 그런데 내가 해냈다는 기쁨이라 뿌듯함에 더 가까워요.', grateful: '함께 연습해 준 사람이 있다면 감사함이 들 수도 있어요.' } },
+        { situation: '😭 내가 안 했는데 선생님이 나한테만 주의를 줬어요.', answer: 'unfair', parent: 'angry', options: ['annoyed','unfair','furious'],
+          why: '잘못하지 않았는데 탓을 들었으니까요.',
+          alt: { annoyed: '짜증남도 나요. 그런데 잘못 없이 혼난 억울함이 더 커요.', furious: '분노를 고를 수도 있어요. 다만 소리 지를 만큼 뜨겁기보다 속에서 맺히는 마음이에요.' } },
+        { situation: '😔 발표하려고 손을 번쩍 들었는데 선생님이 나를 못 보고 지나가셨어요.', answer: 'sorry', parent: 'sad', options: ['sorry','lonely','empty'],
+          why: '기대했는데 알아봐 주지 않았으니까요.',
+          alt: { lonely: '외로움도 스칠 수 있어요. 다만 기대가 어긋난 느낌이 더 커요.', empty: '허무함을 고를 수도 있어요. 용기 낸 게 소용없는 것 같으니까요.' } },
+        { situation: '💭 한 달 동안 모은 용돈으로 산 물건이 하루 만에 고장 났어요.', answer: 'empty', parent: 'sad', options: ['sorry','lonely','empty'],
+          why: '한 달의 노력이 하루 만에 사라졌으니까요.',
+          alt: { sorry: '서운함도 들 수 있어요. 물건을 만든 곳이 원망스러우니까요.', lonely: '외로움을 고를 수도 있어요. 아무도 내 마음을 몰라주는 것 같다면요.' } },
+        { situation: '🔥 동생이 내 일기를 반 친구들 앞에서 큰 소리로 읽었어요.', answer: 'furious', parent: 'angry', options: ['annoyed','unfair','furious'],
+          why: '가장 비밀스러운 걸 여러 사람 앞에서 드러냈으니까요.',
+          alt: { annoyed: '짜증남도 나요. 그런데 이건 짜증보다 훨씬 크고 뜨거운 감정이에요.', unfair: '억울함도 섞여요. 그래도 참기 힘들 만큼 치미는 분노가 더 커요.' } },
+        { situation: '😱 복도 불이 갑자기 모두 꺼지고 앞이 캄캄해졌어요.', answer: 'scared', parent: 'fear', options: ['anxious','worried','scared'],
+          why: '앞이 안 보이는 순간 몸이 먼저 굳어요.',
+          alt: { anxious: '불안함도 들 수 있어요. 다만 지금 당장 위험하다고 느끼는 마음은 무서움이에요.', worried: '걱정됨을 고를 수도 있어요. 다른 친구들은 괜찮은지 떠올랐다면요.' } },
+        { situation: '😟 짝꿍이 오늘도 학교에 나오지 않았어요. 벌써 사흘째예요.', answer: 'worried', parent: 'fear', options: ['anxious','worried','scared'],
+          why: '다른 사람에게 나쁜 일이 생겼을까 마음이 무거워요.',
+          alt: { anxious: '불안함과 비슷하지만, 이건 다른 사람을 향한 마음이에요.', scared: '무서움을 고를 수도 있어요. 큰일이 났을까 봐요. 그래도 걱정됨이 더 가까워요.' } },
+        { situation: '🙏 넘어졌을 때 잘 모르는 친구가 일으켜 주고 가방까지 들어줬어요.', answer: 'grateful', parent: 'joy', options: ['happy','proud','grateful'],
+          why: '모르는 사이인데 손을 내밀어 줬으니까요.',
+          alt: { happy: '행복함도 들어요. 그런데 누군가 덕분에 생긴 마음이라 감사함이에요.', proud: '뿌듯함을 고를 수도 있어요. 다만 뿌듯함은 내가 해냈을 때 쓰는 말이에요.' } },
+        { situation: '🥰 오랜만에 온 가족이 모여 함께 저녁을 먹었어요.', answer: 'happy', parent: 'joy', options: ['happy','proud','grateful'],
+          why: '좋아하는 사람들과 한자리에 있으니까요.',
+          alt: { grateful: '감사함도 맞아요. 모여 준 가족이 고마우니까요.', proud: '뿌듯함을 고를 수도 있어요. 내가 자리를 마련했다면요.' } },
+        { situation: '😤 한 판만 더 하려는데 인터넷이 자꾸 끊겨요.', answer: 'annoyed', parent: 'angry', options: ['annoyed','unfair','furious'],
+          why: '뜻대로 안 되는 일이 자꾸 반복되니까요.',
+          alt: { unfair: '억울함도 들 수 있어요. 내 잘못이 아닌데 내가 손해니까요.', furious: '분노까지 갈 수도 있어요. 중요한 순간에 끊겼다면요.' } },
+        { situation: '🥺 단짝이 요즘 다른 친구하고만 붙어 다녀요.', answer: 'lonely', parent: 'sad', options: ['sorry','lonely','empty'],
+          why: '늘 함께이던 자리가 비었으니까요.',
+          alt: { sorry: '서운함도 함께 오지만, 혼자라는 느낌이 더 커요.', empty: '허무함을 고를 수도 있어요. 그동안의 우정이 소용없는 것 같다면요.' } },
+    ],
+    3: [ // 레벨 3: 세부감정 구분
+        { situation: '💔 비밀을 지켜주기로 한 친구가 다른 아이들에게 말해버렸어요.', answer: 'betrayed', parent: 'sorry', root: 'sad', options: ['disappointed','betrayed','letdown'],
+          why: '믿고 맡긴 비밀이 깨졌으니까요.',
+          alt: { disappointed: '섭섭함도 들어요. 그래도 믿음이 깨진 느낌이 더 강해요.', letdown: '실망도 들어요. 다만 실망은 기대한 일이 어긋날 때, 배신감은 믿은 사람이 등을 돌릴 때예요.' } },
+        { situation: '😖 친구에게 마음을 설명하는데 도대체 이해를 못 해요.', answer: 'frustrated', parent: 'annoyed', root: 'angry', options: ['bothered','frustrated','irritated'],
+          why: '말해도 말해도 뜻이 전해지지 않으니까요.',
+          alt: { bothered: '귀찮음을 고를 수도 있어요. 설명이 자꾸 반복되니까요. 그래도 꽉 막힌 느낌이 더 커요.', irritated: '성가심도 비슷해요. 다만 성가심은 방해받을 때, 답답함은 뜻이 안 통할 때예요.' } },
+        { situation: '😬 전교생 앞에서 발표 순서를 기다리고 있어요.', answer: 'nervous', parent: 'anxious', root: 'fear', options: ['nervous','tense','restless'],
+          why: '내 차례가 다가오는데 마음이 가라앉지 않으니까요.',
+          alt: { tense: '긴장됨도 맞아요. 몸이 굳는 느낌이 더 크다면 긴장됨이에요.', restless: '조마조마도 비슷해요. 결과보다 순서를 기다리는 조급함이면 초조함이에요.' } },
+        { situation: '🌟 후배가 "형(언니) 덕분에 할 수 있었어요"라고 말했어요.', answer: 'fulfilled', parent: 'proud', root: 'joy', options: ['accomplished','fulfilled','achieved'],
+          why: '내가 한 일이 누군가에게 도움이 됐으니까요.',
+          alt: { accomplished: '자랑스러움도 들 수 있어요. 그래도 남을 도와서 생긴 마음이라 보람이에요.', achieved: '성취감을 고를 수도 있어요. 다만 성취감은 내 목표를 이뤘을 때 써요.' } },
+        { situation: '👥 친구들이 나만 모르는 유행어를 쓰면서 웃고 있어요.', answer: 'excluded', parent: 'lonely', root: 'sad', options: ['forlorn','isolated','excluded'],
+          why: '같은 자리에 있는데 나만 끼지 못하니까요.',
+          alt: { forlorn: '쓸쓸함도 들어요. 다만 쓸쓸함은 주변이 텅 빌 때, 소외감은 사람들 속에서 나만 빠질 때예요.', isolated: '고독함을 고를 수도 있어요. 세상에 나 혼자 같다면요. 여기서는 무리에서 빠진 느낌이라 소외감이에요.' } },
+        { situation: '😩 한 달 동안 준비한 대회가 하루 전에 취소됐어요.', answer: 'letdown', parent: 'sorry', root: 'sad', options: ['disappointed','betrayed','letdown'],
+          why: '한 달 준비가 하루 전에 물거품이 됐으니까요.',
+          alt: { disappointed: '섭섭함도 들어요. 다만 섭섭함은 사람에게, 실망은 기대한 일에 더 가까워요.', betrayed: '배신감을 고를 수도 있어요. 대회를 여는 곳이 약속을 어긴 것 같으니까요. 그래도 사람보다 일이 어긋난 실망이에요.' } },
+        { situation: '🏝️ 전학 첫날, 아무도 나를 모르는 교실에 혼자 앉아 있어요.', answer: 'isolated', parent: 'lonely', root: 'sad', options: ['forlorn','isolated','excluded'],
+          why: '아는 사람이 한 명도 없는 곳에 혼자니까요.',
+          alt: { forlorn: '쓸쓸함도 들어요. 다만 텅 빈 느낌보다 세상에 나 혼자인 느낌이 더 커요.', excluded: '소외감을 고를 수도 있어요. 그런데 아직 끼워 주지 않은 게 아니라 서로 모르는 상태예요.' } },
+        { situation: '😶 여러 번 이야기했는데도 상황이 하나도 바뀌지 않아요.', answer: 'helpless', parent: 'empty', root: 'sad', options: ['hollow','helpless','deflated'],
+          why: '아무리 해도 달라지는 게 없으니까요.',
+          alt: { hollow: '공허함도 들어요. 다만 공허함은 마음이 빈 느낌, 무력감은 손발이 묶인 느낌이에요.', deflated: '허탈함을 고를 수도 있어요. 기대가 무너진 순간이라면요. 여기서는 계속 반복돼서 무력감이에요.' } },
+        { situation: '🙄 문제에 집중하고 있는데 옆에서 자꾸 말을 걸어요.', answer: 'irritated', parent: 'annoyed', root: 'angry', options: ['bothered','frustrated','irritated'],
+          why: '하던 일이 자꾸 끊기니까요.',
+          alt: { bothered: '귀찮음도 비슷해요. 다만 귀찮음은 하기 싫은 일 앞에서, 성가심은 방해받을 때예요.', frustrated: '답답함을 고를 수도 있어요. 문제가 안 풀리고 있었다면요.' } },
+        { situation: '💢 규칙을 잘 지켰는데 나만 주의를 들었어요.', answer: 'indignant', parent: 'unfair', root: 'angry', options: ['indignant','resentful','upset'],
+          why: '잘못 없이 부당한 대우를 받았으니까요.',
+          alt: { upset: '속상함도 있어요. 그래도 부당함에 대한 화가 더 커요.', resentful: '원망을 고를 수도 있어요. 주의를 준 사람이 미워졌다면요. 그래도 지금은 부당함에 화가 나는 분함이에요.' } },
+        { situation: '🫣 처음 만나는 사람들 앞에 서서 인사를 해야 해요.', answer: 'tense', parent: 'anxious', root: 'fear', options: ['nervous','tense','restless'],
+          why: '몸과 마음이 딱딱하게 굳으니까요.',
+          alt: { nervous: '초조함도 비슷해요. 다만 초조함은 기다릴 때, 긴장됨은 바로 그 순간 몸이 굳을 때예요.', restless: '조마조마를 고를 수도 있어요. 잘 될지 신경 쓰이니까요.' } },
+        { situation: '👻 무서운 영화를 본 뒤 캄캄한 방에 혼자 들어가야 해요.', answer: 'terror', parent: 'scared', root: 'fear', options: ['terror','creepy','chilling'],
+          why: '몸이 얼어붙어 발이 안 떨어지니까요.',
+          alt: { chilling: '오싹함도 들어요. 그래도 이건 오싹함보다 훨씬 크고 강한 느낌이에요.', creepy: '섬뜩함도 들 수 있어요. 소름이 돋았다면요. 그래도 몸이 얼어붙는 공포가 더 커요.' } },
+        { situation: '🎯 몇 달을 연습한 피아노곡을 처음부터 끝까지 완주했어요.', answer: 'achieved', parent: 'proud', root: 'joy', options: ['accomplished','fulfilled','achieved'],
+          why: '몇 달 동안 세운 목표를 이뤘으니까요.',
+          alt: { accomplished: '자랑스러움도 맞아요. 다만 목표를 이룬 순간의 기쁨은 성취감이에요.', fulfilled: '보람을 고를 수도 있어요. 보람은 남에게 도움이 됐을 때 더 많이 써요.' } },
+        { situation: '🥹 졸업식에서 선생님이 내 이름을 부르며 편지를 읽어 주셨어요.', answer: 'moved', parent: 'grateful', root: 'joy', options: ['thankful','moved','overwhelmed'],
+          why: '선생님의 마음이 그대로 전해져 눈물이 나니까요.',
+          alt: { thankful: '고마움도 맞아요. 그런데 눈물이 날 만큼 마음이 흔들렸다면 감격이에요.', overwhelmed: '벅참을 고를 수도 있어요. 기쁨이 넘칠 때요. 여기서는 감동이 더 커서 감격이에요.' } },
+    ]
+};
+
+// 한 판에 출제되는 레벨당 문제 수 (책 화면의 진행 점 개수와 동일하게 유지)
+const QUESTIONS_PER_ROUND = 5;
+
+// 보기 키 → 감정 이름 (레벨과 상관없이 찾는다)
+function emotionNameOf(key) {
+    if (EMOTIONS[key]) return EMOTIONS[key].name;
+    for (const root of Object.values(EMOTIONS)) {
+        if (root.children[key]) return root.children[key].name;
+        for (const mid of Object.values(root.children)) {
+            if (mid.children[key]) return mid.children[key].name;
+        }
+    }
+    return key;
+}
+// 받침에 따라 을/를
+function eul(word) {
+    const c = word.charCodeAt(word.length - 1);
+    if (c < 0xAC00 || c > 0xD7A3) return word + '을(를)';
+    return word + (((c - 0xAC00) % 28) ? '을' : '를');
+}
+
+// ═══════════════════════════════════════════════════════
+// 공통 함수
+// ═══════════════════════════════════════════════════════
+// ⭐ HTML 이스케이프 (닉네임·처방전 자유입력이 화면을 깨뜨리지 않도록)
+function esc(v) {
+    return String(v == null ? '' : v)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function showToast(msg, type='info') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = type==='error' ? 'rgba(239,68,68,0.95)' : type==='success' ? 'rgba(16,185,129,0.95)' : 'rgba(31,41,55,0.95)';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+window.showScreen = function(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(id);
+    if (target) { target.classList.add('active'); window.scrollTo(0,0); }
+};
+
+async function simpleHash(str) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str + 'sel-salt-2024');
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+let confirmCallback = null;
+window.showConfirmModal = function(message, onConfirm) {
+    document.getElementById('confirmMessage').innerHTML = message;
+    const okBtn = document.getElementById('confirmOkBtn');
+    okBtn.textContent = '확인';        // 이전 모달(이어하기 등)의 라벨/색이 남지 않도록 초기화
+    okBtn.style.background = '';
+    document.getElementById('confirmModal').classList.add('show');
+    confirmCallback = onConfirm;
+    document.getElementById('confirmOkBtn').onclick = () => {
+        const cb = confirmCallback; // 먼저 저장!
+        closeConfirmModal();        // 이게 confirmCallback = null로 만듦
+        if (cb) cb();               // 저장해둔 걸로 실행
+    };
+};
+window.closeConfirmModal = function() {
+    document.getElementById('confirmModal').classList.remove('show');
+    confirmCallback = null;
+};
+window.closeHintModal = function() { document.getElementById('hintModal').classList.remove('show'); };
+window.closeDexDetail = function() { document.getElementById('dexDetailModal').classList.remove('show'); };
+
+async function copyToClipboard(text) {
+    try { await navigator.clipboard.writeText(text); showToast('✅ 코드가 복사되었습니다!', 'success');
+    } catch(e) {
+        const ta = document.createElement('textarea'); ta.value = text;
+        ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { document.execCommand('copy'); showToast('✅ 코드가 복사되었습니다!', 'success');
+        } catch(e2) { showToast('📋 코드: ' + text + ' (직접 복사해주세요)'); }
+        document.body.removeChild(ta);
+    }
+}
+
+window.confirmGoHome = function() {
+    const collectedCount = collectedEmotions.size;
+    const msg = collectedCount > 0 
+        ? `처음 화면으로 돌아갈까요?<br><br>📖 수집한 감정 ${collectedCount}개와 게임 기록이 있어요.<br>` +
+          (isSoloMode ? '⚠️ 혼자 체험 모드는 나가면 기록이 사라져요!' : '✅ 같은 닉네임으로 다시 들어오면 이어할 수 있어요!')
+        : '처음 화면으로 돌아갈까요?';
+    showConfirmModal(msg, () => {
+        if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+        showScreen('screen-start');
+    });
+};
+
+// ═══════════════════════════════════════════════════════
+// 방 시스템
+// ═══════════════════════════════════════════════════════
+window.createRoom = async function() {
+    await authReady;
+    const name = document.getElementById('create-teacher-name').value.trim();
+    const pw = document.getElementById('create-password').value.trim();
+    if (!name) { showToast('닉네임을 입력해주세요.', 'error'); return; }
+    if (!/^\d{4}$/.test(pw)) { showToast('비밀번호는 숫자 4자리로 입력해주세요.', 'error'); return; }
+
+    const code = String(Math.floor(Math.random()*900000+100000));
+    const exp = new Date(); exp.setDate(exp.getDate()+30);
+    const hashed = await simpleHash(pw);
+
+    await DB.saveRoom(code, {
+        teacherName: name, password: hashed,
+        createdAt: new Date().toISOString(), expiresAt: exp.toISOString()
+    });
+
+    currentRoomCode = code; isTeacher = true;
+    document.getElementById('display-room-code').textContent = code;
+    showScreen('screen-room-created');
+};
+
+window.copyRoomCode = function() { copyToClipboard(currentRoomCode); };
+window.goToDashboard = function() { openDashboard(); };
+
+window.joinAsTeacher = async function() {
+    await authReady;
+    const code = document.getElementById('teacher-room-code').value.trim();
+    const pw = document.getElementById('teacher-password').value.trim();
+    if (!code || !pw) { showToast('방 코드와 비밀번호를 입력해주세요.', 'error'); return; }
+
+    const room = await DB.getRoom(code);
+    if (!room) { showToast('존재하지 않는 방입니다.', 'error'); return; }
+    if (room.expiresAt && new Date(room.expiresAt) < new Date()) {
+        await DB.deleteRoom(code); showToast('만료된 방입니다.', 'error'); return;
+    }
+
+    const hashed = await simpleHash(pw);
+    if (room.password !== hashed) { showToast('비밀번호가 틀렸습니다.', 'error'); return; }
+
+    currentRoomCode = code; isTeacher = true;
+    openDashboard();
+};
+
+window.joinAsStudent = async function() {
+    await authReady;
+    const code = document.getElementById('student-room-code').value.trim();
+    const nick = document.getElementById('student-nickname').value.trim();
+    if (!code || !nick) { showToast('방 코드와 닉네임을 입력해주세요.', 'error'); return; }
+
+    const room = await DB.getRoom(code);
+    if (!room) { showToast('존재하지 않는 방입니다.', 'error'); return; }
+    if (room.expiresAt && new Date(room.expiresAt) < new Date()) {
+        await DB.deleteRoom(code); showToast('만료된 방입니다.', 'error'); return;
+    }
+
+    const existing = await DB.getStudent(code, nick);
+    if (existing) {
+        // 이어하기 옵션 제공
+        showConfirmModal(
+            `<strong>${esc(nick)}</strong>님, 이전에 참여한 기록이 있어요!<br><br>` +   // ⭐ 닉네임 이스케이프
+            `📖 도감: ${existing.collectedCount || 0}개 수집<br>` +
+            `⭐ 최고 점수: ${existing.bestScore || existing.gameScore || 0}점<br><br>` +
+            `이어서 할까요?`,
+            async () => {
+                currentRoomCode = code; currentNickname = nick; isTeacher = false; isSoloMode = false;
+                // 기존 데이터 복원
+                restoreStudentData(existing);
+                await DB.saveStudent(code, nick, { lastVisit: new Date().toISOString() });
+                showToast(`🎉 ${nick}님, 다시 오셨군요!`, 'success');
+                goToMainContent();
+            }
+        );
+        // 모달의 확인 버튼 텍스트를 "이어하기"로 변경
+        document.getElementById('confirmOkBtn').textContent = '이어하기';
+        document.getElementById('confirmOkBtn').style.background = 'var(--primary)';
+        return;
+    }
+
+    currentRoomCode = code; currentNickname = nick; isTeacher = false; isSoloMode = false;
+    prescriptionDone = false;
+    collectedEmotions = new Set();
+    bestScore = 0; totalGamesPlayed = 0;
+    await DB.saveStudent(code, nick, { joinedAt: new Date().toISOString(), collectedList:[], bestScore:0 });
+    enterStory();
+};
+
+// 기존 학생 데이터 복원
+function restoreStudentData(data) {
+    // 도감 복원
+    collectedEmotions = new Set((data.collectedList || []).filter(k => DETAIL_INFO[k]));
+    // 최고 점수 복원
+    gameScore = 0;
+    bestScore = data.bestScore || data.gameScore || 0;
+    totalGamesPlayed = data.gamesPlayed || 0;
+    gameLevel = 1; gameQuestion = 0; gameStreak = 0; gameResults = [];
+    // 처방전 복원
+    if (data.prescriptionEmotion) {
+        prescriptionDone = true;
+        // 처방전 입력 필드에 기존 값 채우기 (수정 가능)
+        setTimeout(() => {
+            const rxE = document.getElementById('rx-emotion');
+            const rxW = document.getElementById('rx-when');
+            const rxC = document.getElementById('rx-cure');
+            if (rxE) rxE.value = data.prescriptionEmotion || '';
+            if (rxW) rxW.value = data.prescriptionWhen || '';
+            if (rxC) rxC.value = data.prescriptionCure || '';
+        }, 100);
+    } else {
+        prescriptionDone = false;
+        clearPrescriptionFields();   // ⭐ 앞 사람이 쓰던 처방전 글이 남지 않도록
+    }
+}
+
+// ⭐ 처방전 입력칸을 비운다
+//    (공용 태블릿·컴퓨터실에서 앞 학생이 적은 글이 그대로 남아
+//     새 학생 이름으로 저장되던 문제. 이전에는 어디에서도 칸을 비우지 않았다.)
+function clearPrescriptionFields() {
+    ['rx-emotion','rx-when','rx-cure'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+    });
+}
+
+window.startSoloMode = function() {
+    isSoloMode = true; isTeacher = false;
+    soloData = { nickname:'탐험가', answers:{}, collected:[], bestScore:0, gameScore:0, prescription:{} };
+    currentNickname = '탐험가';
+    collectedEmotions = new Set();
+    bestScore = 0; totalGamesPlayed = 0;
+    prescriptionDone = false;
+    enterStory();
+};
+
+function enterStory() {
+    const badge = isSoloMode ? ' <span class="badge" style="font-size:12px;">혼자 체험</span>' : '';
+    document.getElementById('story-welcome').innerHTML = esc(currentNickname) + '님, 이야기를 읽어봐요!' + badge;   // ⭐ 닉네임 이스케이프
+    document.getElementById('story-check').checked = false;
+    document.getElementById('story-next-btn').disabled = true;
+    clearPrescriptionFields();   // ⭐ 새로 시작하는 학생에게 앞 사람 글이 남지 않도록
+    showScreen('screen-story');
+}
+
+window.onStoryCheck = function() {
+    document.getElementById('story-next-btn').disabled = !document.getElementById('story-check').checked;
+};
+
+window.goToMainContent = function() {
+    const badge = isSoloMode ? ' (혼자 체험)' : '';
+    document.getElementById('main-welcome').textContent = currentNickname + '님' + badge;
+    renderEmotionTree();
+    initGame();
+    renderDex();
+    updatePrescriptionButton();
+    showScreen('screen-main');
+};
+
+// 완료 후 메인으로 돌아가기 — 데이터 유지, 게임만 리셋
+window.backToMain = function() {
+    const badge = isSoloMode ? ' (혼자 체험)' : '';
+    document.getElementById('main-welcome').textContent = currentNickname + '님' + badge;
+    renderEmotionTree();
+    renderDex();
+    updatePrescriptionButton();
+    // 게임은 다시 도전 가능하도록 리셋
+    initGame();
+    showScreen('screen-main');
+    showToast('📖 도감을 더 채워보세요!', 'success');
+};
+
+// 처방전 버튼 상태 관리
+let prescriptionDone = false;
+function updatePrescriptionButton() {
+    const btnArea = document.getElementById('prescription-btn-area');
+    if (!btnArea) return;
+    if (prescriptionDone) {
+        btnArea.innerHTML = `
+            <button class="btn btn-secondary" onclick="openPrescription()" style="margin-bottom:4px;">📝 감정 처방전 수정하기</button>
+            <div style="font-size:13px; color:var(--success); font-weight:700;">✅ 처방전 작성 완료!</div>`;
+    } else {
+        btnArea.innerHTML = `<button class="btn btn-primary" onclick="openPrescription()">📝 감정 처방전 만들기 →</button>`;
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// 메인 탭 전환
+// ═══════════════════════════════════════════════════════
+window.switchMainTab = function(tab) {
+    document.querySelectorAll('#screen-main .tab-btn').forEach((b,i) => {
+        b.classList.toggle('active', ['tree','factory','dex'][i]===tab);
+    });
+    ['tab-tree','tab-factory','tab-dex'].forEach(id => {
+        document.getElementById(id).classList.toggle('active', id === 'tab-'+tab);
+    });
+};
+
+// ═══════════════════════════════════════════════════════
+// 감정 가계도
+// ═══════════════════════════════════════════════════════
+let selectedRoot = null;
+let selectedMid = null;
+
+function renderEmotionTree() {
+    const rootEl = document.getElementById('emotion-root');
+    rootEl.innerHTML = '';
+    Object.entries(EMOTIONS).forEach(([key, em]) => {
+        rootEl.innerHTML += `<button class="emotion-root-btn ${selectedRoot===key?'active':''}" 
+            style="background:${em.bg}; color:${em.color === '#FDCB6E' ? '#92400E' : em.color};" 
+            onclick="selectRoot('${key}')">
+            <div style="font-size:36px;">${em.emoji}</div>
+            <div style="font-size:16px; margin-top:4px;">${em.name}</div>
+        </button>`;
+    });
+    if (selectedRoot) renderMidLevel(selectedRoot);
+}
+
+window.selectRoot = function(key) {
+    selectedRoot = key; selectedMid = null;
+    renderEmotionTree();
+};
+
+function renderMidLevel(rootKey) {
+    const em = EMOTIONS[rootKey];
+    const area = document.getElementById('emotion-mid-area');
+    let html = `<div class="card" style="border:2px solid ${em.color};">
+        <h3 style="color:${em.color}; margin-bottom:8px;">${em.emoji} ${em.name} 가족</h3>
+        <div class="emotion-mid">`;
+    Object.entries(em.children).forEach(([key, mid]) => {
+        html += `<button class="emotion-mid-btn ${selectedMid===key?'active':''}" onclick="selectMid('${rootKey}','${key}')">
+            ${mid.emoji} ${mid.name}
+        </button>`;
+    });
+    html += '</div>';
+    if (selectedMid && em.children[selectedMid]) {
+        const mid = em.children[selectedMid];
+        html += `<div class="emotion-detail-card">
+            <div style="font-size:24px; margin-bottom:8px;">${mid.emoji} <strong>${mid.name}</strong></div>
+            <p style="font-size:14px; color:var(--text-light); font-weight:500; margin-bottom:4px;">💡 ${mid.feeling}</p>
+            <p style="font-size:14px; color:var(--text-light); font-weight:500; margin-bottom:12px;">🎬 ${mid.situation}</p>
+            <div style="font-size:14px; font-weight:700; margin-bottom:8px;">세부 감정들:</div>
+            <div class="emotion-child-grid">`;
+        Object.entries(mid.children).forEach(([cKey, child]) => {
+            const isCollected = collectedEmotions.has(cKey);
+            html += `<button class="emotion-child-btn ${isCollected?'collected':''}" onclick="showChildDetail('${rootKey}','${selectedMid}','${cKey}')">
+                ${child.emoji} ${child.name}
+            </button>`;
+        });
+        html += `</div></div>`;
+    }
+    html += '</div>';
+    area.innerHTML = html;
+    document.getElementById('emotion-detail-area').innerHTML = '';
+}
+
+window.selectMid = function(rootKey, midKey) {
+    selectedMid = midKey;
+    renderMidLevel(rootKey);
+};
+
+window.showChildDetail = function(rootKey, midKey, childKey) {
+    const child = EMOTIONS[rootKey].children[midKey].children[childKey];
+    const mid = EMOTIONS[rootKey].children[midKey];
+    const root = EMOTIONS[rootKey];
+    const isCollected = collectedEmotions.has(childKey);
+    document.getElementById('dexDetailContent').innerHTML = `
+        <div style="text-align:center; margin-bottom:12px;">
+            <div style="font-size:48px;">${child.emoji}</div>
+            <h3 style="color:var(--primary);">${child.name}</h3>
+            ${isCollected ? '<span class="badge" style="background:rgba(16,185,129,0.15); color:var(--success);">✅ 도감에 수집됨</span>' : '<span class="badge" style="background:rgba(245,158,11,0.15); color:var(--warning);">🆕 새로운 감정!</span>'}
+        </div>
+        <div style="background:#F3F4F6; border-radius:12px; padding:12px; margin-bottom:8px;">
+            <div style="font-size:13px; color:var(--primary); font-weight:700;">🌳 감정 가족</div>
+            <div style="font-size:15px;">${root.emoji} ${root.name} → ${mid.emoji} ${mid.name} → ${child.emoji} ${child.name}</div>
+        </div>
+        <div style="background:#F3F4F6; border-radius:12px; padding:12px; margin-bottom:8px;">
+            <div style="font-size:13px; color:var(--primary); font-weight:700;">💡 이런 느낌이에요</div>
+            <div style="font-size:15px;">${child.feeling}</div>
+        </div>
+        <div style="background:#F3F4F6; border-radius:12px; padding:12px; margin-bottom:8px;">
+            <div style="font-size:13px; color:var(--primary); font-weight:700;">🎬 이럴 때 느껴요</div>
+            <div style="font-size:15px;">${child.situation}</div>
+            ${child.situation2 ? `<div style="font-size:15px; margin-top:4px;">${child.situation2}</div>` : ''}
+        </div>
+        ${child.body ? `<div style="background:#F3F4F6; border-radius:12px; padding:12px; margin-bottom:8px;">
+            <div style="font-size:13px; color:var(--primary); font-weight:700;">🫀 몸에서는 이런 신호가 와요</div>
+            <div style="font-size:15px;">${child.body}</div>
+        </div>` : ''}
+        ${child.care ? `<div style="background:#F0FDF4; border:1px solid rgba(16,185,129,0.25); border-radius:12px; padding:12px; margin-bottom:8px;">
+            <div style="font-size:13px; color:var(--success); font-weight:700;">🌱 이럴 때 기분이 나아지려면</div>
+            <div style="font-size:15px;">${child.care}</div>
+        </div>` : ''}
+        ${!isCollected ? `<button class="btn btn-primary" onclick="collectFromTree('${childKey}')" style="margin-top:8px;">📖 도감에 수집하기!</button>` : ''}`;
+    document.getElementById('dexDetailModal').classList.add('show');
+};
+
+// 가계도 탐험에서 수집
+window.collectFromTree = function(childKey) {
+    if (collectedEmotions.has(childKey)) return;
+    collectEmotion(childKey, 'tree');
+    closeDexDetail();
+    // 가계도 UI도 갱신
+    if (selectedRoot) renderMidLevel(selectedRoot);
+    renderDex();
+};
+
+// 공통 수집 함수 — 게임이든 가계도든 여기서 수집하고 Firebase에 저장
+async function collectEmotion(emotionKey, source) {
+    // 도감은 세부감정 36개만 수집 대상 (중간감정 키가 섞여 수집률이 부풀지 않도록)
+    if (!DETAIL_INFO[emotionKey]) return;
+    if (collectedEmotions.has(emotionKey)) return;
+    collectedEmotions.add(emotionKey);
+
+    // 수집 효과
+    const childName = DETAIL_INFO[emotionKey].name;
+    showToast(`📖 "${childName}" 도감에 수집! (${collectedEmotions.size}/${DETAIL_TOTAL})`, 'success');
+
+    // Firebase에 즉시 저장
+    const saveData = { collectedList: Array.from(collectedEmotions), collectedCount: collectedEmotions.size };
+    if (isSoloMode) {
+        soloData.collected = Array.from(collectedEmotions);
+    } else {
+        await DB.saveStudent(currentRoomCode, currentNickname, saveData);
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// 이름표 공장 게임
+// ═══════════════════════════════════════════════════════
+function initGame() {
+    gameLevel = 1; gameQuestion = 0; gameScore = 0; gameStreak = 0; gameResults = [];
+    shuffleGameQuestions(); // 매번 문제 순서 + 선택지 순서 변경
+    renderGameScreen();
+}
+
+function renderGameScreen() {
+    const area = document.getElementById('game-area');
+    if (gameLevel > 3) { renderGameComplete(); return; }
+
+    const questions = currentGameQuestions[gameLevel] || [];
+    if (!questions.length) { shuffleGameQuestions(); renderGameScreen(); return; }
+    if (gameQuestion >= questions.length) {
+        gameLevel++;
+        gameQuestion = 0;
+        if (gameLevel > 3) { renderGameComplete(); return; }
+        renderGameScreen();
+        return;
+    }
+
+    const q = questions[gameQuestion];
+    let html = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <span class="level-badge level-${gameLevel}">레벨 ${gameLevel}</span>
+        <div style="display:flex; gap:8px; align-items:center;">
+            ${bestScore > 0 ? `<div style="font-size:12px; color:var(--text-light); padding:4px 8px; background:#F3F4F6; border-radius:8px;">🏆${bestScore}</div>` : ''}
+            <div class="score-display" style="padding:8px 16px; font-size:16px;">⭐ ${gameScore}점</div>
+        </div>
+    </div>`;
+
+    // 진행률 표시
+    html += `<div class="game-progress">`;
+    for (let i = 0; i < questions.length; i++) {
+        const cls = i < gameQuestion ? (gameResults[(gameLevel-1)*QUESTIONS_PER_ROUND+i] ? 'correct' : 'diff') :
+                    i === gameQuestion ? 'current' : '';
+        html += `<div class="game-dot ${cls}">${i+1}</div>`;
+    }
+    html += `</div>`;
+
+    html += `<div class="game-situation"><div style="font-size:16px; font-weight:500; line-height:1.7;">${q.situation}</div></div>`;
+    html += `<div style="text-align:center; font-weight:900; margin:12px 0; font-size:16px;">🏷️ 이 상황에서 어떤 감정이 들까요?</div>`;
+
+    q.options.forEach(opt => {
+        let label = '';
+        if (gameLevel === 1) { label = EMOTIONS[opt].emoji + ' ' + EMOTIONS[opt].name; }
+        else if (gameLevel === 2) {
+            const parent = EMOTIONS[q.parent || Object.keys(EMOTIONS).find(k => EMOTIONS[k].children[opt])];
+            const mid = parent?.children[opt];
+            label = (mid?.emoji||'') + ' ' + (mid?.name||opt);
+        } else {
+            let child = null;
+            Object.values(EMOTIONS).forEach(root => Object.values(root.children).forEach(mid => {
+                if (mid.children[opt]) child = mid.children[opt];
+            }));
+            label = (child?.emoji||'') + ' ' + (child?.name||opt);
+        }
+        html += `<button class="choice-btn" onclick="answerGame('${opt}')">${label}</button>`;
+    });
+
+    // 레벨 2,3에서 힌트 버튼
+    if (gameLevel >= 2) {
+        html += `<button class="hint-btn" onclick="showGameHint()">🌳 가계도에서 힌트 보기</button>`;
+    }
+
+    area.innerHTML = html;
+}
+
+window.answerGame = function(answer) {
+    const q = currentGameQuestions[gameLevel][gameQuestion];
+    const isMatch = answer === q.answer;
+    const baseScore = gameLevel === 1 ? 15 : gameLevel === 2 ? 20 : 25;
+    const answerName = emotionNameOf(q.answer);
+
+    if (isMatch) {
+        gameStreak++;
+        const streakBonus = Math.min(gameStreak - 1, 3) * 5;
+        gameScore += baseScore + streakBonus;
+        gameResults.push(true);
+
+        // 레벨 2 일치 → 그 감정 가족의 세부감정 중 아직 못 모은 것 하나를 획득
+        // 레벨 3 일치 → 고른 세부감정을 그대로 수집
+        if (gameLevel === 2) {
+            const midObj = EMOTIONS[q.parent] && EMOTIONS[q.parent].children[q.answer];
+            if (midObj) {
+                const reward = Object.keys(midObj.children).find(k => !collectedEmotions.has(k));
+                if (reward) { collectEmotion(reward, 'game'); renderDex(); }
+            }
+        } else if (gameLevel === 3) {
+            collectEmotion(q.answer, 'game');
+            renderDex(); // 도감 갱신
+        }
+    } else {
+        // 다르게 골라도 생각한 점수 5점. 연속 일치만 끊긴다.
+        gameStreak = 0;
+        gameScore += 5;
+        gameResults.push(false);
+    }
+
+    // 선택 표시: 빨간색 없이 "내 선택"과 "많이 고르는 감정"만 표로 붙인다
+    const area = document.getElementById('game-area');
+    const btns = area.querySelectorAll('.choice-btn');
+    btns.forEach(btn => {
+        btn.disabled = true;
+        const val = btn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+        if (val === q.answer) {
+            btn.classList.add('correct');
+            btn.insertAdjacentHTML('beforeend', `<span class="choice-tag common">${isMatch ? '내 선택 · 많이 고르는 감정' : '많이 고르는 감정'}</span>`);
+        } else if (val === answer) {
+            btn.classList.add('mine');
+            btn.insertAdjacentHTML('beforeend', `<span class="choice-tag">내 선택</span>`);
+        }
+    });
+
+    // 피드백: 선택 인정 → 상황 속 근거 → 일반 경향
+    let fbHtml = '';
+    if (isMatch) {
+        fbHtml = `<div class="game-feedback correct">🏷️ 많은 친구들이 이 상황에서 ${eul(answerName)} 골라요. ${q.why || q.feedback || ''}${gameStreak > 1 ? ` 🔥 ${gameStreak}연속 일치!` : ''}</div>`;
+    } else {
+        const altText = (q.alt && q.alt[answer]) || (q.similar && q.similar[answer]) || `${eul(emotionNameOf(answer))} 고를 수도 있어요.`;
+        fbHtml = `<div class="game-feedback similar">🤝 ${altText} 그래도 이 상황에서는 많은 친구들이 ${eul(answerName)} 골라요. ${q.why || q.feedback || ''}</div>`;
+    }
+    fbHtml += `<button class="btn btn-primary" onclick="nextGameQuestion()" style="margin-top:12px;">다음 문제 →</button>`;
+
+    area.insertAdjacentHTML('beforeend', fbHtml);
+};
+
+window.nextGameQuestion = function() {
+    gameQuestion++;
+    renderGameScreen();
+};
+
+window.showGameHint = function() {
+    const q = currentGameQuestions[gameLevel][gameQuestion];
+    let rootKey = q.root || q.parent;
+    if (gameLevel === 2) {
+        rootKey = Object.keys(EMOTIONS).find(k => EMOTIONS[k].children[q.answer] || EMOTIONS[k].children[q.parent]);
+    }
+    const root = EMOTIONS[rootKey];
+    let hintHtml = `<h3 style="color:var(--primary); margin-bottom:12px;">🌳 힌트: ${root?.emoji||''} ${root?.name||''} 가족</h3>`;
+    if (root) {
+        Object.entries(root.children).forEach(([k, mid]) => {
+            hintHtml += `<div style="margin:8px 0; padding:8px; background:#F3F4F6; border-radius:8px;">
+                ${mid.emoji} <strong>${mid.name}</strong>: ${mid.feeling}
+            </div>`;
+        });
+    }
+    document.getElementById('hintContent').innerHTML = hintHtml;
+    document.getElementById('hintModal').classList.add('show');
+};
+
+function renderGameComplete() {
+    const total = gameResults.length;
+    const correct = gameResults.filter(Boolean).length;
+    totalGamesPlayed++;
+
+    const isNewBest = gameScore > bestScore;
+    if (isNewBest) bestScore = gameScore;
+
+    const allChildKeys = DETAIL_KEYS;
+    const uncollected = allChildKeys.filter(k => !collectedEmotions.has(k)).length;
+
+    const area = document.getElementById('game-area');
+    area.innerHTML = `
+        <div style="text-align:center;">
+            <div style="font-size:64px; margin-bottom:12px;">${isNewBest ? '🎉' : '🏆'}</div>
+            <h3 style="color:var(--primary); margin-bottom:8px;">${isNewBest ? '최고 기록 갱신!' : '게임 완료!'}</h3>
+            <div class="score-display">이번 점수: ${gameScore}점</div>
+            ${isNewBest ? `<div style="color:var(--warning); font-size:15px; font-weight:900; margin-top:4px;">🔥 NEW BEST!</div>` : 
+                `<div style="font-size:14px; color:var(--text-light); margin-top:4px;">최고 기록: ${bestScore}점</div>`}
+            <p style="margin-top:12px; font-size:15px; color:var(--text-light);">
+                ${total}장면 중 ${correct}장면이 많은 친구들과 같았어요
+            </p>
+            <div style="background:rgba(124,58,237,0.06); border-radius:12px; padding:12px; margin:12px 0;">
+                <div style="font-size:15px; font-weight:900; color:var(--primary);">📖 도감 수집: ${collectedEmotions.size} / ${allChildKeys.length}</div>
+                ${uncollected > 0 ? 
+                    `<div style="font-size:13px; color:var(--text-light); margin-top:4px;">아직 ${uncollected}개의 감정이 남았어요! 다시 도전해보세요 🔥</div>` :
+                    `<div style="font-size:13px; color:var(--success); margin-top:4px;">🎊 모든 감정을 수집했어요! 대단해요!</div>`}
+            </div>
+            <button class="btn btn-primary" onclick="retryGame()" style="margin-top:8px;">🔄 다시 도전하기 (문제가 바뀌어요!)</button>
+            <button class="btn btn-secondary" onclick="switchMainTab('dex')" style="margin-top:4px;">📖 도감 확인하기</button>
+        </div>`;
+
+    // 데이터 저장
+    saveGameResult(gameScore, correct, total);
+}
+
+// 다시 도전 — 문제 셔플
+window.retryGame = function() {
+    gameLevel = 1; gameQuestion = 0; gameScore = 0; gameStreak = 0; gameResults = [];
+    shuffleGameQuestions();
+    renderGameScreen();
+};
+
+// 문제 셔플 함수 — 매 판마다 풀(pool)에서 아직 안 나온 문제를 우선 뽑는다
+function fisherYates(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+function pickRoundQuestions(level) {
+    const pool = GAME_QUESTIONS[level];
+    const seen = seenQuestions[level];
+    let candidates = pool.filter(q => !seen.has(q.situation));
+    if (candidates.length < QUESTIONS_PER_ROUND) { seen.clear(); candidates = pool.slice(); }
+    const picked = fisherYates(candidates.slice()).slice(0, QUESTIONS_PER_ROUND);
+    picked.forEach(q => seen.add(q.situation));
+    // 선택지도 매번 셔플 (원본 풀은 건드리지 않도록 복사본 사용)
+    return picked.map(q => Object.assign({}, q, { options: fisherYates(q.options.slice()) }));
+}
+function shuffleGameQuestions() {
+    [1,2,3].forEach(level => { currentGameQuestions[level] = pickRoundQuestions(level); });
+}
+
+async function saveGameResult(score, correct, total) {
+    const data = { 
+        gameScore: score, gameCorrect: correct, gameTotal: total, 
+        bestScore: bestScore,
+        collectedList: Array.from(collectedEmotions),
+        collectedCount: collectedEmotions.size,
+        gamesPlayed: totalGamesPlayed
+    };
+    if (isSoloMode) {
+        soloData.gameScore = score; soloData.gameCorrect = correct; soloData.gameTotal = total;
+        soloData.bestScore = bestScore;
+        soloData.collected = Array.from(collectedEmotions);
+    } else {
+        await DB.saveStudent(currentRoomCode, currentNickname, data);
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// 감정 도감
+// ═══════════════════════════════════════════════════════
+function renderDex() {
+    const grid = document.getElementById('dex-grid');
+    let html = '';
+    let total = 0; let collected = 0;
+
+    // 카테고리별 수집 현황
+    html += `<div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:16px;">`;
+    Object.entries(EMOTIONS).forEach(([rk, root]) => {
+        let catTotal = 0, catCollected = 0;
+        Object.values(root.children).forEach(mid => {
+            Object.keys(mid.children).forEach(k => {
+                catTotal++;
+                if (collectedEmotions.has(k)) catCollected++;
+            });
+        });
+        const pct = catTotal ? Math.round(catCollected/catTotal*100) : 0;
+        html += `<div style="background:${root.bg}; border-radius:12px; padding:10px; text-align:center;">
+            <div style="font-size:20px;">${root.emoji}</div>
+            <div style="font-size:13px; font-weight:900; color:${root.color === '#FDCB6E' ? '#92400E' : root.color};">${root.name}</div>
+            <div style="font-size:12px; color:var(--text-light);">${catCollected}/${catTotal}</div>
+            <div style="height:4px; background:rgba(0,0,0,0.1); border-radius:2px; margin-top:4px; overflow:hidden;">
+                <div style="height:100%; width:${pct}%; background:${root.color === '#FDCB6E' ? '#F59E0B' : root.color}; border-radius:2px; transition:width 0.5s;"></div>
+            </div>
+        </div>`;
+    });
+    html += `</div>`;
+
+    // 전체 감정 그리드
+    Object.values(EMOTIONS).forEach(root => {
+        Object.values(root.children).forEach(mid => {
+            Object.entries(mid.children).forEach(([key, child]) => {
+                total++;
+                const isCollected = collectedEmotions.has(key);
+                if (isCollected) collected++;
+                html += `<div class="dex-item ${isCollected ? 'collected' : 'locked'}" onclick="${isCollected ? `showDexDetail('${key}')` : ''}">
+                    <span class="dex-emoji">${isCollected ? child.emoji : '❓'}</span>
+                    ${isCollected ? child.name : '???'}
+                </div>`;
+            });
+        });
+    });
+    grid.innerHTML = html;
+
+    // 수집률에 따른 동기부여 메시지
+    const pct = Math.round(collected/total*100);
+    let msg = '';
+    if (collected === 0) msg = '🌱 감정 가계도를 탐험하거나 게임을 해서 도감을 채워보세요!';
+    else if (pct < 25) msg = '🔥 좋은 시작이에요! 가계도에서 더 많은 감정을 발견해보세요.';
+    else if (pct < 50) msg = '⭐ 벌써 절반 가까이! 계속 탐험해봐요!';
+    else if (pct < 75) msg = '🎯 절반 넘었어요! 숨겨진 감정들을 찾아보세요.';
+    else if (pct < 100) msg = '🏆 거의 다 모았어요! 마지막까지 화이팅!';
+    else msg = '🎊 모든 감정을 수집했어요! 감정 박사!';
+
+    document.getElementById('dex-count').innerHTML = `
+        <div style="font-weight:900; color:var(--primary);">수집: ${collected} / ${total} (${pct}%)</div>
+        <div style="font-size:13px; color:var(--text-light); margin-top:4px;">${msg}</div>
+        <div style="height:8px; background:#E5E7EB; border-radius:4px; margin-top:8px; overflow:hidden;">
+            <div style="height:100%; width:${pct}%; background:var(--gradient); border-radius:4px; transition:width 0.5s;"></div>
+        </div>`;
+}
+
+window.showDexDetail = function(key) {
+    let found = null;
+    Object.entries(EMOTIONS).forEach(([rk, root]) => {
+        Object.entries(root.children).forEach(([mk, mid]) => {
+            if (mid.children[key]) {
+                found = { root, mid, child: mid.children[key], rootKey: rk, midKey: mk };
+            }
+        });
+    });
+    if (!found) return;
+    showChildDetail(found.rootKey, found.midKey, key);
+};
+
+// ═══════════════════════════════════════════════════════
+// 감정 처방전
+// ═══════════════════════════════════════════════════════
+window.openPrescription = function() {
+    const box = document.getElementById('rx-chips');
+    if (box) {
+        const mine = Array.from(collectedEmotions).filter(k => DETAIL_INFO[k]);
+        if (mine.length) {
+            box.innerHTML = `<div style="font-size:13px; color:var(--text-light); font-weight:700; margin-bottom:6px;">📖 내가 모은 감정에서 골라도 좋아요 (누르면 채워져요)</div>`
+                + `<div class="emotion-child-grid">`
+                + mine.map(k => `<button class="emotion-child-btn" onclick="pickRxEmotion('${DETAIL_INFO[k].name}')">${DETAIL_INFO[k].emoji} ${DETAIL_INFO[k].name}</button>`).join('')
+                + `</div>`;
+        } else {
+            box.innerHTML = `<div style="font-size:13px; color:var(--text-light); font-weight:500;">🌱 감정 도감을 채우면 여기에서 골라 쓸 수 있어요.</div>`;
+        }
+    }
+    showScreen('screen-prescription');
+};
+
+window.pickRxEmotion = function(name) {
+    const el = document.getElementById('rx-emotion');
+    if (el) { el.value = name; el.focus(); }
+};
+
+// 완료 화면 → 이름표 공장 재도전
+window.retryFromComplete = function() {
+    backToMain();
+    switchMainTab('factory');
+    retryGame();
+    showToast('🏭 새로운 문제로 다시 도전해요!', 'success');
+};
+
+window.submitPrescription = async function() {
+    const emotion = document.getElementById('rx-emotion').value.trim();
+    const when = document.getElementById('rx-when').value.trim();
+    const cure = document.getElementById('rx-cure').value.trim();
+
+    if (!emotion) { showToast('발견한 감정 이름을 적어주세요.', 'error'); return; }
+    if (!when) { showToast('언제 느꼈는지 적어주세요.', 'error'); return; }
+    if (!cure) { showToast('처방을 적어주세요.', 'error'); return; }
+
+    const rxData = { prescriptionEmotion: emotion, prescriptionWhen: when, prescriptionCure: cure, completedAt: new Date().toISOString() };
+
+    prescriptionDone = true;
+
+    if (isSoloMode) {
+        soloData.prescription = { emotion, when, cure };
+    } else {
+        await DB.saveStudent(currentRoomCode, currentNickname, rxData);
+    }
+
+    // 완료 화면
+    const correct = gameResults.filter(Boolean).length;
+    document.getElementById('complete-summary').innerHTML = `
+        <div style="margin:16px 0;">
+            <div class="score-display">🏆 최고 기록: ${bestScore}점</div>
+            <p style="font-size:15px; color:var(--text-light); margin-top:8px;">
+                총 ${totalGamesPlayed}회 도전 | 이번 ${gameResults.length}장면 중 ${correct}장면이 많은 친구들과 같았어요
+            </p>
+            <div style="background:rgba(124,58,237,0.06); border-radius:12px; padding:12px; margin-top:12px;">
+                <div style="font-size:16px; font-weight:900; color:var(--primary);">📖 도감 수집: ${collectedEmotions.size} / ${DETAIL_TOTAL}</div>
+                <div style="height:8px; background:#E5E7EB; border-radius:4px; margin-top:8px; overflow:hidden;">
+                    <div style="height:100%; width:${Math.round(collectedEmotions.size/DETAIL_TOTAL*100)}%; background:var(--gradient); border-radius:4px;"></div>
+                </div>
+            </div>
+        </div>`;
+
+    const rxCard = document.getElementById('complete-prescription');
+    rxCard.style.display = 'block';
+    // ⭐ 처방전 자유입력 3칸 이스케이프
+    rxCard.innerHTML = `
+        <h3 style="text-align:center; margin-bottom:12px;">📝 나의 감정 처방전</h3>
+        <p><strong>💊 감정 이름:</strong> ${esc(emotion)}</p>
+        <p><strong>🕐 언제:</strong> ${esc(when)}</p>
+        <p><strong>💡 처방:</strong> ${esc(cure)}</p>`;
+
+    if (isSoloMode) document.getElementById('solo-download-btn').style.display = 'block';
+    showScreen('screen-complete');
+    showToast('🎉 멋지게 완성했어요!', 'success');
+};
+
+// 혼자체험 결과 저장
+window.downloadSoloResult = function() {
+    const collectedNames = (soloData.collected || []).filter(k => DETAIL_INFO[k]).map(k => DETAIL_INFO[k].name);
+
+    const text = `[감정에도 이름이 있다 - 나의 결과]\n\n` +
+        `🏆 최고 점수: ${soloData.bestScore || 0}점\n` +
+        `🎮 도전 횟수: ${totalGamesPlayed}회\n` +
+        `📖 도감 수집: ${collectedNames.length}/${DETAIL_TOTAL}개\n` +
+        `수집한 감정: ${collectedNames.join(', ') || '없음'}\n\n` +
+        `[감정 처방전]\n` +
+        `감정: ${soloData.prescription?.emotion || '-'}\n` +
+        `언제: ${soloData.prescription?.when || '-'}\n` +
+        `처방: ${soloData.prescription?.cure || '-'}\n`;
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = '감정이름_나의결과.txt'; a.click();
+    showToast('📄 결과가 저장되었습니다!', 'success');
+};
+
+// ═══════════════════════════════════════════════════════
+// 교사 대시보드
+// ═══════════════════════════════════════════════════════
+function openDashboard() {
+    document.getElementById('dash-room-code').textContent = currentRoomCode;
+    showScreen('screen-dashboard');
+    startDashboardListener();
+    renderTTSSections();
+}
+
+function startDashboardListener() {
+    if (unsubscribe) unsubscribe();
+    unsubscribe = DB.onStudentsChange(currentRoomCode, (students) => {
+        dashboardData = students;
+        updateDashboard(students);
+    });
+}
+
+window.refreshDashboard = function() {
+    // 조용히 갱신 (팝업 없음)
+    if (unsubscribe) unsubscribe();
+    startDashboardListener();
+};
+
+// 대시보드용 감정 이름 색인 (모듈 스코프의 DETAIL_INFO 재사용)
+const EMOTION_NAME = {};
+Object.keys(DETAIL_INFO).forEach(k => { EMOTION_NAME[k] = DETAIL_INFO[k].emoji + ' ' + DETAIL_INFO[k].name; });
+
+// 막대 그래프 렌더러 (항목이 많아도 잘리지 않도록 세로 누적형)
+function renderBarChart(title, rows, color) {
+    let h = `<h3 style="margin-bottom:12px;">${title}</h3>`;
+    const max = Math.max(1, ...rows.map(r => r[1]));
+    if (!rows.some(r => r[1] > 0)) {
+        return h + `<p style="text-align:center; color:var(--text-light); font-size:14px; font-weight:500;">아직 데이터가 없습니다.</p>`;
+    }
+    rows.forEach(([label, count]) => {
+        const pct = count ? Math.max(10, Math.round(count / max * 100)) : 0;
+        h += `<div class="chart-bar-container">
+            <div class="chart-bar-label">${label} <span style="color:var(--text-light); font-weight:500;">${count}명</span></div>
+            <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${pct}%; background:${color};">${count || ''}</div></div>
+        </div>`;
+    });
+    return h;
+}
+
+function updateDashboard(students) {
+    const entries = Object.entries(students);
+    const total = entries.length;
+    const completed = entries.filter(([,d]) => d.completedAt).length;
+
+    // 참여 현황
+    document.getElementById('dash-participation').innerHTML = `
+        <h3 style="margin-bottom:12px;">📊 참여 현황</h3>
+        <div style="display:flex; justify-content:space-around; text-align:center;">
+            <div><div style="font-size:32px; color:var(--primary); font-weight:900;">${total}</div><div style="font-size:14px; color:var(--text-light);">참여</div></div>
+            <div><div style="font-size:32px; color:var(--success); font-weight:900;">${completed}</div><div style="font-size:14px; color:var(--text-light);">완료</div></div>
+        </div>
+        <div style="margin-top:12px; height:8px; background:#E5E7EB; border-radius:4px; overflow:hidden;">
+            <div style="height:100%; width:${total?Math.round(completed/total*100):0}%; background:var(--success); border-radius:4px; transition:width 0.5s;"></div>
+        </div>`;
+
+    // 게임 통계
+    const bestScores = entries.map(([,d]) => d.bestScore || d.gameScore || 0).filter(v => v > 0);
+    const avgBest = bestScores.length ? Math.round(bestScores.reduce((a,b)=>a+b,0)/bestScores.length) : 0;
+    const topScore = bestScores.length ? Math.max(...bestScores) : 0;
+    const avgCollected = entries.map(([,d]) => d.collectedCount||0).filter(v => v > 0);
+    const avgC = avgCollected.length ? Math.round(avgCollected.reduce((a,b)=>a+b,0)/avgCollected.length) : 0;
+    const totalPlays = entries.reduce((sum,[,d]) => sum + (d.gamesPlayed||0), 0);
+
+    document.getElementById('dash-game-stats').innerHTML = `
+        <h3 style="margin-bottom:12px;">🎮 게임 통계</h3>
+        <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px; text-align:center;">
+            <div style="background:#F3F4F6; border-radius:12px; padding:12px;">
+                <div style="font-size:24px; font-weight:900; color:var(--primary);">⭐ ${avgBest}</div>
+                <div style="font-size:13px; color:var(--text-light);">평균 최고점수</div>
+            </div>
+            <div style="background:#F3F4F6; border-radius:12px; padding:12px;">
+                <div style="font-size:24px; font-weight:900; color:var(--warning);">🏆 ${topScore}</div>
+                <div style="font-size:13px; color:var(--text-light);">반 최고점수</div>
+            </div>
+            <div style="background:#F3F4F6; border-radius:12px; padding:12px;">
+                <div style="font-size:24px; font-weight:900; color:var(--success);">📖 ${avgC}</div>
+                <div style="font-size:13px; color:var(--text-light);">평균 도감수집</div>
+            </div>
+            <div style="background:#F3F4F6; border-radius:12px; padding:12px;">
+                <div style="font-size:24px; font-weight:900; color:#EC4899;">🔄 ${totalPlays}</div>
+                <div style="font-size:13px; color:var(--text-light);">총 도전 횟수</div>
+            </div>
+        </div>`;
+
+    // 점수 분포 / 도감 수집률 분포 / 많이 모은 감정
+    const played = entries.filter(([,d]) => (d.gamesPlayed || 0) > 0 || (d.bestScore || d.gameScore || 0) > 0);
+    const scoreBins = [['0~99점',0],['100~149점',0],['150~199점',0],['200~249점',0],['250점 이상',0]];
+    played.forEach(([,d]) => {
+        const v = d.bestScore || d.gameScore || 0;
+        const idx = v < 100 ? 0 : v < 150 ? 1 : v < 200 ? 2 : v < 250 ? 3 : 4;
+        scoreBins[idx][1]++;
+    });
+    const dexBins = [['0~9개',0],['10~18개',0],['19~27개',0],['28~35개',0],['36개 완성',0]];
+    entries.forEach(([,d]) => {
+        const v = d.collectedCount || 0;
+        const idx = v < 10 ? 0 : v < 19 ? 1 : v < 28 ? 2 : v < 36 ? 3 : 4;
+        dexBins[idx][1]++;
+    });
+    const dexFreq = {};
+    entries.forEach(([,d]) => (d.collectedList || []).forEach(k => { if (EMOTION_NAME[k]) dexFreq[k] = (dexFreq[k]||0)+1; }));
+    const topDex = Object.entries(dexFreq).sort((a,b) => b[1]-a[1]).slice(0,6);
+
+    let distHtml = renderBarChart('🎯 게임 최고점수 분포', scoreBins, 'var(--primary)');
+    distHtml += `<div style="height:12px;"></div>`;
+    distHtml += renderBarChart('📖 감정 도감 수집률 분포', dexBins, 'var(--success)');
+    if (topDex.length) {
+        distHtml += `<div style="margin-top:14px;"><div class="chart-bar-label">🌟 우리 반이 많이 모은 감정</div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">`
+            + topDex.map(([k,c]) => `<span class="badge">${EMOTION_NAME[k]} ${c}명</span>`).join('')
+            + `</div></div>`;
+    }
+    document.getElementById('dash-distribution').innerHTML = distHtml;
+
+    // 감정 처방전 워드 클라우드
+    const emotions = entries.map(([,d]) => d.prescriptionEmotion).filter(Boolean);
+    let cloudHtml = `<h3 style="margin-bottom:12px;">💊 감정 처방전 키워드</h3>`;
+    if (emotions.length) {
+        const freq = {}; emotions.forEach(e => freq[e] = (freq[e]||0)+1);
+        const sorted = Object.entries(freq).sort((a,b) => b[1]-a[1]);
+        cloudHtml += `<div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center;">`;
+        sorted.forEach(([word, count]) => {
+            const size = Math.min(12 + count * 4, 28);
+            cloudHtml += `<span style="font-size:${size}px; color:var(--primary); opacity:${0.5 + count*0.15}; padding:4px 8px;">${esc(word)}</span>`;   // ⭐ 처방전 감정어 이스케이프
+        });
+        cloudHtml += `</div>`;
+    } else {
+        cloudHtml += `<p style="text-align:center; color:var(--text-light); font-size:14px;">아직 데이터가 없습니다.</p>`;
+    }
+    document.getElementById('dash-emotion-cloud').innerHTML = cloudHtml;
+
+    // 상세기록
+    let detailHtml = `<h3 style="margin-bottom:12px;">📋 학생별 상세 기록</h3>`;
+    if (!entries.length) {
+        detailHtml += `<p style="text-align:center; color:var(--text-light);">참여한 학생이 없습니다.</p>`;
+    } else {
+        // ⭐ 닉네임·처방전은 학생 자유입력 → esc()로 감싸 화면 깨짐 방지
+        entries.forEach(([name, data]) => {
+            detailHtml += `<div style="border:1px solid #E5E7EB; border-radius:12px; padding:12px; margin:8px 0;">
+                <div style="font-weight:900; color:var(--primary);">${esc(name)}</div>
+                <div style="font-size:13px; color:var(--text-light); margin:4px 0;">
+                    참여: ${data.joinedAt ? new Date(data.joinedAt).toLocaleString('ko-KR') : '-'}
+                    ${data.completedAt ? ' | ✅ 완료' : ''}
+                </div>
+                <div style="font-size:14px; margin-top:6px;">
+                    ${data.bestScore !== undefined ? `🏆 최고: ${data.bestScore}점 | ` : (data.gameScore !== undefined ? `⭐ 점수: ${data.gameScore}점 | ` : '')}
+                    ${data.collectedCount !== undefined ? `📖 수집: ${data.collectedCount}/${DETAIL_TOTAL}개 | ` : ''}
+                    ${data.gamesPlayed ? `🔄 ${data.gamesPlayed}회 도전` : ''}
+                </div>
+                ${data.prescriptionEmotion ? `<div style="font-size:14px; margin-top:6px; padding:8px; background:#F0FDF4; border-radius:8px;">
+                    💊 <strong>${esc(data.prescriptionEmotion)}</strong>: ${esc(data.prescriptionCure || '-')}
+                </div>` : ''}
+            </div>`;
+        });
+    }
+    document.getElementById('dash-student-list').innerHTML = detailHtml;
+}
+
+// 대시보드 탭 전환
+window.switchDashTab = function(tab) {
+    const tabs = ['overview','detail','export','tts'];
+    document.querySelectorAll('#screen-dashboard > .tab-bar .tab-btn').forEach((b,i) => {
+        b.classList.toggle('active', tabs[i]===tab);
+    });
+    tabs.forEach(t => {
+        const el = document.getElementById('dash-tab-'+t);
+        if(el) el.classList.toggle('active', t===tab);
+    });
+};
+
+// 엑셀 다운로드
+window.downloadExcel = function() {
+    const entries = Object.entries(dashboardData);
+    if (!entries.length) { showToast('내보낼 데이터가 없습니다.', 'error'); return; }
+    const wsData = [['닉네임','참여시간','완료시간','최고점수','도전횟수','최근점수','일치수','총장면','도감수집','처방전 감정','처방전 상황','처방전 처방']];
+    entries.forEach(([name, d]) => {
+        wsData.push([name,
+            d.joinedAt ? new Date(d.joinedAt).toLocaleString('ko-KR') : '',
+            d.completedAt ? new Date(d.completedAt).toLocaleString('ko-KR') : '',
+            d.bestScore || d.gameScore || 0, d.gamesPlayed || 0,
+            d.gameScore || 0, d.gameCorrect || 0, d.gameTotal || 0, d.collectedCount || 0,
+            d.prescriptionEmotion || '', d.prescriptionWhen || '', d.prescriptionCure || ''
+        ]);
+    });
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '참여결과');
+    XLSX.writeFile(wb, `SEL_감정이름_결과_${currentRoomCode}.xlsx`);
+    showToast('📊 엑셀이 다운로드되었습니다!', 'success');
+};
+
+// PDF 다운로드 - dashboardData에서 직접 빌드 (v3.3)
+window.downloadPDF = function() {
+    const entries = Object.entries(dashboardData);
+    if (!entries.length) { showToast('내보낼 데이터가 없습니다.', 'error'); return; }
+
+    let pdfBody = '';
+
+    // 참여 현황
+    const total = entries.length;
+    const completed = entries.filter(([,d]) => d.completedAt).length;
+    pdfBody += `<div class="card"><h3>📊 참여 현황</h3><p>참여 ${total}명 / 완료 ${completed}명</p></div>`;
+
+    // 게임 통계
+    const bestScoresP = entries.map(([,d]) => d.bestScore || d.gameScore || 0).filter(v => v > 0);
+    const avgBestP = bestScoresP.length ? Math.round(bestScoresP.reduce((a,b)=>a+b,0)/bestScoresP.length) : 0;
+    const topScoreP = bestScoresP.length ? Math.max(...bestScoresP) : 0;
+    const totalPlaysP = entries.reduce((sum,[,d]) => sum + (d.gamesPlayed||0), 0);
+    const dexCountsP = entries.map(([,d]) => d.collectedCount || 0);
+    const avgDexP = dexCountsP.length ? Math.round(dexCountsP.reduce((a,b)=>a+b,0)/dexCountsP.length) : 0;
+    pdfBody += `<div class="card"><h3>🎮 게임 통계</h3><p>평균 최고점수: ${avgBestP}점 | 반 최고점수: ${topScoreP}점 | 총 도전 횟수: ${totalPlaysP}회 | 평균 도감 수집: ${avgDexP}/${DETAIL_TOTAL}개</p></div>`;
+
+    // 점수 분포 / 수집률 분포 (표로)
+    const binsP = [['0~99점',0],['100~149점',0],['150~199점',0],['200~249점',0],['250점 이상',0]];
+    entries.forEach(([,d]) => {
+        const v = d.bestScore || d.gameScore || 0;
+        if (!v && !(d.gamesPlayed||0)) return;
+        binsP[v < 100 ? 0 : v < 150 ? 1 : v < 200 ? 2 : v < 250 ? 3 : 4][1]++;
+    });
+    const dexBinsP = [['0~9개',0],['10~18개',0],['19~27개',0],['28~35개',0],['36개 완성',0]];
+    entries.forEach(([,d]) => {
+        const v = d.collectedCount || 0;
+        dexBinsP[v < 10 ? 0 : v < 19 ? 1 : v < 28 ? 2 : v < 36 ? 3 : 4][1]++;
+    });
+    pdfBody += `<div class="card"><h3>📈 분포</h3><table><tr><th>구간</th>` + binsP.map(b=>`<th>${b[0]}</th>`).join('') + `</tr>`;
+    pdfBody += `<tr><td>최고점수</td>` + binsP.map(b=>`<td>${b[1]}명</td>`).join('') + `</tr></table>`;
+    pdfBody += `<table><tr><th>구간</th>` + dexBinsP.map(b=>`<th>${b[0]}</th>`).join('') + `</tr>`;
+    pdfBody += `<tr><td>도감 수집</td>` + dexBinsP.map(b=>`<td>${b[1]}명</td>`).join('') + `</tr></table></div>`;
+
+    // 학생별 상세
+    pdfBody += `<div class="card"><h3>📋 학생별 상세 기록</h3>`;
+    pdfBody += `<table><tr><th>닉네임</th><th>참여시간</th><th>최고점수</th><th>도전횟수</th><th>도감</th><th>처방전 감정</th><th>처방</th></tr>`;
+    entries.forEach(([name, d]) => {
+        pdfBody += `<tr><td>${esc(name)}</td>`;   // ⭐ 닉네임 이스케이프 (PDF 출력)
+        pdfBody += `<td>${d.joinedAt ? new Date(d.joinedAt).toLocaleString('ko-KR') : '-'}</td>`;
+        pdfBody += `<td>${d.bestScore || d.gameScore || 0}</td>`;
+        pdfBody += `<td>${d.gamesPlayed || 0}</td>`;
+        pdfBody += `<td>${d.collectedCount || 0}/${DETAIL_TOTAL}</td>`;
+        pdfBody += `<td>${esc(d.prescriptionEmotion || '-')}</td>`;   // ⭐ 처방전 자유입력 이스케이프 (PDF 출력)
+        pdfBody += `<td>${esc(d.prescriptionCure || '-')}</td></tr>`;
+    });
+    pdfBody += `</table></div>`;
+
+    try {
+        const pw = window.open('', '_blank');
+        if (pw) {
+            pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SEL 대시보드 출력</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{font-family:'Noto Sans KR',sans-serif;margin:0;padding:0;box-sizing:border-box}
+body{padding:24px;font-size:14px;color:#1F2937;line-height:1.6}
+.print-header{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #7C3AED}
+.print-header h2{color:#7C3AED;font-size:20px;margin-bottom:4px}
+.print-header p{color:#6B7280;font-size:12px}
+.card{border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin:12px 0;page-break-inside:avoid}
+table{width:100%;border-collapse:collapse;margin:8px 0}
+th,td{border:1px solid #E5E7EB;padding:8px 10px;text-align:left;font-size:13px}
+th{background:#F3F4F6;font-weight:700}
+h3{color:#7C3AED;font-size:16px;margin:12px 0 8px}
+.print-guide{background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;text-align:center}
+@media print{.print-guide{display:none}}
+</style></head><body>
+<div class="print-guide">💡 <strong>PDF로 저장하려면:</strong> 인쇄 대화상자에서 "대상"을 <strong>"PDF로 저장"</strong>으로 선택하세요.</div>
+<div class="print-header"><h2>📊 감정에도 이름이 있다 - 대시보드</h2>
+<p>방 코드: ${currentRoomCode} | 출력: ${new Date().toLocaleString('ko-KR')}</p></div>
+${pdfBody}
+<scr`+`ipt>setTimeout(function(){window.print();},1000);</scr`+`ipt>
+</body></html>`);
+            pw.document.close();
+            showToast('📄 새 창에서 인쇄 화면이 열립니다.', 'success');
+            return;
+        }
+    } catch(e) { console.log('[PDF] 새 창 실패'); }
+    try { showToast('📄 인쇄 대화상자에서 PDF로 저장을 선택해주세요.'); setTimeout(()=>window.print(),500); return; } catch(e){}
+    showToast('📄 Ctrl+P (Mac: ⌘+P)를 눌러 PDF로 저장해주세요.');
+};
+
+// TTS
+let currentUtterance = null;
+let isSpeaking = false;
+
+function renderTTSSections() {
+    const sections = [
+        { id: 'tts-story', name: '📖 스토리', text: '민준이는 국어 시간에 교과서를 넘기다 갑자기 책을 덮었어요. 옆자리 친구가 무심코 던진 한마디에 얼굴이 굳었어요. 선생님이 물었어요. 지금 어떤 기분이야? 민준이는 그냥 기분 나빠요, 짜증나요 라고 답했어요. 하지만 그 안에는 서운함도, 억울함도 숨어있을 수 있어요.' },
+        { id: 'tts-tree', name: '🌳 가계도 설명', text: '감정에도 가족이 있어요. 슬픔이라는 큰 감정 안에는 서운함, 외로움, 허무함 같은 중간 감정이 있고, 서운함 안에는 섭섭함, 배신감, 실망이 있어요. 이렇게 내 감정에 더 정확한 이름을 붙여주면, 감정이 조금 작아지고 다룰 수 있게 됩니다.' },
+        { id: 'tts-game', name: '🏭 게임 안내', text: '이제 감정 이름표 공장에서 연습해 볼까요? 상황을 읽고, 많은 친구들이 느낄 만한 감정 이름표를 골라 붙여 보세요. 다른 감정을 골라도 괜찮아요. 왜 그런지 앱이 이야기해 줄 거예요. 레벨이 올라갈수록 더 세밀한 감정을 구별하게 돼요. 힌트가 필요하면 가계도 보기 버튼을 눌러보세요.' },
+        { id: 'tts-dex', name: '📖 도감 안내', text: '감정 도감은 여러분이 만난 감정을 모으는 곳이에요. 가계도에서 세부 감정을 눌러 도감에 수집하기를 누르거나, 이름표 공장에서 문제를 맞히면 도감이 채워져요. 서른여섯 개를 모두 모으면 감정 박사가 됩니다. 아직 모으지 못한 감정이 있다면 다시 도전해 보세요.' },
+        { id: 'tts-reflection', name: '📝 마무리', text: '오늘 우리는 짜증나요, 기분 나빠요 같은 큰 감정 안에 숨어있는 작은 감정들의 이름을 찾아봤어요. 감정에는 옳고 그름이 없어요. 모든 감정은 내 마음을 알려주는 소중한 신호입니다. 앞으로 마음이 복잡할 때, 오늘 배운 감정 이름을 떠올려 보세요.' }
+    ];
+
+    let html = '';
+    sections.forEach(s => {
+        html += `<div style="margin:12px 0; padding:12px; background:#F9FAFB; border-radius:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:14px; font-weight:700;">${s.name}</span>
+                <div>
+                    <button class="btn-small nav-btn" onclick="speakText('${s.id}')">▶️</button>
+                    <button class="btn-small nav-btn" onclick="previewScript('${s.id}')">📝</button>
+                </div>
+            </div>
+            <div id="${s.id}" style="display:none;">${s.text}</div>
+        </div>`;
+    });
+    document.getElementById('tts-sections').innerHTML = html;
+}
+
+window.speakText = function(sectionId) {
+    if (isSpeaking) { window.speechSynthesis.cancel(); isSpeaking = false; }
+    const text = document.getElementById(sectionId)?.textContent;
+    if (!text) return;
+    currentUtterance = new SpeechSynthesisUtterance(text);
+    currentUtterance.lang = 'ko-KR';
+    currentUtterance.rate = 0.9;
+    currentUtterance.onend = () => { isSpeaking = false; };
+    window.speechSynthesis.speak(currentUtterance);
+    isSpeaking = true;
+};
+
+window.stopSpeaking = function() {
+    window.speechSynthesis.cancel();
+    isSpeaking = false;
+};
+
+window.previewScript = function(sectionId) {
+    const text = document.getElementById(sectionId)?.textContent || '';
+    document.getElementById('hintContent').innerHTML = `<h3 style="color:var(--primary); margin-bottom:12px;">📝 스크립트 미리보기</h3><p style="font-size:15px; line-height:1.8; font-weight:500;">${text}</p>`;
+    document.getElementById('hintModal').classList.add('show');
+};
+
+// 데이터 초기화
+window.confirmReset = function() {
+    // ⭐ 방 문서는 남기고 학생 기록만 삭제 — 같은 방 코드·비밀번호로 다음 반 수업을 이어갈 수 있도록
+    showConfirmModal('정말 초기화하시겠습니까?<br><strong>모든 학생 기록</strong>이 삭제됩니다.<br>방 코드와 비밀번호는 그대로 유지되어 다시 수업할 수 있어요.<br><span style="color:var(--error);">이 작업은 되돌릴 수 없습니다!</span>', async () => {
+        await DB.deleteStudentsOnly(currentRoomCode);
+        showToast('🗑️ 학생 기록이 초기화되었습니다.', 'success');
+        if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+        showScreen('screen-start');
+    });
+};
+
+// 초기화
+console.log('[SEL] 감정에도 이름이 있다 v3.4 ready');
+</script>
+</body>
+</html>

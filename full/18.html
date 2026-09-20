@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>불안·우울·스트레스 이해하기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+    --primary: #7C3AED;
+    --primary-light: #A78BFA;
+    --primary-dark: #5B21B6;
+    --gradient: linear-gradient(135deg, #7C3AED 0%, #A78BFA 50%, #C4B5FD 100%);
+    --gradient-bg: linear-gradient(135deg, #EDE9FE 0%, #F5F3FF 50%, #FFFFFF 100%);
+    --success: #10B981;
+    --error: #EF4444;
+    --warning: #F59E0B;
+    --text: #1E1B4B;
+    --text-light: #6B7280;
+    --bg-card: rgba(255,255,255,0.95);
+}
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Noto Sans KR',sans-serif; }
+body { background:var(--gradient-bg); min-height:100vh; color:var(--text); font-weight:700; font-size:18px; line-height:1.7; overflow-x:hidden; }
+h1,h2 { font-weight:900; }
+
+.screen { display:none; }
+.screen.active { display:block; animation:fadeIn 0.3s; }
+@keyframes fadeIn { from{opacity:0}to{opacity:1} }
+@keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)} }
+
+.container { max-width:500px; margin:0 auto; padding:16px; }
+@media(min-width:769px){.container{max-width:600px;}}
+@media(max-width:768px){body{font-size:16px;padding:0;}.container{max-width:100%;padding:12px;}}
+
+.header-bar { background:var(--gradient); color:#fff; padding:16px 20px; border-radius:20px; text-align:center; margin-bottom:20px; box-shadow:0 4px 20px rgba(124,58,237,0.25); }
+.header-bar h1 { font-size:22px; }
+.header-bar p { font-size:14px; opacity:0.9; margin-top:4px; }
+
+.card { background:var(--bg-card); border-radius:20px; padding:24px; margin:12px 0; box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+
+.btn { padding:16px 24px; border-radius:16px; font-size:17px; font-weight:900; font-family:'Noto Sans KR',sans-serif; border:none; cursor:pointer; min-height:52px; transition:all 0.2s; width:100%; max-width:400px; display:block; margin:0 auto; text-align:center; }
+.btn-primary { background:var(--gradient); color:white; box-shadow:0 4px 15px rgba(124,58,237,0.3); }
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 6px 24px rgba(124,58,237,0.4); }
+.btn-primary:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+.btn-secondary { background:rgba(124,58,237,0.1); color:var(--primary); border:2px solid var(--primary-light); }
+.btn-danger { background:var(--error); color:#fff; }
+.btn-success { background:var(--success); color:#fff; }
+.btn-sm { padding:10px 18px; font-size:15px; min-height:40px; width:auto; display:inline-block; }
+.btn-group { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+.btn-group .btn { flex:1; min-width:100px; }
+
+input, textarea { min-height:48px; font-size:16px; font-family:'Noto Sans KR',sans-serif; font-weight:700; border:2px solid #E5E7EB; border-radius:12px; padding:12px 16px; width:100%; box-sizing:border-box; }
+input:focus, textarea:focus { border-color:var(--primary); outline:none; box-shadow:0 0 0 3px rgba(124,58,237,0.1); }
+textarea { min-height:80px; resize:vertical; }
+
+.privacy-notice { background:rgba(124,58,237,0.05); border:1px solid rgba(124,58,237,0.15); border-radius:12px; padding:14px; font-size:13px; font-weight:400; color:var(--text-light); line-height:1.6; margin-top:16px; }
+
+.nav-buttons { display:flex; gap:10px; margin-bottom:16px; }
+.nav-btn { background:rgba(124,58,237,0.1); color:var(--primary); border:none; padding:8px 16px; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; }
+.nav-btn:hover { background:rgba(124,58,237,0.2); }
+
+.emoji-big { font-size:64px; display:block; text-align:center; margin:16px 0; animation:float 3s ease-in-out infinite; }
+.badge { display:inline-block; padding:4px 14px; border-radius:20px; font-size:14px; font-weight:700; background:#EDE9FE; color:var(--primary); }
+
+.progress-bar { background:#E5E7EB; border-radius:20px; height:10px; margin:12px 0; overflow:hidden; }
+.progress-fill { background:var(--gradient); height:100%; border-radius:20px; transition:width 0.5s; }
+
+.step-indicator { display:flex; justify-content:center; gap:8px; margin:12px 0; }
+.step-dot { width:10px; height:10px; border-radius:50%; background:#E5E7EB; transition:all 0.3s; }
+.step-dot.active { background:var(--primary); width:28px; border-radius:5px; }
+.step-dot.done { background:var(--success); }
+
+.story-box { background:linear-gradient(135deg,#FEF3C7,#FDE68A); border-radius:20px; padding:20px; margin:16px 0; border-left:5px solid #F59E0B; line-height:1.8; font-size:16px; font-weight:400; }
+.story-box strong { font-weight:900; color:#92400E; }
+.story-box .character { font-weight:900; color:var(--primary-dark); }
+
+.think-bubble { background:#fff; border:2px solid var(--primary-light); border-radius:20px 20px 20px 4px; padding:16px 20px; margin:12px 0; font-size:16px; font-weight:400; line-height:1.7; }
+
+.scenario-box { background:#fff; border:2px solid #E5E7EB; border-radius:20px; padding:20px; margin:12px 0; }
+.scenario-box.anxiety { border-color:#FCA5A5; background:linear-gradient(135deg,#FEF2F2,#FFF); }
+.scenario-box.depression { border-color:#93C5FD; background:linear-gradient(135deg,#EFF6FF,#FFF); }
+.scenario-box.stress { border-color:#FCD34D; background:linear-gradient(135deg,#FFFBEB,#FFF); }
+
+.choice-btn { display:block; width:100%; text-align:left; padding:16px; margin:8px 0; border:2px solid #E5E7EB; border-radius:14px; background:white; cursor:pointer; transition:all 0.2s; font-size:16px; font-weight:700; font-family:'Noto Sans KR',sans-serif; }
+.choice-btn:hover { border-color:var(--primary-light); background:rgba(124,58,237,0.04); }
+.choice-btn.selected { border-color:var(--primary); background:rgba(124,58,237,0.08); box-shadow:0 0 0 3px rgba(124,58,237,0.15); transform:scale(1.02); }
+.choice-btn.selected::after { content:' ✓'; color:var(--primary); font-weight:900; }
+
+.reflection-box { background:linear-gradient(135deg,#F0FDF4,#ECFDF5); border:2px solid #86EFAC; border-radius:20px; padding:20px; margin:16px 0; }
+
+.crisis-box { background:linear-gradient(135deg,#FEF2F2,#FFF1F2); border:2px solid #FCA5A5; border-radius:20px; padding:20px; margin:16px 0; }
+.crisis-box h3 { color:#DC2626; font-size:18px; margin-bottom:12px; }
+.crisis-number { display:flex; align-items:center; gap:12px; padding:10px; background:#fff; border-radius:8px; margin:8px 0; }
+.crisis-number .number { font-size:20px; font-weight:900; color:#DC2626; }
+
+.stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); gap:12px; margin:12px 0; }
+.stat-box { background:var(--gradient); color:#fff; border-radius:12px; padding:16px; text-align:center; }
+.stat-box .stat-num { font-size:28px; font-weight:900; }
+.stat-box .stat-label { font-size:13px; opacity:0.9; margin-top:4px; }
+
+.tab-bar { display:flex; border-bottom:3px solid #E5E7EB; margin-bottom:16px; overflow-x:auto; }
+.tab-item { padding:12px 16px; font-size:14px; font-weight:700; cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-3px; white-space:nowrap; color:var(--text-light); }
+.tab-item.active { color:var(--primary); border-bottom-color:var(--primary); }
+
+.word-cloud { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; padding:16px; background:#F9FAFB; border-radius:16px; min-height:60px; }
+
+/* ═══ 토스트 ═══ */
+#toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); background:rgba(31,41,55,0.95); color:white; padding:14px 28px; border-radius:14px; font-size:15px; font-weight:700; z-index:10000; opacity:0; transition:all 0.3s; max-width:90%; text-align:center; }
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ═══ 커스텀 확인 모달 (부록C 패턴) ═══ */
+.modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9998; justify-content:center; align-items:center; padding:20px; }
+.modal-content { background:#fff; border-radius:20px; padding:28px; max-width:420px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.2); max-height:80vh; overflow-y:auto; }
+.modal-icon { font-size:48px; text-align:center; margin-bottom:12px; }
+.modal-message { font-size:16px; line-height:1.7; margin-bottom:20px; font-weight:400; }
+.modal-buttons { display:flex; gap:10px; }
+.modal-buttons .btn { flex:1; }
+
+/* ═══ 인쇄용 스타일 (PDF fallback) ═══ */
+@media print {
+    body * { visibility:hidden; }
+    #dashboard-content, #dashboard-content * { visibility:visible; }
+    #dashboard-content { position:absolute; left:0; top:0; width:100%; }
+    .btn, .nav-buttons, .tab-bar, #toast, .modal-overlay, .tab-item { display:none !important; }
+    .card { break-inside:avoid; box-shadow:none; border:1px solid #ddd; }
+}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+
+<!-- ═══ 커스텀 확인 모달 (부록C 패턴) ═══ -->
+<div id="confirmModal" class="modal-overlay" style="display:none">
+    <div class="modal-content">
+        <div class="modal-icon">⚠️</div>
+        <div class="modal-message" id="confirmMessage"></div>
+        <div class="modal-buttons">
+            <button class="btn btn-secondary btn-sm" onclick="closeConfirmModal()">취소</button>
+            <button class="btn btn-primary btn-sm" id="confirmOkBtn" style="background:var(--error)">확인</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════ 시작 화면 ═══════════════ -->
+<div id="screen-start" class="screen active">
+<div class="container">
+    <div class="header-bar">
+        <h1>🧠 불안·우울·스트레스 이해하기</h1>
+        <p>마음건강 영역 | 사회정서교육</p>
+    </div>
+    <div class="card" style="text-align:center;">
+        <span class="emoji-big">🌧️</span>
+        <h2>마음 속 날씨를 이해해 볼까요?</h2>
+        <p style="font-weight:400;color:var(--text-light);margin:8px 0;">
+            불안, 우울, 스트레스...<br>누구나 느끼는 <strong>자연스러운 마음의 날씨</strong>예요.
+        </p>
+        <span class="badge" style="margin-top:8px;">⏱️ 예상 소요시간: 약 10~15분</span>
+    </div>
+    <div class="card">
+        <button class="btn btn-primary" onclick="showScreen('screen-login')" style="margin-bottom:12px;font-size:20px;">🏫 방 만들기 / 입장하기</button>
+        <button class="btn btn-secondary" onclick="startSoloMode()">🌟 혼자 체험하기</button>
+    </div>
+    <div class="privacy-notice">
+        🔐 <strong>안심하세요!</strong><br>
+        우리가 사용하는 방 코드는 오직 입장할 때만 필요한 숫자일 뿐, 여러분이 누구인지 알려주는 이름표가 아니랍니다. 입장 코드는 숫자로만 구성되어 있어 개인정보를 포함하지 않습니다. 닉네임을 만들 때 개인정보를 포함하지 않도록 만들어 주세요. 여러분의 익명성은 소중히 보호됩니다.
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════ 로그인/입장 화면 ═══════════════ -->
+<div id="screen-login" class="screen">
+<div class="container">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-start')">← 처음으로</button>
+    </div>
+    <div class="header-bar"><h1>🏫 교실 참여</h1></div>
+    <div class="card">
+        <button class="btn btn-primary" onclick="showScreen('screen-create-room')" style="margin-bottom:10px;">👩‍🏫 방 만들기(교사용)</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-teacher-join')" style="margin-bottom:10px;">🔑 교사로 접속하기</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-student-join')">🧒 학생으로 참여하기</button>
+    </div>
+    <div class="privacy-notice">🔐 안심하세요! 방 코드는 숫자로만 구성되어 있어 개인정보를 포함하지 않습니다.</div>
+</div>
+</div>
+
+<!-- ═══════════════ 방 만들기 ═══════════════ -->
+<div id="screen-create-room" class="screen">
+<div class="container">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로가기</button>
+        <button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="header-bar"><h1>👩‍🏫 방 만들기</h1></div>
+    <div class="card">
+        <label style="font-size:15px;display:block;margin-bottom:6px;">교사 닉네임</label>
+        <input type="text" id="teacher-name" placeholder="예: 김선생님" maxlength="10">
+        <div style="height:12px;"></div>
+        <label style="font-size:15px;display:block;margin-bottom:6px;">관리자 비밀번호 (숫자 4자리)</label>
+        <input type="password" id="room-password" placeholder="••••" maxlength="4" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        <div style="height:16px;"></div>
+        <button class="btn btn-primary" onclick="createRoom()">방 만들기</button>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════ 방 만들기 완료 ═══════════════ -->
+<div id="screen-room-created" class="screen">
+<div class="container">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="header-bar"><h1>✅ 방이 만들어졌어요!</h1></div>
+    <div class="card" style="text-align:center;">
+        <p style="font-size:15px;margin-bottom:4px;">방 코드</p>
+        <p id="created-room-code" style="font-size:48px;font-weight:900;color:var(--primary);letter-spacing:8px;margin:8px 0;"></p>
+        <button class="btn btn-secondary btn-sm" onclick="copyRoomCode()">📋 코드 복사하기</button>
+    </div>
+    <div class="card">
+        <button class="btn btn-primary" onclick="enterDashboard()">📊 교사 대시보드 열기</button>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════ 교사로 접속 ═══════════════ -->
+<div id="screen-teacher-join" class="screen">
+<div class="container">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로가기</button>
+        <button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="header-bar"><h1>🔑 교사로 접속</h1></div>
+    <div class="card">
+        <label style="font-size:15px;display:block;margin-bottom:6px;">방 코드 (숫자 6자리)</label>
+        <input type="text" id="teacher-room-code" placeholder="000000" maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        <div style="height:12px;"></div>
+        <label style="font-size:15px;display:block;margin-bottom:6px;">관리자 비밀번호</label>
+        <input type="password" id="teacher-pw" placeholder="••••" maxlength="4" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        <div style="height:16px;"></div>
+        <button class="btn btn-primary" onclick="joinAsTeacher()">교사로 입장</button>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════ 학생으로 참여 ═══════════════ -->
+<div id="screen-student-join" class="screen">
+<div class="container">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로가기</button>
+        <button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="header-bar"><h1>🧒 학생으로 참여</h1></div>
+    <div class="card">
+        <label style="font-size:15px;display:block;margin-bottom:6px;">방 코드 (숫자 6자리)</label>
+        <input type="text" id="student-room-code" placeholder="000000" maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        <div style="height:12px;"></div>
+        <label style="font-size:15px;display:block;margin-bottom:6px;">닉네임</label>
+        <input type="text" id="student-nickname" placeholder="닉네임을 입력하세요" maxlength="10">
+        <div style="height:16px;"></div>
+        <button class="btn btn-primary" onclick="joinAsStudent()">입장하기</button>
+    </div>
+    <div class="privacy-notice">🔐 닉네임을 만들 때 개인정보(실명, 전화번호 등)를 포함하지 않도록 만들어 주세요.</div>
+</div>
+</div>
+
+<!-- ═══════════════ 학생 활동 화면 ═══════════════ -->
+<div id="screen-activity" class="screen">
+<div class="container">
+    <div class="nav-buttons">
+        <button class="nav-btn" id="activity-back-btn" onclick="goBackStep()">← 뒤로가기</button>
+        <button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div class="progress-bar"><div id="progress-fill" class="progress-fill" style="width:0%"></div></div>
+    <div id="step-dots" class="step-indicator"></div>
+    <div id="activity-content"></div>
+</div>
+</div>
+
+<!-- ═══════════════ 완료 화면 ═══════════════ -->
+<div id="screen-complete" class="screen">
+<div class="container">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="backToMain()">← 다시 활동하기</button>
+        <button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+    </div>
+    <div class="card" style="text-align:center;">
+        <span class="emoji-big">🌟</span>
+        <h2>🎉 멋지게 해냈어요!</h2>
+        <div id="complete-summary" style="margin:16px 0;"></div>
+        <button class="btn btn-primary" onclick="backToMain()" style="margin-top:12px;">🔄 다시 활동하러 가기</button>
+        <button class="btn btn-secondary" onclick="downloadMyResult()" style="margin-top:10px;">📄 내 결과 저장하기</button>
+    </div>
+</div>
+</div>
+
+<!-- ═══════════════ 교사 대시보드 ═══════════════ -->
+<div id="screen-dashboard" class="screen">
+<div class="container">
+    <div class="nav-buttons">
+        <button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+    </div>
+    <div class="header-bar">
+        <h1>📊 교사 대시보드</h1>
+        <p id="dashboard-room-info"></p>
+    </div>
+    <div class="tab-bar" id="dashboard-tabs">
+        <div class="tab-item active" data-tab="overview" onclick="switchTab('overview', this)">📊 현황</div>
+        <div class="tab-item" data-tab="detail" onclick="switchTab('detail', this)">📋 상세기록</div>
+        <div class="tab-item" data-tab="export" onclick="switchTab('export', this)">📥 내보내기</div>
+        <div class="tab-item" data-tab="tts" onclick="switchTab('tts', this)">🔊 TTS</div>
+    </div>
+    <div id="dashboard-content"></div>
+    <div class="privacy-notice" style="margin-top:16px;">
+        ⚠️ 수업이 끝나면 데이터 초기화를 눌러주세요. 30일 후 자동 삭제됩니다.
+    </div>
+</div>
+</div>
+
+<script type="module">
+// ═══════════════════════════════════════════════════════
+// 🔥 Firebase 초기화 - emo-dex 프로젝트 고정
+// ═══════════════════════════════════════════════════════
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s",
+    authDomain: "emo-dex.firebaseapp.com",
+    projectId: "emo-dex",
+    storageBucket: "emo-dex.firebasestorage.app",
+    messagingSenderId: "994736049700",
+    appId: "1:994736049700:web:8233fa7b68cd6e0cccd2b1",
+    measurementId: "G-6YLB5C6VNR"
+};
+
+const APP_ID = 'sel-lesson-29';
+
+let app, auth, db;
+let useFirebase = false;
+let currentUser = null;
+const localDB = {};
+
+// ═══ 인증 ═══
+async function initAuth() {
+    try {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject('timeout'), 5000);
+            onAuthStateChanged(auth, user => { if(user){ currentUser=user; clearTimeout(timeout); resolve(user); } });
+            signInAnonymously(auth).catch(e => { clearTimeout(timeout); reject(e); });
+        });
+        useFirebase = true;
+        console.log('[Firebase] ☁️ 연결 성공');
+    } catch(e) {
+        useFirebase = false;
+        console.log('[Firebase] 💾 로컬 모드:', e);
+    }
+}
+// ⭐ 인증 준비 Promise — 방 만들기/입장 진입부에서 반드시 await 한다
+const authReady = initAuth();
+
+// ═══ DB 래퍼 ═══
+const DB = {
+    async saveRoom(code, data) {
+        if(useFirebase) { await setDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',code), data, {merge:true}); }
+        else { localDB[`room_${code}`] = {...(localDB[`room_${code}`]||{}), ...data}; }
+    },
+    async getRoom(code) {
+        if(useFirebase) { const s=await getDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',code)); return s.exists()?s.data():null; }
+        else { return localDB[`room_${code}`]||null; }
+    },
+    async saveStudent(code, nick, data) {
+        if(useFirebase) { await setDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',code,'students',nick), data, {merge:true}); }
+        else { if(!localDB[`stu_${code}`]) localDB[`stu_${code}`]={}; localDB[`stu_${code}`][nick]={...(localDB[`stu_${code}`]?.[nick]||{}), ...data}; }
+    },
+    async getStudent(code, nick) {
+        if(useFirebase) { const s=await getDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',code,'students',nick)); return s.exists()?s.data():null; }
+        else { return localDB[`stu_${code}`]?.[nick]||null; }
+    },
+    async getAllStudents(code) {
+        if(useFirebase) { const c=collection(db,'artifacts',APP_ID,'public','data','rooms',code,'students'); const s=await getDocs(c); const r={}; s.forEach(d=>{r[d.id]=d.data();}); return r; }
+        else { return localDB[`stu_${code}`]||{}; }
+    },
+    async clearStudents(code) {
+        // ⭐ 학생 subcollection만 삭제 — 방 문서(해시 비번·만료일)는 보존한다
+        if(useFirebase) { const c=collection(db,'artifacts',APP_ID,'public','data','rooms',code,'students'); const s=await getDocs(c); const ps=[]; s.forEach(d=>ps.push(deleteDoc(d.ref))); await Promise.all(ps); }
+        else { localDB[`stu_${code}`] = {}; }
+    },
+    async deleteRoom(code) {
+        if(useFirebase) { const c=collection(db,'artifacts',APP_ID,'public','data','rooms',code,'students'); const s=await getDocs(c); const ps=[]; s.forEach(d=>ps.push(deleteDoc(d.ref))); await Promise.all(ps); await deleteDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',code)); }
+        else { delete localDB[`room_${code}`]; delete localDB[`stu_${code}`]; }
+    },
+    onStudentsChange(code, cb) {
+        if(useFirebase) { return onSnapshot(collection(db,'artifacts',APP_ID,'public','data','rooms',code,'students'), snap => { const r={}; snap.forEach(d=>{r[d.id]=d.data();}); cb(r); }); }
+        else { const iv=setInterval(()=>cb(localDB[`stu_${code}`]||{}),2000); return ()=>clearInterval(iv); }
+    }
+};
+
+// ═══════════════════════════════════════════════════════
+// 🔧 글로벌 상태
+// ═══════════════════════════════════════════════════════
+let isSoloMode = false;
+let currentRoomCode = '';
+let currentNickname = '';
+let isTeacher = false;
+let activityStep = 0;
+let activityDone = false;
+let unsubscribe = null;
+let dashboardData = {};
+let dashboardTab = 'overview';
+
+// ⭐ 배열 길이 하드코딩 제거: 단계 함수 배열에서 총 단계 수를 유도한다 (함수 선언은 호이스팅됨)
+const STEP_FNS = [step0, step1, step2, step3, step4, step5, step6, step7];
+const TOTAL_STEPS = STEP_FNS.length;
+
+// ⭐ 학생 데이터 영속성 상태
+let studentData = null;      // 재입장 시 서버에서 불러온 원본
+let myData = {};             // 내 활동 데이터 미러 (혼자 체험 포함)
+let stepDrafts = {};         // 단계별 입력 임시 저장 (즉시 저장 대상)
+let draftTimer = null;
+
+// ═══════════════════════════════════════════════════════
+// 📱 화면 전환 (window. 필수)
+// ═══════════════════════════════════════════════════════
+// ⭐ HTML 이스케이프 — 닉네임/자유입력을 innerHTML에 넣기 전 반드시 통과시킨다
+function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+// ⭐ 비밀번호 단방향 해시 (평문 저장 방지). 기존 평문 방도 로그인 호환.
+function hashPw(pw) {
+    let h = 5381; const t = 'sel-lesson-29:' + pw;
+    for(let i=0;i<t.length;i++){ h = ((h<<5) + h + t.charCodeAt(i)) >>> 0; }
+    return 'h' + h.toString(36);
+}
+
+window.showScreen = function(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(screenId);
+    if(target) { target.classList.add('active'); window.scrollTo(0,0); }
+};
+
+// ═══════════════════════════════════════════════════════
+// 🍞 토스트 (부록B 패턴)
+// ═══════════════════════════════════════════════════════
+function showToast(message, type='info') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.style.background = type==='error'?'rgba(239,68,68,0.95)': type==='success'?'rgba(16,185,129,0.95)':'rgba(31,41,55,0.95)';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ═══════════════════════════════════════════════════════
+// 🪟 커스텀 확인 모달 (부록C 패턴 + v3.4 콜백 버그 수정)
+// ═══════════════════════════════════════════════════════
+let confirmCallback = null;
+
+window.showConfirmModal = function(message, onConfirm) {
+    document.getElementById('confirmMessage').innerHTML = message; // innerHTML로 HTML 지원
+    document.getElementById('confirmModal').style.display = 'flex';
+    confirmCallback = onConfirm;
+    document.getElementById('confirmOkBtn').onclick = () => {
+        const cb = confirmCallback; // ⭐ v3.4: 반드시 먼저 저장!
+        closeConfirmModal();        // 이 안에서 confirmCallback = null 됨
+        if(cb) cb();               // 저장해둔 cb로 실행
+    };
+};
+
+window.closeConfirmModal = function() {
+    document.getElementById('confirmModal').style.display = 'none';
+    confirmCallback = null;
+    // 모달 버튼 텍스트/스타일 원복
+    document.getElementById('confirmOkBtn').textContent = '확인';
+    document.getElementById('confirmOkBtn').style.background = 'var(--error)';
+};
+
+// ═══════════════════════════════════════════════════════
+// 📋 코드 복사 (3단계 fallback)
+// ═══════════════════════════════════════════════════════
+window.copyRoomCode = async function() {
+    const text = currentRoomCode;
+    try {
+        await navigator.clipboard.writeText(text);
+        showToast('✅ 코드가 복사되었습니다!','success');
+    } catch(err) {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.cssText='position:fixed;opacity:0;left:-9999px';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { document.execCommand('copy'); showToast('✅ 코드가 복사되었습니다!','success'); }
+        catch(e) { showToast('📋 코드: '+text+' (직접 복사해주세요)','info'); }
+        document.body.removeChild(ta);
+    }
+};
+
+// ═══════════════════════════════════════════════════════
+// 🏠 방 만들기
+// ═══════════════════════════════════════════════════════
+window.createRoom = async function() {
+    await authReady; // ⭐ 인증 완료 전에는 저장이 조용히 스킵된다
+    const name = document.getElementById('teacher-name').value.trim();
+    const pw = document.getElementById('room-password').value.trim();
+    if(!name) return showToast('교사 닉네임을 입력해주세요.','error');
+    if(pw.length!==4) return showToast('비밀번호 4자리를 입력해주세요.','error');
+    const code = String(Math.floor(100000+Math.random()*900000));
+    const expires = new Date(); expires.setDate(expires.getDate()+30);
+    try {
+        await DB.saveRoom(code, { teacherName:name, password:hashPw(pw), pwHashed:true, createdAt:new Date().toISOString(), expiresAt:expires.toISOString() });
+        currentRoomCode = code; isTeacher = true; currentNickname = name;
+        document.getElementById('created-room-code').textContent = code;
+        showScreen('screen-room-created');
+        showToast('✅ 방이 만들어졌어요!','success');
+    } catch(e) { showToast('방 만들기 실패','error'); }
+};
+
+window.enterDashboard = function() {
+    document.getElementById('dashboard-room-info').textContent = `방 코드: ${currentRoomCode} | ${currentNickname}`;
+    showScreen('screen-dashboard');
+    loadDashboard();
+};
+
+// ═══════════════════════════════════════════════════════
+// 🔑 교사로 접속
+// ═══════════════════════════════════════════════════════
+window.joinAsTeacher = async function() {
+    await authReady; // ⭐
+    const code = document.getElementById('teacher-room-code').value.trim();
+    const pw = document.getElementById('teacher-pw').value.trim();
+    if(code.length!==6) return showToast('방 코드 6자리를 입력해주세요.','error');
+    if(!pw) return showToast('비밀번호를 입력해주세요.','error');
+    const room = await DB.getRoom(code);
+    if(!room) return showToast('존재하지 않는 방입니다.','error');
+    if(room.expiresAt && new Date(room.expiresAt)<new Date()) { await DB.deleteRoom(code); return showToast('⏰ 만료된 방입니다.','error'); }
+    const pwOk = room.pwHashed ? (room.password === hashPw(pw)) : (room.password === pw);
+    if(!pwOk) return showToast('비밀번호가 틀렸습니다.','error');
+    currentRoomCode = code; isTeacher = true; currentNickname = room.teacherName||'교사';
+    document.getElementById('dashboard-room-info').textContent = `방 코드: ${currentRoomCode} | ${currentNickname}`;
+    showScreen('screen-dashboard');
+    loadDashboard();
+};
+
+// ═══════════════════════════════════════════════════════
+// 🧒 학생으로 참여 (⭐ v3.4: 이어하기 모달)
+// ═══════════════════════════════════════════════════════
+window.joinAsStudent = async function() {
+    await authReady; // ⭐
+    const code = document.getElementById('student-room-code').value.trim();
+    const nick = document.getElementById('student-nickname').value.trim();
+    if(code.length!==6||!nick) return showToast('방 코드와 닉네임을 입력해주세요.','error');
+    const room = await DB.getRoom(code);
+    if(!room) return showToast('존재하지 않는 방입니다.','error');
+    if(room.expiresAt && new Date(room.expiresAt)<new Date()) { await DB.deleteRoom(code); return showToast('⏰ 만료된 방입니다.','error'); }
+
+    const existing = await DB.getStudent(code, nick);
+    if(existing) {
+        // ═══ v3.4: 재입장 이어하기 모달 ═══
+        const stepDone = existing.completedStep || 0;
+        showConfirmModal(
+            `<strong>${esc(nick)}</strong>님, 이전에 참여한 기록이 있어요!<br><br>` +
+            `📝 진행 단계: ${Math.min(stepDone, TOTAL_STEPS)}/${TOTAL_STEPS}<br>` +
+            `🧩 퀴즈 최고 기록: ${(existing.step4 && (existing.step4.quizBest || existing.step4.quizScore)) || 0}점<br>` +
+            `${existing.completedAt ? '✅ 활동 완료됨' : '⏳ 활동 진행 중'}<br><br>` +
+            `이어서 할까요? (적어둔 내용도 그대로 남아 있어요)`,
+            async () => {
+                currentRoomCode = code; currentNickname = nick;
+                isTeacher = false; isSoloMode = false;
+                restoreStudentData(existing);
+                await DB.saveStudent(code, nick, { lastVisit: new Date().toISOString() });
+                showToast(`🎉 ${nick}님, 다시 오셨군요!`,'success');
+                if(existing.completedAt) { goToMainContent(); }
+                else { showScreen('screen-activity'); renderStep(); }
+            }
+        );
+        // 모달 버튼 텍스트를 "이어하기"로 변경
+        document.getElementById('confirmOkBtn').textContent = '이어하기';
+        document.getElementById('confirmOkBtn').style.background = 'var(--primary)';
+        return;
+    }
+
+    // ═══ 신규 입장 ═══
+    currentRoomCode = code; currentNickname = nick;
+    isTeacher = false; isSoloMode = false;
+    activityStep = 0; activityDone = false;
+    studentData = null; myData = {}; stepDrafts = {};
+    quizBest = 0; quizPlays = 0; quizRound = 1; pickQuizRound();
+    await DB.saveStudent(code, nick, { joinedAt: new Date().toISOString(), completedStep: 0, completed: false });
+    showToast(`${nick}님 환영합니다!`,'success');
+    showScreen('screen-activity');
+    renderStep();
+};
+
+// ═══════════════════════════════════════════════════════
+// 🔄 데이터 복원 (v3.4: restoreStudentData)
+// ═══════════════════════════════════════════════════════
+function restoreStudentData(data) {
+    data = data || {};
+    studentData = data;
+    activityDone = !!data.completedAt;
+    activityStep = Math.max(0, Math.min(data.completedStep || 0, TOTAL_STEPS - 1)); // ⭐ 범위 클램프(빈 화면 방지)
+    // 메모리 미러 복원
+    myData = {};
+    for(let i=0;i<TOTAL_STEPS;i++){ const k='step'+i; if(data[k]) myData[k]=data[k]; }
+    // ⭐ 입력값(텍스트/선택 하이라이트) 복원용 드래프트
+    stepDrafts = (data.draft && typeof data.draft === 'object') ? JSON.parse(JSON.stringify(data.draft)) : {};
+    // ⭐ 퀴즈 최고 기록 복원 (문제는 새로, 기록은 유지)
+    quizBest = (data.step4 && (data.step4.quizBest || data.step4.quizScore)) || 0;
+    quizPlays = (data.step4 && data.step4.quizPlays) || 0;
+    quizRound = 1; pickQuizRound();
+}
+
+// ═══ ⭐ 단계 입력 상태 캡처/복원 (모든 단계 공통, 마크업 변경 없음) ═══
+function captureStepState() {
+    const cont = document.getElementById('activity-content');
+    if(!cont) return null;
+    const texts = {}, sels = {};
+    cont.querySelectorAll('textarea, input[type="text"]').forEach(el => { if(el.id) texts[el.id] = el.value; });
+    cont.querySelectorAll('.choice-btn').forEach(el => {
+        const p = el.parentElement; if(!p || !p.id) return;
+        if(!sels[p.id]) sels[p.id] = [];
+        if(el.classList.contains('selected')) sels[p.id].push(el.textContent.trim());
+    });
+    return { texts, sels };
+}
+function applyStepState(st) {
+    if(!st) return;
+    const cont = document.getElementById('activity-content'); if(!cont) return;
+    const texts = st.texts || {}, sels = st.sels || {};
+    Object.keys(texts).forEach(id => { const el = cont.querySelector('[id="'+id+'"]'); if(el) el.value = texts[id]; });
+    Object.keys(sels).forEach(pid => {
+        const p = cont.querySelector('[id="'+pid+'"]'); if(!p) return;
+        const list = sels[pid] || [];
+        p.querySelectorAll('.choice-btn').forEach(b => { if(list.indexOf(b.textContent.trim()) >= 0) b.classList.add('selected'); });
+    });
+}
+function scheduleDraftSave() {
+    const st = captureStepState();
+    if(st) stepDrafts['s'+activityStep] = st;
+    if(draftTimer) clearTimeout(draftTimer);
+    draftTimer = setTimeout(persistDrafts, 600);
+}
+async function persistDrafts() {
+    draftTimer = null;
+    if(isSoloMode || isTeacher || !currentRoomCode || !currentNickname) return;
+    try { await DB.saveStudent(currentRoomCode, currentNickname, { draft: stepDrafts, completedStep: activityStep, lastSaved: new Date().toISOString() }); }
+    catch(e) { console.log('임시저장 실패:', e); }
+}
+function bindAutoSave() {
+    const cont = document.getElementById('activity-content'); if(!cont) return;
+    cont.querySelectorAll('textarea, input[type="text"]').forEach(el => {
+        el.addEventListener('input', scheduleDraftSave);
+        el.addEventListener('blur', scheduleDraftSave);
+    });
+}
+
+function goToMainContent() {
+    activityStep = TOTAL_STEPS - 1; // 마지막 단계로
+    showScreen('screen-activity');
+    renderStep();
+}
+
+// ═══════════════════════════════════════════════════════
+// 🌟 혼자 체험하기
+// ═══════════════════════════════════════════════════════
+window.startSoloMode = function() {
+    isSoloMode = true; currentNickname = '탐험가'; currentRoomCode = 'solo';
+    isTeacher = false; activityStep = 0; activityDone = false;
+    studentData = null; myData = {}; stepDrafts = {};
+    quizBest = 0; quizPlays = 0; quizRound = 1; pickQuizRound();
+    showScreen('screen-activity');
+    renderStep();
+};
+
+// ═══════════════════════════════════════════════════════
+// 🎒 학생 활동: 8단계
+// ═══════════════════════════════════════════════════════
+async function saveStepData(stepKey, data) {
+    myData[stepKey] = { ...(myData[stepKey]||{}), ...data };   // 혼자 체험 포함 항상 미러
+    if(isSoloMode) return;
+    const st = captureStepState(); if(st) stepDrafts['s'+activityStep] = st;
+    try { await DB.saveStudent(currentRoomCode, currentNickname, { [stepKey]: data, completedStep: activityStep, draft: stepDrafts }); }
+    catch(e) { console.log('저장 실패:', e); }
+}
+
+function renderStep() {
+    const cont = document.getElementById('activity-content');
+    const pct = Math.round((activityStep / TOTAL_STEPS)*100);
+    document.getElementById('progress-fill').style.width = pct+'%';
+    let dots=''; for(let i=0;i<TOTAL_STEPS;i++){ dots+=`<div class="step-dot ${i<activityStep?'done':i===activityStep?'active':''}"></div>`; }
+    document.getElementById('step-dots').innerHTML = dots;
+    document.getElementById('activity-back-btn').style.display = activityStep===0?'none':'inline-block';
+    cont.innerHTML = '';
+    if(activityStep < STEP_FNS.length) STEP_FNS[activityStep](cont);
+    applyStepState(stepDrafts['s'+activityStep]);   // ⭐ 재입장/뒤로가기 시 DOM 복원
+    bindAutoSave();                                  // ⭐ 입력 즉시 저장 바인딩
+    window.scrollTo(0,0);
+}
+
+window.goBackStep = function() {
+    if(activityStep>0){ scheduleDraftSave(); activityStep--; renderStep(); }
+};
+
+window.toggleChoice = function(btn) { btn.classList.toggle('selected'); scheduleDraftSave(); };
+window.selectSingle = function(btn) {
+    btn.parentElement.querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    scheduleDraftSave();
+};
+
+// ── STEP 0: 민준이의 이야기 ──
+function step0(cont) {
+    cont.innerHTML = `<div class="card">
+        <span class="emoji-big">📖</span>
+        <h2 style="text-align:center;margin-bottom:16px;">민준이의 이야기</h2>
+        <div class="story-box">
+            <strong>🌙 어젯밤, 민준이의 방</strong><br><br>
+            내일은 수학 시험이에요. <span class="character">민준이</span>는 침대에 누웠지만 잠이 오지 않아요.<br><br>
+            <em>"시험 망하면 어쩌지... 엄마가 실망하실 텐데..."</em><br><br>
+            가슴이 두근두근 뛰고, 배가 살살 아파와요. 이불을 뒤집어쓰고 눈을 꼭 감았지만, 머릿속에는 온갖 걱정이 빙글빙글 돌아요.
+        </div>
+        <div class="story-box" style="background:linear-gradient(135deg,#DBEAFE,#BFDBFE);border-left-color:#3B82F6;">
+            <strong>☁️ 다음 날, 학교에서</strong><br><br>
+            시험은 생각보다 어렵지 않았어요. 하지만 <span class="character">민준이</span>는 기분이 이상해요.<br><br>
+            친구들이 "쉬웠다!"라고 말하는데, 민준이는 <em>"나만 틀렸을 것 같아..."</em> 하는 생각이 자꾸 들어요. 점심에도 밥이 잘 안 넘어가고, 쉬는 시간에 친구들이 부르는데 나가기 싫었어요.
+        </div>
+        <div style="margin-top:20px;">
+            <p style="font-size:16px;font-weight:700;margin-bottom:12px;">🤔 민준이는 어떤 마음이었을까요? (여러 개 선택 가능)</p>
+            <div id="s0-choices">${['😰 불안했다','😢 우울했다','😤 스트레스를 받았다','😶 잘 모르겠다'].map(c=>`<button class="choice-btn" onclick="toggleChoice(this)">${c}</button>`).join('')}</div>
+            <div style="height:12px;"></div>
+            <p style="font-size:15px;font-weight:700;margin-bottom:8px;">✏️ 민준이에게 해주고 싶은 말이 있다면?</p>
+            <textarea id="s0-msg" placeholder="민준이에게 한마디 적어주세요..." rows="3"></textarea>
+        </div>
+        <div style="height:16px;"></div>
+        <button class="btn btn-primary" onclick="doneStep0()">다음으로 →</button>
+    </div>`;
+}
+window.doneStep0 = async function() {
+    const sel=[...document.querySelectorAll('#s0-choices .selected')].map(b=>b.textContent.trim());
+    const msg=document.getElementById('s0-msg').value.trim();
+    if(!sel.length) return showToast('민준이의 마음을 하나 이상 선택해주세요.','error');
+    await saveStepData('step0',{feelings:sel, message:msg}); activityStep=1; renderStep();
+};
+
+// ── STEP 1: 불안이 ──
+function step1(cont) {
+    cont.innerHTML = `<div class="card">
+        <span class="emoji-big">😰</span>
+        <h2 style="text-align:center;color:#DC2626;">불안이를 만나다</h2>
+        <div class="think-bubble" style="border-color:#FCA5A5;">안녕, 나는 <strong>불안이</strong>야! 😰<br>나는 <strong>"앞으로 일어날 나쁜 일"</strong>을 걱정할 때 찾아와.<br>시험, 발표, 새로운 환경... 이런 것들이 나를 불러내지.</div>
+        <div class="scenario-box anxiety">
+            <h3>😰 불안이의 특징</h3>
+            <p style="font-weight:400;line-height:1.8;margin-top:8px;"><strong>생각:</strong> "안 되면 어쩌지?", "잘못될 것 같아", "나만 못하면?"<br><strong>감정:</strong> 초조함, 긴장, 두려움, 걱정<br><strong>몸의 반응:</strong> 심장이 두근두근, 손에 땀, 배가 아픔, 잠이 안 옴</p>
+        </div>
+        <p style="font-size:16px;font-weight:700;margin:16px 0 12px;">🔍 이런 상황에서 불안한 적 있나요?</p>
+        <div id="s1-choices">${['🎤 친구들 앞에서 발표할 때','📝 시험 보기 전날','🏫 새 학기 첫 날','🤝 처음 만나는 사람과 인사할 때','📱 중요한 결과를 기다릴 때'].map(c=>`<button class="choice-btn" onclick="toggleChoice(this)">${c}</button>`).join('')}</div>
+        <p style="font-size:15px;font-weight:700;margin:12px 0 8px;">✏️ 나만의 불안한 순간이 있다면?</p>
+        <textarea id="s1-own" placeholder="불안했던 순간을 적어보세요..." rows="2"></textarea>
+        <div class="reflection-box" style="margin-top:16px;"><p style="font-size:15px;">💡 <strong>알고 있나요?</strong></p><p style="font-weight:400;font-size:14px;line-height:1.7;margin-top:8px;">불안은 사실 우리를 <strong>보호하려는 마음의 알람</strong>이에요. 시험 전 불안이 없다면 공부를 안 하게 될 수도 있어요. 하지만 불안이 <strong>너무 크면</strong> 오히려 아무것도 못하게 만들기도 해요. 중요한 건, 불안을 <strong>알아차리는 것</strong>이에요.</p></div>
+        <div style="height:16px;"></div>
+        <button class="btn btn-primary" onclick="doneStep1()">다음: 우울이를 만나러 가기 →</button>
+    </div>`;
+}
+window.doneStep1 = async function() {
+    const sel=[...document.querySelectorAll('#s1-choices .selected')].map(b=>b.textContent.trim());
+    const own=document.getElementById('s1-own').value.trim();
+    await saveStepData('step1',{anxietyScenarios:sel, ownAnxiety:own}); activityStep=2; renderStep();
+};
+
+// ── STEP 2: 우울이 ──
+function step2(cont) {
+    cont.innerHTML = `<div class="card">
+        <span class="emoji-big">😢</span>
+        <h2 style="text-align:center;color:#2563EB;">우울이를 만나다</h2>
+        <div class="think-bubble" style="border-color:#93C5FD;">안녕, 나는 <strong>우울이</strong>야... 😢<br>나는 <strong>"이미 일어난 슬픈 일"</strong> 때문에 찾아와.<br>잃어버린 것, 실패한 것, 외로운 것... 그런 것들이 나를 깨워.</div>
+        <div class="scenario-box depression">
+            <h3>😢 우울이의 특징</h3>
+            <p style="font-weight:400;line-height:1.8;margin-top:8px;"><strong>생각:</strong> "아무것도 하기 싫어", "나는 못해", "재미없어"<br><strong>감정:</strong> 슬픔, 무기력, 외로움, 허전함<br><strong>몸의 반응:</strong> 몸이 무거움, 밥맛이 없음, 눈물이 남, 피곤함</p>
+        </div>
+        <p style="font-size:16px;font-weight:700;margin:16px 0 12px;">🔍 이런 상황에서 우울한 적 있나요?</p>
+        <div id="s2-choices">${['😞 시험을 못 봤을 때','💔 친한 친구와 싸웠을 때','🐶 소중한 것을 잃어버렸을 때','🏠 혼자 집에 있을 때','😔 아무도 나를 이해 못하는 것 같을 때'].map(c=>`<button class="choice-btn" onclick="toggleChoice(this)">${c}</button>`).join('')}</div>
+        <p style="font-size:15px;font-weight:700;margin:12px 0 8px;">✏️ 우울했던 순간이 있다면?</p>
+        <textarea id="s2-own" placeholder="우울했던 순간을 적어보세요..." rows="2"></textarea>
+        <div class="reflection-box" style="margin-top:16px;"><p style="font-size:15px;">💡 <strong>알고 있나요?</strong></p><p style="font-weight:400;font-size:14px;line-height:1.7;margin-top:8px;">우울은 <strong>마음이 쉬고 싶다는 신호</strong>예요. 슬프거나 힘든 일이 있으면 우울해지는 건 자연스러워요. 하지만 우울이 <strong>2주 이상 계속</strong>되면, 믿을 수 있는 어른에게 이야기하는 것이 중요해요.</p></div>
+        <div style="height:16px;"></div>
+        <button class="btn btn-primary" onclick="doneStep2()">다음: 스트레스를 만나러 가기 →</button>
+    </div>`;
+}
+window.doneStep2 = async function() {
+    const sel=[...document.querySelectorAll('#s2-choices .selected')].map(b=>b.textContent.trim());
+    const own=document.getElementById('s2-own').value.trim();
+    await saveStepData('step2',{depressionScenarios:sel, ownDepression:own}); activityStep=3; renderStep();
+};
+
+// ── STEP 3: 스트레스 ──
+function step3(cont) {
+    cont.innerHTML = `<div class="card">
+        <span class="emoji-big">😤</span>
+        <h2 style="text-align:center;color:#D97706;">스트레스를 만나다</h2>
+        <div class="think-bubble" style="border-color:#FCD34D;">안녕, 나는 <strong>스트레스</strong>야! 😤<br>나는 <strong>"해야 할 일이 너무 많거나 힘들 때"</strong> 찾아와.<br>시간 부족, 과도한 요구, 갈등... 이런 것들이 나를 키워.</div>
+        <div class="scenario-box stress">
+            <h3>😤 스트레스의 특징</h3>
+            <p style="font-weight:400;line-height:1.8;margin-top:8px;"><strong>생각:</strong> "시간이 없어!", "너무 힘들어", "왜 나한테만 이래"<br><strong>감정:</strong> 짜증, 답답함, 화남, 압박감<br><strong>몸의 반응:</strong> 머리가 아픔, 어깨가 뻣뻣, 소화가 안 됨, 피부 트러블</p>
+        </div>
+        <p style="font-size:16px;font-weight:700;margin:16px 0 12px;">🔍 이런 상황에서 스트레스받은 적 있나요?</p>
+        <div id="s3-choices">${['📚 숙제가 너무 많을 때','⏰ 시간이 부족할 때','👨‍👩‍👧 부모님의 기대가 클 때','🏃 학원이 너무 많을 때','😡 친구와 의견이 다를 때'].map(c=>`<button class="choice-btn" onclick="toggleChoice(this)">${c}</button>`).join('')}</div>
+        <p style="font-size:15px;font-weight:700;margin:12px 0 8px;">✏️ 스트레스받았던 순간이 있다면?</p>
+        <textarea id="s3-own" placeholder="스트레스받았던 순간을 적어보세요..." rows="2"></textarea>
+        <div class="reflection-box" style="margin-top:16px;"><p style="font-size:15px;">💡 <strong>알고 있나요?</strong></p><p style="font-weight:400;font-size:14px;line-height:1.7;margin-top:8px;"><strong>적당한 스트레스</strong>는 우리에게 힘을 줘요. 운동선수가 경기 전 긴장하면 더 잘 뛸 수 있는 것처럼요. 하지만 스트레스가 <strong>너무 많으면</strong> 몸과 마음이 지쳐요. 중요한 건, <strong>나만의 해소법</strong>을 찾는 거예요.</p></div>
+        <div style="height:16px;"></div>
+        <button class="btn btn-primary" onclick="doneStep3()">다음: 세 감정 비교하기 →</button>
+    </div>`;
+}
+window.doneStep3 = async function() {
+    const sel=[...document.querySelectorAll('#s3-choices .selected')].map(b=>b.textContent.trim());
+    const own=document.getElementById('s3-own').value.trim();
+    await saveStepData('step3',{stressScenarios:sel, ownStress:own}); activityStep=4; renderStep();
+};
+
+// ── STEP 4: 세 감정 구별 퀴즈 (문제 은행 + 라운드 셔플 + 최고기록) ──
+const QUIZ_POOL = [
+    {q:'"다음 주 발표가 걱정돼서 잠이 안 와요"', a:0, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"시험을 못 봐서 아무것도 하기 싫어요"', a:1, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"숙제도 해야 하고, 학원도 가야 하고, 시간이 없어요"', a:2, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"친구가 전학 가서 매일 허전해요"', a:1, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"체험학습 가기 전날, 설레면서도 조마조마해요"', a:0, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"내일 치과에 가는데 자꾸 그 생각이 떠올라요"', a:0, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"운동회 계주 대표가 됐는데 실수할까 봐 조마조마해요"', a:0, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"전학 온 학교에서 내일 아무도 말을 안 걸면 어쩌지 싶어요"', a:0, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"수영 수업에서 물이 무서워서 자꾸 뒤로 물러나게 돼요"', a:0, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"개학이 다가올수록 마음이 계속 조여드는 것 같아요"', a:0, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"키우던 강아지가 아파서 며칠째 눈물이 나요"', a:1, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"단짝 친구가 다른 친구랑만 놀아서 마음이 텅 빈 것 같아요"', a:1, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"열심히 만든 작품이 망가져서 아무 말도 하기 싫어요"', a:1, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"좋아하던 축구도 요즘은 하나도 재미가 없어요"', a:1, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"오늘도 학원 세 곳을 가야 해서 어깨가 뻣뻣해요"', a:2, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"동생이 자꾸 방해해서 짜증이 확 올라와요"', a:2, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"모둠 과제 마감이 내일인데 아직 반도 못 했어요"', a:2, opts:['😰 불안','😢 우울','😤 스트레스']},
+    {q:'"쉬는 시간마다 할 일이 밀려서 숨 돌릴 틈이 없어요"', a:2, opts:['😰 불안','😢 우울','😤 스트레스']},
+];
+const QUIZ_PER_ROUND = 6;
+let QUIZZES = QUIZ_POOL.slice(0, QUIZ_PER_ROUND);
+let quizAnswered=0, quizCorrect=0, quizBest=0, quizPlays=0, quizRound=1;
+
+function shuffleArr(a) { for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function pickQuizRound() { QUIZZES = shuffleArr(QUIZ_POOL.slice()).slice(0, QUIZ_PER_ROUND); }
+pickQuizRound();
+
+function step4(cont) {
+    quizAnswered=0; quizCorrect=0;
+    if(!QUIZZES.length) pickQuizRound();
+    let h=`<div class="card"><span class="emoji-big">🧩</span><h2 style="text-align:center;margin-bottom:6px;">세 감정 구별하기</h2>
+    <p style="text-align:center;font-size:14px;font-weight:400;color:var(--text-light);margin-bottom:14px;">라운드 ${quizRound} · 이번 문제 ${QUIZZES.length}개 (문제 은행 ${QUIZ_POOL.length}개)<br>⭐ 최고 기록 ${quizBest}/${QUIZ_PER_ROUND} · 도전 ${quizPlays}회</p>`;
+    QUIZZES.forEach((q,qi)=>{
+        const colors=['#FEE2E2;color:#DC2626;border-color:#FCA5A5','#DBEAFE;color:#2563EB;border-color:#93C5FD','#FEF3C7;color:#D97706;border-color:#FCD34D'];
+        h+=`<div class="scenario-box" id="q${qi}" style="margin:12px 0;"><p style="font-weight:700;font-size:16px;margin-bottom:12px;">${qi+1}. ${q.q}</p><div class="btn-group">`;
+        q.opts.forEach((o,oi)=>{h+=`<button class="btn btn-sm" style="background:${colors[oi]}" onclick="answerQuiz(${qi},${oi})" id="q${qi}o${oi}">${o}</button>`;});
+        h+=`</div><p id="q${qi}r" style="margin-top:8px;font-size:14px;display:none;"></p></div>`;
+    });
+    h+=`<div style="height:16px;"></div>
+    <div id="step4-result" style="display:none;text-align:center;font-weight:900;font-size:17px;margin-bottom:10px;color:var(--primary-dark);"></div>
+    <button class="btn btn-secondary" id="step4retry" onclick="retryQuizRound()" style="display:none;margin-bottom:10px;">🔄 새 문제로 다시 도전하기 (문제가 바뀌어요!)</button>
+    <button class="btn btn-primary" id="step4next" onclick="doneStep4()" disabled>다음: 생각-감정-몸 연결 →</button></div>`;
+    cont.innerHTML=h;
+}
+window.retryQuizRound = function() {
+    quizRound++; pickQuizRound();
+    step4(document.getElementById('activity-content'));
+    window.scrollTo(0,0);
+    showToast('🧩 새로운 문제가 나왔어요!','success');
+};
+window.answerQuiz = function(qi,sel) {
+    const btns=document.querySelectorAll(`#q${qi} .btn`);
+    btns.forEach(b=>{b.disabled=true;b.style.opacity='0.6';});
+    const r=document.getElementById(`q${qi}r`); r.style.display='block';
+    if(sel===QUIZZES[qi].a) {
+        document.getElementById(`q${qi}o${sel}`).style.opacity='1';
+        document.getElementById(`q${qi}o${sel}`).style.border='3px solid #10B981';
+        r.innerHTML='✅ 많은 친구들도 그렇게 봐요.'; r.style.color='#10B981'; quizCorrect++;
+    } else {
+        document.getElementById(`q${qi}o${sel}`).style.border='3px solid #7C3AED';
+        document.getElementById(`q${qi}o${QUIZZES[qi].a}`).style.opacity='1';
+        document.getElementById(`q${qi}o${QUIZZES[qi].a}`).style.border='3px solid #10B981';
+        r.innerHTML='💡 그렇게 볼 수도 있어요. 이 말은 초록 테두리 쪽에 더 가까워요. 세 가지가 겹칠 때도 많아요.'; r.style.color='#7C3AED';
+    }
+    quizAnswered++;
+    if(quizAnswered>=QUIZZES.length) {
+        quizPlays++;
+        const isBest = quizCorrect > quizBest;
+        if(isBest) quizBest = quizCorrect;
+        const nb=document.getElementById('step4next'); if(nb) nb.disabled=false;
+        const rt=document.getElementById('step4retry'); if(rt) rt.style.display='block';
+        const rs=document.getElementById('step4-result');
+        if(rs){ rs.style.display='block'; rs.innerHTML = `이번 라운드 ${quizCorrect}/${QUIZZES.length}점` + (isBest ? ' · 🔥 최고 기록 갱신!' : ` · ⭐ 최고 ${quizBest}점`); }
+        saveStepData('step4',{quizScore:quizCorrect, quizTotal:QUIZZES.length, quizBest:quizBest, quizPlays:quizPlays});
+    }
+};
+window.doneStep4 = async function() {
+    if(quizCorrect > quizBest) quizBest = quizCorrect;
+    await saveStepData('step4',{quizScore:quizCorrect, quizTotal:QUIZZES.length, quizBest:quizBest, quizPlays:quizPlays}); activityStep=5; renderStep();
+};
+
+// ── STEP 5: 생각-감정-몸 연결 지도 ──
+const EMO_CHIPS = ['😰 불안','😢 슬픔','😤 짜증','😞 무기력','😨 두려움','😔 외로움','😡 화남','😣 답답함','😥 걱정','😳 부끄러움','🥱 지침','🙁 서운함','😯 놀람','🫤 혼란스러움'];
+const BODY_CHIPS = ['💓 심장 두근','🤕 머리 아픔','🤢 배 아픔','😴 잠이 안 옴','💪 몸이 뻣뻣','😰 손에 땀','😩 피곤함','🍽️ 밥맛 없음','🥶 손발이 차가움','😮‍💨 숨이 답답','🦵 다리에 힘이 없음','👂 소리에 예민해짐','🤯 머리가 멍함','🌀 어지러움'];
+
+function step5(cont) {
+    cont.innerHTML = `<div class="card">
+        <span class="emoji-big">🗺️</span>
+        <h2 style="text-align:center;margin-bottom:8px;">생각-감정-몸 연결 지도</h2>
+        <p style="text-align:center;font-weight:400;color:var(--text-light);margin-bottom:16px;">생각, 감정, 몸은 서로 연결되어 있어요!</p>
+        <div class="story-box"><strong>예시: 민준이의 경우</strong><br><br>🧠 <strong>생각:</strong> "시험 망하면 어쩌지..."<br>⬇️<br>💛 <strong>감정:</strong> 불안, 걱정<br>⬇️<br>🫀 <strong>몸:</strong> 심장이 두근두근, 배가 아픔, 잠이 안 옴</div>
+        <h3 style="margin:20px 0 12px;font-size:17px;">🖊️ 이제 나의 연결 지도를 만들어 볼까요?</h3>
+        <p style="font-size:15px;font-weight:700;margin-bottom:8px;">1️⃣ 최근 힘들었던 상황</p>
+        <textarea id="s5-sit" placeholder="예: 수학 시험 전날..." rows="2"></textarea>
+        <p style="font-size:15px;font-weight:700;margin:12px 0 8px;">2️⃣ 그때 어떤 생각이 들었나요? 🧠</p>
+        <textarea id="s5-think" placeholder='예: "다 틀리면 어쩌지..."' rows="2"></textarea>
+        <p style="font-size:15px;font-weight:700;margin:12px 0 8px;">3️⃣ 어떤 감정이었나요? 💛</p>
+        <div id="s5-emo">${EMO_CHIPS.map(e=>`<button class="choice-btn" style="display:inline-block;width:auto;padding:8px 14px;margin:4px;" onclick="toggleChoice(this)">${e}</button>`).join('')}</div>
+        <p style="font-size:15px;font-weight:700;margin:12px 0 8px;">4️⃣ 몸에서 어떤 반응이 있었나요? 🫀</p>
+        <div id="s5-body">${BODY_CHIPS.map(e=>`<button class="choice-btn" style="display:inline-block;width:auto;padding:8px 14px;margin:4px;" onclick="toggleChoice(this)">${e}</button>`).join('')}</div>
+        <div class="reflection-box" style="margin-top:16px;"><p style="font-size:15px;">💡 <strong>여기서 잠깐!</strong></p><p style="font-weight:400;font-size:14px;line-height:1.7;margin-top:8px;">여기서 고른 것이 많다고 해서 내 마음이 아픈 것은 <strong>절대 아니에요.</strong> 이건 검사가 아니라 <strong>내 마음을 알아차리는 연습</strong>이에요. 몸은 마음의 이야기를 대신 전해 주는 <strong>친절한 알림이</strong>랍니다.</p></div>
+        <div class="story-box" style="margin-top:14px;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border-left-color:#6366F1;font-size:15px;"><strong>🔎 다른 친구들의 연결 지도</strong><br><br><strong>지호:</strong> 🧠 "또 지각하면 어쩌지" → 💛 불안·걱정 → 🫀 아침에 배가 아픔<br><br><strong>서연:</strong> 🧠 "내 그림만 이상한 것 같아" → 💛 부끄러움·서운함 → 🫀 얼굴이 화끈, 어깨가 굳음<br><br><strong>도윤:</strong> 🧠 "할 일이 산더미야" → 💛 짜증·답답함 → 🫀 머리가 멍하고 잠이 안 옴</div>
+        <div style="height:16px;"></div>
+        <button class="btn btn-primary" onclick="doneStep5()">다음: 생각 점검하기 →</button>
+    </div>`;
+}
+window.doneStep5 = async function() {
+    const sit=document.getElementById('s5-sit').value.trim();
+    const think=document.getElementById('s5-think').value.trim();
+    const emo=[...document.querySelectorAll('#s5-emo .selected')].map(b=>b.textContent.trim());
+    const body=[...document.querySelectorAll('#s5-body .selected')].map(b=>b.textContent.trim());
+    if(!sit) return showToast('힘들었던 상황을 적어주세요.','error');
+    if(!think) return showToast('그때의 생각을 적어주세요.','error');
+    if(!emo.length) return showToast('감정을 하나 이상 선택해주세요.','error');
+    await saveStepData('step5',{situation:sit, thought:think, emotions:emo, bodyReactions:body}); activityStep=6; renderStep();
+};
+
+// ── STEP 6: 생각 점검하기 ──
+const REFRAMES = [
+    { t:'"나만 발표를 못해."',
+      o:['다들 나를 비웃을 거야','긴장하는 건 나만이 아니야. 한 문장씩 천천히 말해보자','발표는 그냥 안 하는 게 나아'], a:1,
+      why:'사실을 확인하고 지금 할 수 있는 작은 행동을 찾는 생각이에요.' },
+    { t:'"이번 시험을 못 봤으니 나는 형편없어."',
+      o:['이번엔 아쉬웠어. 어디가 어려웠는지 같이 살펴보자','나는 원래 못하는 사람이야','다시는 시험을 안 봤으면 좋겠어'], a:0,
+      why:'한 번의 결과를 \'나 전체\'로 넓히지 않는 생각이에요.' },
+    { t:'"친구가 인사를 안 받았어. 나를 싫어하나 봐."',
+      o:['앞으로 저 친구랑 말 안 할래','바빴거나 못 봤을 수도 있어. 이따 한 번 더 인사해보자','역시 나는 친구가 없어'], a:1,
+      why:'한 가지 해석 말고 다른 가능성도 함께 떠올리는 생각이에요.' },
+    { t:'"할 일이 너무 많아서 아무것도 못 하겠어."',
+      o:['전부 오늘 안에 끝내야만 해','다 포기할래','가장 급한 것 하나부터 10분만 해보자'], a:2,
+      why:'큰 덩어리를 작게 쪼개면 시작할 힘이 생겨요.' },
+    { t:'"기분이 이런 걸 보니 나는 이상한 걸까?"',
+      o:['불안·우울·스트레스는 누구나 느끼는 마음의 날씨야','나는 어딘가 고장 난 것 같아','아무한테도 말하면 안 돼'], a:0,
+      why:'감정은 좋고 나쁨이 아니라 신호예요. 오래 가면 어른에게 말하면 돼요.' },
+];
+let reframeDone = 0, reframeCorrect = 0;
+
+function step6(cont) {
+    reframeDone = 0; reframeCorrect = 0;
+    cont.innerHTML = `<div class="card">
+        <span class="emoji-big">🔍</span>
+        <h2 style="text-align:center;margin-bottom:16px;">생각 점검하기</h2>
+        <p style="text-align:center;font-weight:400;color:var(--text-light);margin-bottom:16px;">힘들 때 드는 생각, 정말 100% 사실일까요?</p>
+        <div class="story-box" style="font-size:14px;"><strong>예시)</strong><br>원래 생각: "시험 망하면 어쩌지" → 다른 생각: "한 번 못 봐도 다음에 잘 볼 수 있어"<br>원래 생각: "나만 못해" → 다른 생각: "다들 어려운 부분이 있을 거야"</div>
+        <p style="font-size:16px;font-weight:700;margin:16px 0 12px;">🤔 그때의 생각, 100% 사실이었나요?</p>
+        <div id="s6-check">${['네, 거의 사실이에요','아니요, 100%는 아니에요','잘 모르겠어요'].map(c=>`<button class="choice-btn" onclick="selectSingle(this)">${c}</button>`).join('')}</div>
+        <p style="font-size:16px;font-weight:700;margin:16px 0 8px;">🌈 다르게 생각할 수도 있지 않을까요?</p>
+        <textarea id="s6-new" placeholder="다르게 생각해 본다면 어떻게 말할 수 있을까요?" rows="3"></textarea>
+        <p style="font-size:16px;font-weight:700;margin:16px 0 12px;">💪 생각을 바꿨을 때 기분이 어떨 것 같아요?</p>
+        <div id="s6-feel">${['😊 조금 나아질 것 같아요','😌 많이 편해질 것 같아요','🤔 잘 모르겠어요','😐 별로 달라지지 않을 것 같아요'].map(c=>`<button class="choice-btn" onclick="selectSingle(this)">${c}</button>`).join('')}</div>
+
+        <h3 style="margin:24px 0 8px;font-size:17px;">🔁 생각 뒤집기 연습</h3>
+        <p style="font-weight:400;font-size:14px;color:var(--text-light);margin-bottom:10px;">아래 생각들을 <strong>더 도움이 되는 생각</strong>으로 바꿔 볼까요? (${REFRAMES.length}문제)</p>
+        <div id="reframe-list">${REFRAMES.map((r,i)=>`
+            <div class="scenario-box" id="rf${i}" style="margin:10px 0;">
+                <p style="font-weight:900;font-size:15px;margin-bottom:10px;">🧠 ${r.t}</p>
+                ${r.o.map((o,oi)=>`<button class="btn btn-sm btn-secondary" style="width:100%;text-align:left;margin:4px 0;display:block;" id="rf${i}o${oi}" onclick="answerReframe(${i},${oi})">${o}</button>`).join('')}
+                <p id="rf${i}r" style="display:none;margin-top:8px;font-size:14px;font-weight:400;"></p>
+            </div>`).join('')}</div>
+        <p id="reframe-score" style="text-align:center;font-weight:900;color:var(--primary-dark);margin-top:6px;"></p>
+
+        <p style="font-size:16px;font-weight:700;margin:20px 0 8px;">🌤️ 그때, 언제쯤 마음이 조금 나아졌나요? 무엇이 도움이 되었나요?</p>
+        <textarea id="s6-better" placeholder="예: 저녁에 엄마랑 이야기하고 나니까 조금 가벼워졌어요" rows="3"></textarea>
+        <p style="font-size:13px;font-weight:400;color:var(--text-light);margin-top:6px;">💛 힘들었던 순간보다 <strong>조금 나아진 순간</strong>을 찾아보면, 다음에도 그 방법을 쓸 수 있어요.</p>
+
+        <div style="height:16px;"></div>
+        <button class="btn btn-primary" onclick="doneStep6()">다음: 마무리 성찰 →</button>
+    </div>`;
+}
+// ⭐ 생각 뒤집기 기록 보존 — step6()에 다시 들어오면 카운터가 0으로 초기화되기 때문에,
+//    그대로 저장하면 이미 남아 있던 기록(예: 5/5)이 0/0으로 덮어써진다.
+//    (step7에서 뒤로가기 → step6 → 다음 을 누르면 실제로 기록이 지워졌음)
+//    더 많이 푼 기록을 남기도록 한다. (퀴즈의 quizBest와 같은 방식)
+function reframeRecord() {
+    const prev = (myData && myData.step6) || {};
+    const pc = prev.reframeCorrect || 0, pd = prev.reframeDone || 0;
+    return (reframeDone >= pd)
+        ? { reframeCorrect: reframeCorrect, reframeDone: reframeDone }
+        : { reframeCorrect: pc, reframeDone: pd };
+}
+window.answerReframe = function(i, sel) {
+    const box=document.getElementById('rf'+i); if(!box) return;
+    if(box.dataset.done==='1') return;
+    box.dataset.done='1';
+    const r=REFRAMES[i];
+    box.querySelectorAll('.btn').forEach(b=>{ b.disabled=true; b.style.opacity='0.55'; });
+    const ok = sel===r.a;
+    const good=document.getElementById('rf'+i+'o'+r.a);
+    if(good){ good.style.opacity='1'; good.style.border='3px solid #10B981'; good.style.background='rgba(16,185,129,0.10)'; }
+    if(!ok){ const bad=document.getElementById('rf'+i+'o'+sel); if(bad) bad.style.border='3px solid #EF4444'; }
+    const fb=document.getElementById('rf'+i+'r');
+    if(fb){ fb.style.display='block'; fb.innerHTML=(ok?'✅ 좋아요! ':'💡 초록 테두리를 봐요. ')+r.why; fb.style.color= ok?'#059669':'#6B7280'; }
+    reframeDone++; if(ok) reframeCorrect++;
+    const sc=document.getElementById('reframe-score');
+    if(sc) sc.textContent = `생각 뒤집기 ${reframeCorrect}/${reframeDone}`;
+    saveStepData('step6', reframeRecord());   // ⭐ 기존 기록보다 적게 푼 결과로 덮어쓰지 않는다
+};
+window.doneStep6 = async function() {
+    const nt=document.getElementById('s6-new').value.trim();
+    if(!nt) return showToast('다른 생각을 적어주세요.','error');
+    const check=[...document.querySelectorAll('#s6-check .selected')].map(b=>b.textContent.trim());
+    const feel=[...document.querySelectorAll('#s6-feel .selected')].map(b=>b.textContent.trim());
+    const better=(document.getElementById('s6-better')||{value:''}).value.trim();
+    // ⭐ 생각 뒤집기 기록은 reframeRecord()로 보존해서 저장한다 (0/0 덮어쓰기 방지)
+    await saveStepData('step6', Object.assign({newThought:nt, check, feel, betterMoment:better}, reframeRecord())); activityStep=7; renderStep();
+};
+
+// ── STEP 7: 마무리 성찰 + 도움 요청 안내 ──
+// ⚠️ 대처법은 안전하고 회복 지향적인 방법만 넣는다 (몸에 불편을 주는 자극 계열 금지).
+const CARE_KIT = ['🌬️ 천천히 숨 쉬기(4초 들이마시고 6초 내쉬기)','🚶 잠깐 걷거나 스트레칭하기','🎵 좋아하는 음악 듣기','💧 물 한 잔 마시기','📓 일기나 낙서로 마음 꺼내놓기','🗣️ 친구에게 이야기하기','👨‍👩‍👧 가족에게 이야기하기','🎨 그림 그리기·만들기','📖 좋아하는 책 읽기','☀️ 창밖 보며 햇빛 쬐기','🐾 반려동물이나 인형과 시간 보내기','🛏️ 할 일을 잠깐 멈추고 쉬기','🍚 밥 잘 챙겨 먹고 일찍 자기','✂️ 할 일을 작게 쪼개서 하나만 하기','🧑‍🏫 선생님께 도움 요청하기'];
+const TRUSTED_ADULTS = ['👩‍🏫 담임선생님','💬 상담(Wee)선생님','🩺 보건선생님','👨‍👩‍👧 부모님·보호자','👵 할머니·할아버지','🧑‍🤝‍🧑 형·누나·언니·오빠','👨‍👩‍👦 이모·삼촌·친척','🏫 학원·방과후 선생님'];
+
+function step7(cont) {
+    cont.innerHTML = `<div class="card" style="text-align:center;">
+        <span class="emoji-big">🌟</span>
+        <h2>오늘의 여행을 마무리해요</h2>
+        <p style="font-weight:400;color:var(--text-light);margin-top:8px;">불안이, 우울이, 스트레스를 만나고<br>나만의 연결 지도도 만들었어요!</p>
+    </div>
+    <div class="card">
+        <h3>💡 오늘 꼭 기억할 것</h3>
+        <div class="reflection-box"><p style="font-weight:400;font-size:15px;line-height:1.8;">
+            ✅ 불안, 우울, 스트레스는 <strong>누구나</strong> 느끼는 자연스러운 감정이에요.<br>
+            ✅ 중요한 건 이 감정을 <strong>알아차리는 것</strong>이에요.<br>
+            ✅ 생각을 <strong>점검</strong>하면 감정이 조금 나아질 수 있어요.<br>
+            ✅ 힘들 때는 <strong>도움을 요청</strong>하는 것이 용기예요.
+        </p></div>
+    </div>
+    <div class="card">
+        <h3 style="margin-bottom:12px;">✏️ 오늘의 성찰</h3>
+        <p style="font-size:15px;font-weight:700;margin-bottom:8px;">1. 오늘 가장 기억에 남는 것은?</p>
+        <textarea id="s7-mem" placeholder="가장 기억에 남는 것을 적어보세요" rows="2"></textarea>
+        <p style="font-size:15px;font-weight:700;margin:12px 0 8px;">2. 앞으로 불안·우울·스트레스를 느낄 때 어떻게 할 수 있을까요?</p>
+        <textarea id="s7-plan" placeholder="나만의 대처법을 적어보세요" rows="2"></textarea>
+        <p style="font-size:15px;font-weight:700;margin:12px 0 8px;">3. 오늘 활동에 대한 소감 (선택)</p>
+        <textarea id="s7-fb" placeholder="자유롭게 느낀 점을 적어보세요" rows="2"></textarea>
+    </div>
+    <div class="card">
+        <h3 style="margin-bottom:6px;">🧰 나의 마음 응급상자</h3>
+        <p style="font-weight:400;font-size:14px;color:var(--text-light);margin-bottom:10px;">마음의 날씨가 흐린 날, 나에게 도움이 될 것 같은 방법을 <strong>3가지 이상</strong> 골라 담아보세요.</p>
+        <div id="s7-kit">${CARE_KIT.map(c=>`<button class="choice-btn" style="display:inline-block;width:auto;padding:8px 14px;margin:4px;font-size:15px;" onclick="toggleChoice(this)">${c}</button>`).join('')}</div>
+        <p style="font-size:15px;font-weight:700;margin:14px 0 8px;">✏️ 나만의 방법을 더 적어도 좋아요</p>
+        <textarea id="s7-kit-own" placeholder="예: 동생이랑 보드게임 하기" rows="2"></textarea>
+    </div>
+    <div class="card">
+        <h3 style="margin-bottom:6px;">🤝 내가 믿고 이야기할 수 있는 어른</h3>
+        <p style="font-weight:400;font-size:14px;color:var(--text-light);margin-bottom:10px;">힘든 마음이 <strong>오래 이어질 때</strong> 이야기할 어른을 미리 정해두면, 정말 필요한 날 훨씬 쉽게 말할 수 있어요.</p>
+        <div id="s7-adults">${TRUSTED_ADULTS.map(c=>`<button class="choice-btn" style="display:inline-block;width:auto;padding:8px 14px;margin:4px;font-size:15px;" onclick="toggleChoice(this)">${c}</button>`).join('')}</div>
+        <p style="font-size:15px;font-weight:700;margin:14px 0 8px;">✏️ 그 어른에게 어떻게 말을 꺼낼 수 있을까요?</p>
+        <textarea id="s7-ask" placeholder="예: 선생님, 요즘 잠이 잘 안 와서 걱정돼요. 잠깐 이야기해도 될까요?" rows="2"></textarea>
+    </div>
+    <div class="crisis-box">
+        <h3>🤝 도움을 받을 수 있는 곳</h3>
+        <p style="font-size:14px;font-weight:400;margin-bottom:10px;">마음이 힘든 날이 <strong>2주 넘게</strong> 이어지거나 혼자 견디기 버겁다면, <strong>가장 가까이 있는 믿을 만한 어른</strong>에게 먼저 이야기해 보세요. 말하는 것만으로도 마음이 한결 가벼워질 수 있어요.</p>
+        <div class="crisis-number"><span>🏫</span><div><span class="number" style="font-size:16px;">담임선생님 · 상담(Wee)선생님 · 보건선생님</span><br><span style="font-size:13px;font-weight:400;">학교에서 가장 가까이 도와줄 수 있는 어른이에요</span></div></div>
+        <div class="crisis-number"><span>🏠</span><div><span class="number" style="font-size:16px;">부모님 · 보호자 · 믿을 만한 가족</span><br><span style="font-size:13px;font-weight:400;">집에서 내 이야기를 들어줄 수 있는 어른이에요</span></div></div>
+        <div class="crisis-number"><span>📞</span><div><span class="number">1388</span><br><span style="font-size:13px;font-weight:400;">청소년 상담 전화 (24시간·무료)</span></div></div>
+        <!-- ⭐ 2024년부터 정신건강·자살예방 상담이 109로 통합되어 번호를 갱신함 (기존 1577-0199) -->
+        <div class="crisis-number"><span>📞</span><div><span class="number">109</span><br><span style="font-size:13px;font-weight:400;">자살예방·정신건강 상담 전화 (24시간·무료)</span></div></div>
+        <p style="font-size:13px;font-weight:400;margin-top:8px;color:#6B7280;">불안·우울·스트레스는 <strong>병이 아니라 누구나 겪는 마음의 날씨</strong>예요. 다만 오래 계속되면 어른의 도움을 받는 것이 가장 빠른 길이에요.</p>
+    </div>
+    <button class="btn btn-primary" style="font-size:20px;" onclick="completeActivity()">🎉 활동 완료하기</button>
+    <div style="height:30px;"></div>`;
+}
+window.completeActivity = async function() {
+    const mem=document.getElementById('s7-mem').value.trim();
+    const plan=document.getElementById('s7-plan').value.trim();
+    const fb=document.getElementById('s7-fb').value.trim();
+    if(!mem) return showToast('기억에 남는 것을 적어주세요.','error');
+    if(!plan) return showToast('나만의 대처법을 적어주세요.','error');
+    const kit=[...document.querySelectorAll('#s7-kit .selected')].map(b=>b.textContent.trim());
+    const kitOwn=(document.getElementById('s7-kit-own')||{value:''}).value.trim();
+    const adults=[...document.querySelectorAll('#s7-adults .selected')].map(b=>b.textContent.trim());
+    const askHow=(document.getElementById('s7-ask')||{value:''}).value.trim();
+    if(kit.length<3) return showToast('마음 응급상자에 3가지 이상 담아주세요.','error');
+    if(!adults.length) return showToast('믿고 이야기할 어른을 한 명 이상 골라주세요.','error');
+    await saveStepData('step7',{memory:mem, plan, feedback:fb, careKit:kit, careKitOwn:kitOwn, trustedAdults:adults, askHow:askHow});
+    if(!isSoloMode) { try { await DB.saveStudent(currentRoomCode,currentNickname,{completed:true,completedAt:new Date().toISOString(),completedStep:TOTAL_STEPS,draft:stepDrafts}); } catch(e){} }
+    activityDone = true;
+    renderCompleteSummary();
+    showScreen('screen-complete');
+};
+
+function renderCompleteSummary() {
+    const d = myData || {};
+    const q = d.step4 || {};
+    const kit = (d.step7 && d.step7.careKit) || [];
+    const adults = (d.step7 && d.step7.trustedAdults) || [];
+    const emos = (d.step5 && d.step5.emotions) || [];
+    document.getElementById('complete-summary').innerHTML = `
+        <p style="font-weight:400;color:var(--text-light);line-height:1.8;">
+            불안이, 우울이, 스트레스를 만나고<br>나만의 연결 지도까지 완성했어요!
+        </p>
+        <div class="reflection-box" style="text-align:left;margin-top:14px;">
+            <p style="font-size:15px;margin-bottom:8px;">🧩 감정 구별 퀴즈 최고 기록: <strong>${(q.quizBest||q.quizScore||0)}/${(q.quizTotal||QUIZ_PER_ROUND)}</strong> (도전 ${q.quizPlays||0}회)</p>
+            ${(d.step6 && d.step6.reframeDone) ? `<p style="font-size:15px;margin-bottom:8px;">🔁 생각 뒤집기: <strong>${d.step6.reframeCorrect||0}/${d.step6.reframeDone}</strong></p>` : ''}
+            ${emos.length ? `<p style="font-size:15px;margin-bottom:8px;">💛 내가 알아차린 감정: ${esc(emos.join(', '))}</p>` : ''}
+            ${kit.length ? `<p style="font-size:15px;margin-bottom:8px;">🧰 마음 응급상자: ${esc(kit.join(', '))}</p>` : ''}
+            ${adults.length ? `<p style="font-size:15px;">🤝 믿고 이야기할 어른: ${esc(adults.join(', '))}</p>` : ''}
+        </div>
+        <p style="font-weight:400;color:var(--text-light);line-height:1.8;margin-top:12px;">
+            ${isSoloMode?'⚠️ 혼자 체험 모드는 나가면 기록이 사라져요. 아래에서 결과를 저장해 두세요!':'✅ 같은 닉네임으로 다시 들어오면 이어할 수 있어요!'}
+        </p>`;
+}
+
+// ═══ ⭐ 혼자 체험/학생 결과 텍스트 파일 저장 (지침서 6-3) ═══
+window.downloadMyResult = function() {
+    const d = myData || {};
+    const g = (k,f,def='-') => (d[k] && d[k][f] != null && d[k][f] !== '' ? (Array.isArray(d[k][f]) ? d[k][f].join(', ') : d[k][f]) : def);
+    const L = [];
+    L.push('불안·우울·스트레스 이해하기 — 나의 마음 기록');
+    L.push('닉네임: ' + (currentNickname || '탐험가'));
+    L.push('날짜: ' + new Date().toLocaleString('ko-KR'));
+    L.push('────────────────────────────');
+    L.push('[민준이 이야기] 민준이의 마음: ' + g('step0','feelings'));
+    L.push('[민준이 이야기] 민준이에게 한마디: ' + g('step0','message'));
+    L.push('');
+    L.push('[불안] 나에게 불안한 상황: ' + g('step1','anxietyScenarios'));
+    L.push('[불안] 나만의 불안한 순간: ' + g('step1','ownAnxiety'));
+    L.push('[우울] 나에게 우울한 상황: ' + g('step2','depressionScenarios'));
+    L.push('[우울] 나만의 우울한 순간: ' + g('step2','ownDepression'));
+    L.push('[스트레스] 나에게 스트레스 상황: ' + g('step3','stressScenarios'));
+    L.push('[스트레스] 나만의 순간: ' + g('step3','ownStress'));
+    L.push('');
+    L.push('[퀴즈] 최고 기록: ' + g('step4','quizBest','0') + ' / ' + g('step4','quizTotal', String(QUIZ_PER_ROUND)) + ' (도전 ' + g('step4','quizPlays','0') + '회)');
+    L.push('');
+    L.push('[연결 지도] 상황: ' + g('step5','situation'));
+    L.push('[연결 지도] 생각: ' + g('step5','thought'));
+    L.push('[연결 지도] 감정: ' + g('step5','emotions'));
+    L.push('[연결 지도] 몸의 반응: ' + g('step5','bodyReactions'));
+    L.push('');
+    L.push('[생각 점검] 새로운 생각: ' + g('step6','newThought'));
+    L.push('[생각 점검] 조금 나아진 순간: ' + g('step6','betterMoment'));
+    L.push('[생각 뒤집기] ' + g('step6','reframeCorrect','0') + ' / ' + g('step6','reframeDone','0'));
+    L.push('');
+    L.push('[마무리] 기억에 남는 것: ' + g('step7','memory'));
+    L.push('[마무리] 나만의 대처법: ' + g('step7','plan'));
+    L.push('[마음 응급상자] ' + g('step7','careKit'));
+    L.push('[마음 응급상자] 나만의 방법: ' + g('step7','careKitOwn'));
+    L.push('[믿을 만한 어른] ' + g('step7','trustedAdults'));
+    L.push('[말 꺼내는 방법] ' + g('step7','askHow'));
+    L.push('[소감] ' + g('step7','feedback'));
+    L.push('────────────────────────────');
+    L.push('불안·우울·스트레스는 누구나 겪는 마음의 날씨예요.');
+    L.push('오래 이어지거나 힘들 땐 믿을 만한 어른에게 꼭 이야기해요. (청소년 상담 1388 / 자살예방·정신건강 상담 109)');   // ⭐ 109 통합 반영
+    try {
+        const blob = new Blob(['\ufeff' + L.join('\r\n')], {type:'text/plain;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = '나의마음기록_' + (currentNickname || '탐험가') + '.txt';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(()=>URL.revokeObjectURL(url), 1500);
+        showToast('📄 내 결과가 저장되었어요!','success');
+    } catch(e) { showToast('📄 저장이 어려운 환경이에요. 화면을 캡처해 보관해 주세요.','info'); }
+};
+
+// ═══ v3.4: backToMain ═══
+window.backToMain = function() {
+    quizRound = 1; pickQuizRound();   // 다시 하면 퀴즈 문제가 새로 셔플됨 (기록은 유지)
+    activityStep = 0;
+    showScreen('screen-activity');
+    renderStep();
+    showToast('📝 활동을 다시 해볼 수 있어요!','success');
+};
+
+// ═══ v3.4: confirmGoHome ═══
+window.confirmGoHome = function() {
+    const msg = activityDone
+        ? `처음 화면으로 돌아갈까요?<br><br>${isSoloMode?'⚠️ 혼자 체험 모드는 나가면 기록이 사라져요!':'✅ 같은 닉네임으로 다시 들어오면 이어할 수 있어요!'}`
+        : `진행 중인 활동이 있어요. 처음 화면으로 돌아갈까요?<br><br>${isSoloMode?'⚠️ 혼자 체험 모드는 나가면 기록이 사라져요!':'✅ 같은 닉네임으로 다시 들어오면 이어할 수 있어요!'}`;
+    showConfirmModal(msg, async () => {
+        if(draftTimer){ clearTimeout(draftTimer); draftTimer=null; }
+        await persistDrafts();   // ⭐ 나가기 전 입력 내용 저장
+        if(unsubscribe){unsubscribe();unsubscribe=null;}
+        showScreen('screen-start');
+    });
+};
+
+// ═══════════════════════════════════════════════════════
+// 📊 교사 대시보드
+// ═══════════════════════════════════════════════════════
+function loadDashboard() {
+    if(unsubscribe){ unsubscribe(); unsubscribe=null; }   // ⭐ 재진입 시 이전 리스너 해제
+    unsubscribe = DB.onStudentsChange(currentRoomCode, data => { dashboardData = data || {}; renderDashboard(); });
+}
+// ⭐ 수동 새로고침 — 팝업/토스트 없이 조용히 갱신
+window.refreshDashboard = async function() {
+    try { dashboardData = (await DB.getAllStudents(currentRoomCode)) || {}; renderDashboard(); }
+    catch(e) { console.log('새로고침 실패:', e); }
+};
+
+window.switchTab = function(tab, el) {
+    dashboardTab = tab;
+    const tabs = [...document.querySelectorAll('#dashboard-tabs .tab-item')];
+    tabs.forEach(t=>t.classList.remove('active'));
+    // ⭐ 요소를 직접 전달받음 (암묵적 전역 event / onclick 문자열 파싱 의존 제거). 구방식 fallback 유지.
+    const target = el || tabs.find(t=>t.getAttribute('data-tab')===tab) || tabs.find(t=>(t.getAttribute('onclick')||'').indexOf("'"+tab+"'")>=0);
+    if(target) target.classList.add('active');
+    renderDashboard();
+};
+
+function renderDashboard() {
+    const cont=document.getElementById('dashboard-content');
+    const entries=Object.entries(dashboardData);
+    const total=entries.length;
+    const completed=entries.filter(([_,d])=>d.completed).length;
+
+    if(dashboardTab==='overview') renderOverview(cont,entries,total,completed);
+    else if(dashboardTab==='detail') renderDetail(cont,entries,total,completed);
+    else if(dashboardTab==='export') renderExport(cont,entries,total,completed);
+    else if(dashboardTab==='tts') renderTTS(cont,entries);
+}
+
+function renderOverview(cont,entries,total,completed) {
+    const anx={}, dep={}, str={}, kit={}, adults={}, bodies={};
+    const scores=[], bests=[];
+    entries.forEach(([_,d])=>{
+        (d.step1?.anxietyScenarios||[]).forEach(s=>{anx[s]=(anx[s]||0)+1;});
+        (d.step2?.depressionScenarios||[]).forEach(s=>{dep[s]=(dep[s]||0)+1;});
+        (d.step3?.stressScenarios||[]).forEach(s=>{str[s]=(str[s]||0)+1;});
+        (d.step5?.bodyReactions||[]).forEach(s=>{bodies[s]=(bodies[s]||0)+1;});
+        (d.step7?.careKit||[]).forEach(s=>{kit[s]=(kit[s]||0)+1;});
+        (d.step7?.trustedAdults||[]).forEach(s=>{adults[s]=(adults[s]||0)+1;});
+        if(d.step4 && typeof d.step4.quizScore==='number') scores.push(d.step4.quizScore);
+        if(d.step4) bests.push(d.step4.quizBest||d.step4.quizScore||0);
+    });
+    const avg=scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1):'-';
+    const bestAvg=bests.length?(bests.reduce((a,b)=>a+b,0)/bests.length).toFixed(1):'-';
+    const plays=entries.reduce((a,[_,d])=>a+((d.step4&&d.step4.quizPlays)||0),0);
+    const emotionWords={};
+    entries.forEach(([_,d])=>{(d.step5?.emotions||[]).forEach(e=>{emotionWords[e]=(emotionWords[e]||0)+1;});});
+    const pct = total ? Math.round(completed/total*100) : 0;
+
+    cont.innerHTML=`
+    <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="refreshDashboard()">🔄 새로고침</button>
+    </div>
+    <div class="stat-grid">
+        <div class="stat-box"><div class="stat-num">${total}</div><div class="stat-label">참여</div></div>
+        <div class="stat-box" style="background:var(--success);"><div class="stat-num">${completed}</div><div class="stat-label">완료</div></div>
+        <div class="stat-box" style="background:#F59E0B;"><div class="stat-num">${total-completed}</div><div class="stat-label">진행중</div></div>
+        <div class="stat-box" style="background:#6366F1;"><div class="stat-num">${avg}</div><div class="stat-label">퀴즈평균</div></div>
+        <div class="stat-box" style="background:#0EA5E9;"><div class="stat-num">${bestAvg}</div><div class="stat-label">최고평균</div></div>
+        <div class="stat-box" style="background:#EC4899;"><div class="stat-num">${plays}</div><div class="stat-label">퀴즈도전</div></div>
+    </div>
+    <div class="card"><h3 style="color:var(--primary-dark);margin-bottom:8px;">✅ 완료율 ${completed}/${total}명 (${pct}%)</h3>
+        <div class="progress-bar" style="height:14px;"><div class="progress-fill" style="width:${pct}%"></div></div></div>
+    <div class="card"><h3 style="color:var(--primary-dark);margin-bottom:12px;">😰 불안 상황 분포</h3>${barChart(anx,'#FCA5A5','#DC2626')}</div>
+    <div class="card"><h3 style="color:var(--primary-dark);margin-bottom:12px;">😢 우울 상황 분포</h3>${barChart(dep,'#93C5FD','#2563EB')}</div>
+    <div class="card"><h3 style="color:var(--primary-dark);margin-bottom:12px;">😤 스트레스 상황 분포</h3>${barChart(str,'#FCD34D','#D97706')}</div>
+    <div class="card"><h3 style="color:var(--primary-dark);margin-bottom:12px;">🫀 몸의 신호 분포</h3>${barChart(bodies,'#C4B5FD','#5B21B6')}</div>
+    <div class="card"><h3 style="color:var(--primary-dark);margin-bottom:12px;">🧰 마음 응급상자 인기 방법</h3>${barChart(kit,'#86EFAC','#059669')}</div>
+    <div class="card"><h3 style="color:var(--primary-dark);margin-bottom:12px;">🤝 믿고 이야기할 어른</h3>${barChart(adults,'#FDBA74','#C2410C')}
+        <p style="font-size:13px;font-weight:400;color:var(--text-light);margin-top:10px;">💡 아무도 고르지 못한 학생이 있다면 개별로 살펴봐 주세요. 이 활동은 진단이 아니라 <strong>연결을 만드는</strong> 활동입니다.</p></div>
+    <div class="card"><h3 style="color:var(--primary-dark);margin-bottom:12px;">☁️ 감정 워드 클라우드</h3><div class="word-cloud">${wordCloud(emotionWords)}</div></div>`;
+}
+
+function barChart(data,bg,txt) {
+    const sorted=Object.entries(data).sort((a,b)=>b[1]-a[1]);
+    if(!sorted.length) return '<p style="color:var(--text-light);font-size:14px;">아직 데이터 없음</p>';
+    const max=Math.max(...sorted.map(([_,v])=>v));
+    return sorted.map(([l,c])=>`<div style="margin:6px 0;"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:2px;"><span>${esc(l.length>24?l.slice(0,24)+'...':l)}</span><span style="color:${txt};font-weight:900;">${c}명</span></div><div style="background:#F3F4F6;border-radius:6px;height:18px;overflow:hidden;"><div style="background:${bg};height:100%;width:${max>0?(c/max*100):0}%;border-radius:6px;transition:width 0.5s;"></div></div></div>`).join('');
+}
+function wordCloud(words) {
+    const sorted=Object.entries(words).sort((a,b)=>b[1]-a[1]);
+    if(!sorted.length) return '<p style="color:var(--text-light);font-size:14px;">아직 데이터 없음</p>';
+    const max=Math.max(...sorted.map(([_,v])=>v));
+    const colors=['#7C3AED','#DC2626','#2563EB','#D97706','#059669','#EC4899','#6366F1','#14B8A6'];
+    return sorted.map(([w,c],i)=>{const sz=Math.max(14,Math.min(28,14+(c/max)*14));const cl=colors[i%colors.length];return `<span style="font-size:${sz}px;background:${cl}20;color:${cl};padding:6px 14px;border-radius:20px;font-weight:700;">${esc(w)}(${c})</span>`;}).join('');
+}
+
+function renderDetail(cont,entries,total,completed) {
+    let rows=entries.map(([n,d])=>{
+        const st=d.completed?'<span style="color:var(--success);">✅완료</span>':'<span style="color:#F59E0B;">⏳진행중</span>';
+        const td='padding:8px;border-bottom:1px solid #E5E7EB;';
+        return `<tr><td style="${td}font-weight:700;">${esc(n)}</td><td style="${td}">${st}</td><td style="${td}">${d.step4?esc((d.step4.quizBest||d.step4.quizScore||0)+'/'+(d.step4.quizTotal||'-')):'-'}</td><td style="${td}font-size:13px;">${esc((d.step5?.emotions||[]).join(', '))||'-'}</td><td style="${td}font-size:13px;max-width:200px;word-break:break-all;">${esc(d.step6?.newThought)||'-'}</td><td style="${td}font-size:13px;max-width:200px;word-break:break-all;">${esc(d.step6?.betterMoment)||'-'}</td><td style="${td}font-size:13px;max-width:200px;word-break:break-all;">${esc(d.step7?.plan)||'-'}</td><td style="${td}font-size:13px;max-width:180px;word-break:break-all;">${esc((d.step7?.careKit||[]).join(', '))||'-'}</td><td style="${td}font-size:13px;max-width:160px;word-break:break-all;">${esc((d.step7?.trustedAdults||[]).join(', '))||'-'}</td></tr>`;
+    }).join('');
+    cont.innerHTML=`<div class="card"><h3 style="margin-bottom:12px;">📋 참여결과 (${completed}/${total}명 완료)</h3><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:14px;font-weight:400;"><thead><tr style="background:#F5F3FF;"><th style="padding:10px;text-align:left;font-weight:900;">닉네임</th><th style="padding:10px;text-align:left;font-weight:900;">상태</th><th style="padding:10px;text-align:left;font-weight:900;">퀴즈</th><th style="padding:10px;text-align:left;font-weight:900;">감정</th><th style="padding:10px;text-align:left;font-weight:900;">새로운 생각</th><th style="padding:10px;text-align:left;font-weight:900;">나아진 순간</th><th style="padding:10px;text-align:left;font-weight:900;">대처법</th><th style="padding:10px;text-align:left;font-weight:900;">마음 응급상자</th><th style="padding:10px;text-align:left;font-weight:900;">믿을 만한 어른</th></tr></thead><tbody>${rows||'<tr><td colspan="9" style="padding:20px;text-align:center;color:var(--text-light);">아직 데이터 없음</td></tr>'}</tbody></table></div></div>
+    <div class="card"><h3 style="margin-bottom:12px;">💬 학생 소감</h3>${entries.filter(([_,d])=>d.step7?.feedback).map(([n,d])=>`<div style="padding:10px;border-bottom:1px solid #E5E7EB;"><strong>${esc(n)}</strong><p style="font-weight:400;font-size:14px;margin-top:4px;">${esc(d.step7.feedback)}</p></div>`).join('')||'<p style="color:var(--text-light);font-size:14px;">아직 소감 없음</p>'}</div>
+    <div class="card"><h3 style="margin-bottom:12px;">🗣️ 어른에게 말 꺼내기 연습</h3>${entries.filter(([_,d])=>d.step7?.askHow).map(([n,d])=>`<div style="padding:10px;border-bottom:1px solid #E5E7EB;"><strong>${esc(n)}</strong><p style="font-weight:400;font-size:14px;margin-top:4px;">${esc(d.step7.askHow)}</p></div>`).join('')||'<p style="color:var(--text-light);font-size:14px;">아직 데이터 없음</p>'}</div>`;
+}
+
+function renderExport(cont,entries,total,completed) {
+    cont.innerHTML=`<div class="card">
+        <h3 style="margin-bottom:16px;">📥 데이터 내보내기</h3>
+        <button class="btn btn-success" onclick="downloadExcel()" style="margin-bottom:10px;">📥 엑셀 다운로드</button>
+        <button class="btn btn-secondary" onclick="downloadPDF()" style="margin-bottom:10px;">📄 PDF 다운로드 (인쇄)</button>
+        <button class="btn btn-danger" onclick="confirmResetRoom()">🗑️ 데이터 초기화</button>
+    </div>`;
+}
+
+function renderTTS(cont,entries) {
+    const sections=[
+        {id:'tts-anx',label:'😰 불안 상황',text:entries.map(([n,d])=>`${n}: ${(d.step1?.anxietyScenarios||[]).join(', ')}`).join('. ')||'데이터 없음'},
+        {id:'tts-dep',label:'😢 우울 상황',text:entries.map(([n,d])=>`${n}: ${(d.step2?.depressionScenarios||[]).join(', ')}`).join('. ')||'데이터 없음'},
+        {id:'tts-str',label:'😤 스트레스 상황',text:entries.map(([n,d])=>`${n}: ${(d.step3?.stressScenarios||[]).join(', ')}`).join('. ')||'데이터 없음'},
+        {id:'tts-new',label:'🌈 새로운 생각',text:entries.filter(([_,d])=>d.step6?.newThought).map(([n,d])=>`${n}: ${d.step6.newThought}`).join('. ')||'데이터 없음'},
+        {id:'tts-plan',label:'💪 대처법',text:entries.filter(([_,d])=>d.step7?.plan).map(([n,d])=>`${n}: ${d.step7.plan}`).join('. ')||'데이터 없음'},
+        {id:'tts-better',label:'🌤️ 조금 나아진 순간',text:entries.filter(([_,d])=>d.step6?.betterMoment).map(([n,d])=>`${n}: ${d.step6.betterMoment}`).join('. ')||'데이터 없음'},
+        {id:'tts-kit',label:'🧰 마음 응급상자',text:entries.filter(([_,d])=>(d.step7?.careKit||[]).length).map(([n,d])=>`${n}: ${d.step7.careKit.join(', ')}`).join('. ')||'데이터 없음'},
+        {id:'tts-adult',label:'🤝 믿을 만한 어른',text:entries.filter(([_,d])=>(d.step7?.trustedAdults||[]).length).map(([n,d])=>`${n}: ${d.step7.trustedAdults.join(', ')}`).join('. ')||'데이터 없음'},
+    ];
+    cont.innerHTML=`<div class="card"><h3 style="margin-bottom:12px;">🔊 TTS 읽기</h3><p style="font-size:14px;font-weight:400;color:var(--text-light);margin-bottom:12px;">📝 버튼으로 읽을 내용을 먼저 확인한 뒤 ▶️ 로 재생하세요.</p>
+    <button class="btn btn-danger btn-sm" onclick="stopTTS()" id="global-stop" style="display:none;margin-bottom:12px;">⏹️ 읽기 중지</button>
+    ${sections.map(s=>`<div style="border:1px solid #E5E7EB;border-radius:12px;padding:14px;margin-bottom:10px;"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;"><strong style="font-size:15px;">${s.label}</strong><div style="display:flex;gap:6px;"><button class="btn btn-sm btn-secondary" style="width:auto;" onclick="previewTTS('${s.id}')">📝</button><button class="btn btn-sm btn-success" style="width:auto;" onclick="speakTTS('${s.id}')">▶️</button></div></div><div id="${s.id}" style="display:none;">${esc(s.text)}</div></div>`).join('')}
+    </div>`;
+}
+
+// ═══ 엑셀 ═══
+window.downloadExcel = function() {
+    const entries=Object.entries(dashboardData);
+    const rows=[['닉네임','상태','참여시간','퀴즈최고','퀴즈도전','생각뒤집기','불안상황','우울상황','스트레스상황','감정','몸반응','상황','생각','새로운생각','조금나아진순간','대처법','마음응급상자','나만의방법','믿을만한어른','말꺼내기','기억에남는것','소감']];
+    entries.forEach(([n,d])=>{rows.push([
+        n,
+        d.completed?'완료':'진행중',
+        d.joinedAt?new Date(d.joinedAt).toLocaleString('ko-KR'):'',
+        d.step4?((d.step4.quizBest||d.step4.quizScore||0)+'/'+(d.step4.quizTotal||'')):'',
+        d.step4?.quizPlays||0,
+        d.step6?.reframeDone?((d.step6.reframeCorrect||0)+'/'+d.step6.reframeDone):'',
+        (d.step1?.anxietyScenarios||[]).join(', '),
+        (d.step2?.depressionScenarios||[]).join(', '),
+        (d.step3?.stressScenarios||[]).join(', '),
+        (d.step5?.emotions||[]).join(', '),
+        (d.step5?.bodyReactions||[]).join(', '),
+        d.step5?.situation||'',
+        d.step5?.thought||'',
+        d.step6?.newThought||'',
+        d.step6?.betterMoment||'',
+        d.step7?.plan||'',
+        (d.step7?.careKit||[]).join(', '),
+        d.step7?.careKitOwn||'',
+        (d.step7?.trustedAdults||[]).join(', '),
+        d.step7?.askHow||'',
+        d.step7?.memory||'',
+        d.step7?.feedback||''
+    ]);});
+    const ws=XLSX.utils.aoa_to_sheet(rows); const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'참여결과');
+    XLSX.writeFile(wb,`SEL_마음날씨_결과_${currentRoomCode}.xlsx`);
+    showToast('📥 엑셀이 다운로드됩니다.','success');
+};
+
+// ═══ PDF (v3.3+: dashboardData에서 HTML 직접 빌드, innerHTML 복사 금지) ═══
+window.downloadPDF = function() {
+    const entries=Object.entries(dashboardData);
+    if(!entries.length){ showToast('내보낼 데이터가 없습니다.','error'); return; }
+    const total=entries.length;
+    const completed=entries.filter(([_,d])=>d.completed).length;
+    // ⭐ innerHTML 복사 금지 — dashboardData에서 직접 빌드 (숨은 탭 누락 방지)
+    const agg=(fn)=>{const m={};entries.forEach(([_,d])=>{(fn(d)||[]).forEach(v=>{m[v]=(m[v]||0)+1;});});return Object.entries(m).sort((a,b)=>b[1]-a[1]);};
+    const tbl=(title,rows)=>rows.length?`<div class="card"><h3>${title}</h3><table><tr><th>항목</th><th>인원</th></tr>${rows.map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('')}</table></div>`:'';
+    let pdfBody = `<div class="card"><h3>📊 참여 현황</h3><p>참여 ${total}명 / 완료 ${completed}명 (${total?Math.round(completed/total*100):0}%)</p></div>`;
+    pdfBody += tbl('😰 불안 상황 분포', agg(d=>d.step1?.anxietyScenarios));
+    pdfBody += tbl('😢 우울 상황 분포', agg(d=>d.step2?.depressionScenarios));
+    pdfBody += tbl('😤 스트레스 상황 분포', agg(d=>d.step3?.stressScenarios));
+    pdfBody += tbl('🧰 마음 응급상자', agg(d=>d.step7?.careKit));
+    pdfBody += tbl('🤝 믿을 만한 어른', agg(d=>d.step7?.trustedAdults));
+    pdfBody += `<div class="card"><h3>📋 학생별 상세 기록</h3><table><tr><th>닉네임</th><th>상태</th><th>퀴즈</th><th>감정</th><th>새로운 생각</th><th>조금 나아진 순간</th><th>대처법</th><th>마음 응급상자</th><th>믿을 만한 어른</th><th>소감</th></tr>`;
+    entries.forEach(([n,d])=>{pdfBody+=`<tr><td>${esc(n)}</td><td>${d.completed?'완료':'진행중'}</td><td>${d.step4?esc((d.step4.quizBest||d.step4.quizScore||0)+'/'+(d.step4.quizTotal||'-')):'-'}</td><td>${esc((d.step5?.emotions||[]).join(', '))||'-'}</td><td>${esc(d.step6?.newThought)||'-'}</td><td>${esc(d.step6?.betterMoment)||'-'}</td><td>${esc(d.step7?.plan)||'-'}</td><td>${esc((d.step7?.careKit||[]).join(', '))||'-'}</td><td>${esc((d.step7?.trustedAdults||[]).join(', '))||'-'}</td><td>${esc(d.step7?.feedback)||'-'}</td></tr>`;});
+    pdfBody += `</table></div>`;
+
+    try {
+        const pw = window.open('','_blank');
+        if(pw) {
+            pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>SEL 대시보드 출력</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet"><style>*{font-family:'Noto Sans KR',sans-serif;margin:0;padding:0;box-sizing:border-box;}body{padding:24px;font-size:14px;color:#1F2937;line-height:1.6;}.print-header{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #7C3AED;}.print-header h2{color:#7C3AED;font-size:20px;}.print-header p{color:#6B7280;font-size:12px;}.card{border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin:12px 0;page-break-inside:avoid;}table{width:100%;border-collapse:collapse;margin:8px 0;}th,td{border:1px solid #E5E7EB;padding:8px 10px;text-align:left;font-size:13px;}th{background:#F3F4F6;font-weight:700;}h3{color:#7C3AED;font-size:16px;margin:12px 0 8px;}.print-guide{background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;text-align:center;}@media print{.print-guide{display:none;}}</style></head><body><div class="print-guide">💡 <strong>PDF로 저장하려면:</strong> 인쇄 대화상자에서 "대상"을 <strong>"PDF로 저장"</strong>으로 선택하세요.</div><div class="print-header"><h2>📊 SEL 불안·우울·스트레스 이해하기</h2><p>방 코드: ${currentRoomCode} | 출력: ${new Date().toLocaleString('ko-KR')}</p></div>${pdfBody}<scr`+`ipt>setTimeout(function(){window.print();},1000);</scr`+`ipt></body></html>`);
+            pw.document.close();
+            showToast('📄 새 창에서 PDF로 저장하세요.','success');
+            return;
+        }
+    } catch(e) { console.log('[PDF] 새 창 실패:', e.message); }
+    try { showToast('📄 Ctrl+P를 눌러 PDF로 저장해주세요.','info'); setTimeout(()=>window.print(),500); return; }
+    catch(e) { console.log('[PDF] print 실패:', e.message); }
+    showToast('📄 키보드에서 Ctrl+P (Mac: ⌘+P)를 눌러주세요.','info');
+};
+
+// ═══ 데이터 초기화 ═══
+window.confirmResetRoom = function() {
+    showConfirmModal('이 방의 <strong>학생 활동 기록</strong>이 모두 삭제됩니다.<br>이 작업은 되돌릴 수 없어요.<br><br>✅ 방 코드와 관리자 비밀번호는 그대로 유지되어,<br>같은 방을 계속 사용할 수 있어요.<br><br>정말 초기화할까요?', async ()=>{
+        try {
+            if(unsubscribe){ unsubscribe(); unsubscribe=null; }   // ⭐ 삭제 전 리스너 해제
+            await DB.clearStudents(currentRoomCode);              // ⭐ 방 문서(해시 비번·만료일)는 보존
+            dashboardData = {};
+            renderDashboard();
+            loadDashboard();                                       // 리스너 재연결
+            showToast('학생 기록이 초기화되었습니다. (방은 그대로 유지)','success');
+        }
+        catch(e){ showToast('초기화 실패','error'); }
+    });
+};
+
+// ═══ TTS ═══
+let ttsUtterance=null, ttsActive=false;
+// ⭐ 숨겨진(display:none) 요소에서 innerText가 빈 문자열이 되는 브라우저 대비 textContent fallback
+function ttsText(id) {
+    const el=document.getElementById(id); if(!el) return '';
+    const it=(el.innerText||'').trim();
+    return it ? it : (el.textContent||'').trim();
+}
+function setStopBtn(show) {
+    const b=document.getElementById('global-stop');
+    if(b) b.style.display = show ? 'inline-block' : 'none';
+}
+window.speakTTS = function(id) {
+    if(!('speechSynthesis' in window)) return showToast('이 브라우저는 읽기 기능을 지원하지 않아요.','info');
+    if(ttsActive){window.speechSynthesis.cancel();ttsActive=false;}
+    const text=ttsText(id);
+    if(!text||text==='데이터 없음') return showToast('읽을 데이터가 없어요.','info');
+    ttsUtterance=new SpeechSynthesisUtterance(text);
+    ttsUtterance.lang='ko-KR'; ttsUtterance.rate=0.9;
+    ttsUtterance.onend=()=>{ttsActive=false;setStopBtn(false);};
+    ttsUtterance.onerror=()=>{ttsActive=false;setStopBtn(false);};
+    window.speechSynthesis.speak(ttsUtterance);
+    ttsActive=true; setStopBtn(true);
+};
+window.stopTTS = function() {
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    ttsActive=false; setStopBtn(false);
+};
+window.previewTTS = function(id) {
+    const text=ttsText(id)||'데이터 없음';
+    showConfirmModal(`<strong>📝 스크립트 미리보기</strong><br><br>${esc(text)}`, ()=>{});
+    document.getElementById('confirmOkBtn').textContent='닫기';
+    document.getElementById('confirmOkBtn').style.background='var(--primary)';
+};
+
+// ═══════════════════════════════════════════════════════
+// 🚀 초기화
+// ═══════════════════════════════════════════════════════
+await authReady;
+console.log('🧠 불안·우울·스트레스 이해하기 v3.4 초기화 완료');
+</script>
+</body>
+</html>

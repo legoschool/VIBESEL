@@ -1,0 +1,2418 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>함께하면 왜 더 잘 될까</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Noto Sans KR',sans-serif}
+:root{
+--primary:#7C3AED;--primary-light:#A78BFA;--primary-dark:#5B21B6;
+--gradient:linear-gradient(135deg,#7C3AED 0%,#A78BFA 50%,#C4B5FD 100%);
+--gradient-bg:linear-gradient(135deg,#EDE9FE 0%,#F5F3FF 50%,#FFFFFF 100%);
+--success:#10B981;--error:#EF4444;--warning:#F59E0B;
+--text:#1F2937;--text-light:#6B7280;--bg-card:rgba(255,255,255,0.95);
+}
+body{background:var(--gradient-bg);color:var(--text);font-weight:700;font-size:18px;line-height:1.7;min-height:100vh;overflow-x:hidden}
+h1,h2,h3{font-weight:900}
+.container{max-width:500px;margin:0 auto;padding:16px}
+.screen{display:none}.screen.active{display:block;animation:fadeIn 0.3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* 버튼 */
+.btn{padding:16px 24px;border-radius:16px;font-size:17px;font-weight:900;font-family:'Noto Sans KR',sans-serif;border:none;cursor:pointer;min-height:52px;transition:all 0.2s;width:100%;max-width:400px;display:block;margin:6px auto;text-align:center}
+.btn-primary{background:var(--gradient);color:white;box-shadow:0 4px 15px rgba(124,58,237,0.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,0.4)}
+.btn-secondary{background:rgba(124,58,237,0.1);color:var(--primary);border:2px solid var(--primary-light)}
+.btn-small{padding:10px 16px;font-size:14px;min-height:40px;width:auto;display:inline-block;border-radius:12px}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.btn-success{background:var(--success);color:white;box-shadow:0 4px 12px rgba(16,185,129,0.3)}
+
+/* 입력 */
+input,textarea{min-height:48px;font-size:16px;font-family:'Noto Sans KR',sans-serif;font-weight:700;border:2px solid #E5E7EB;border-radius:12px;padding:12px 16px;width:100%;box-sizing:border-box}
+input:focus,textarea:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(124,58,237,0.1)}
+textarea{min-height:80px;resize:vertical}
+
+/* 카드 */
+.card{background:var(--bg-card);border-radius:20px;padding:24px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.privacy-notice{background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.15);border-radius:12px;padding:14px;font-size:13px;font-weight:400;color:var(--text-light);line-height:1.6;margin-top:16px}
+.nav-buttons{display:flex;gap:8px;margin-bottom:16px}
+.nav-btn{background:rgba(124,58,237,0.08);border:none;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:700;color:var(--primary);cursor:pointer;font-family:'Noto Sans KR',sans-serif}
+.nav-btn:hover{background:rgba(124,58,237,0.15)}
+.badge{display:inline-block;background:rgba(124,58,237,0.1);color:var(--primary);padding:6px 14px;border-radius:20px;font-size:14px;font-weight:700}
+
+/* 선택 버튼 */
+.choice-btn{padding:16px;border:2px solid #E5E7EB;border-radius:14px;background:white;cursor:pointer;transition:all 0.2s;text-align:left;width:100%;margin:6px 0;font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:16px;display:block}
+.choice-btn.selected{border-color:var(--primary);background:rgba(124,58,237,0.08);box-shadow:0 0 0 3px rgba(124,58,237,0.15);transform:scale(1.02)}
+.choice-btn.selected::after{content:' ✓';color:var(--primary);font-weight:900}
+
+/* ═══ 스토리 (감동 강화) ═══ */
+.story-panel{background:white;border-radius:24px;padding:0;margin:12px 0;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.1)}
+.story-header{background:var(--gradient);color:white;padding:20px 24px;text-align:center}
+.story-header h3{font-size:20px;margin-bottom:4px}
+.story-body{padding:24px}
+.story-emoji-big{font-size:64px;text-align:center;margin:12px 0;animation:storyBounce 0.5s}
+@keyframes storyBounce{0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+.story-text{font-size:17px;line-height:2;color:var(--text);font-weight:500}
+.story-text strong{color:var(--primary);font-weight:900}
+.dialogue{background:rgba(124,58,237,0.06);padding:12px 18px;border-radius:16px;margin:12px 0;font-weight:700;color:var(--primary-dark);position:relative;border-left:4px solid var(--primary-light)}
+.dialogue .speaker{font-size:13px;color:var(--primary);font-weight:900;margin-bottom:4px}
+.inner-thought{background:rgba(107,114,128,0.06);padding:12px 18px;border-radius:16px;margin:12px 0;font-style:italic;color:var(--text-light);border-left:4px solid #D1D5DB}
+.story-progress{display:flex;gap:8px;justify-content:center;margin:20px 0}
+.story-dot{width:12px;height:12px;border-radius:50%;background:#E5E7EB;transition:all 0.3s}
+.story-dot.active{background:var(--primary);transform:scale(1.4);box-shadow:0 0 8px rgba(124,58,237,0.4)}
+.story-dot.done{background:var(--primary-light)}
+
+/* 탭 */
+.tab-buttons{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{flex:1;min-width:70px;padding:12px 6px;border:none;background:rgba(124,58,237,0.08);color:var(--primary);border-radius:12px;font-weight:700;cursor:pointer;font-size:13px;transition:all 0.2s;font-family:'Noto Sans KR',sans-serif}
+.tab-btn.active{background:var(--gradient);color:white;box-shadow:0 2px 10px rgba(124,58,237,0.3)}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* 미션 카드 */
+.mission-card{background:white;border-radius:16px;padding:20px;margin:10px 0;border:2px solid #E5E7EB;transition:all 0.3s;cursor:pointer}
+.mission-card:hover{border-color:var(--primary-light);transform:translateY(-2px)}
+.mission-card.completed{border-color:var(--success);background:rgba(16,185,129,0.04)}
+.mission-card.locked{opacity:0.6;cursor:not-allowed}
+.mission-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.mission-num{background:var(--gradient);color:white;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;flex-shrink:0}
+.mission-num.done{background:var(--success)}
+.mission-status{font-size:13px;font-weight:700;color:var(--text-light)}
+.mission-title{font-size:17px;font-weight:900;margin:4px 0}
+.mission-type{font-size:13px;color:var(--primary);font-weight:700}
+
+/* ═══ 게임 공통 ═══ */
+.game-area{background:white;border-radius:20px;padding:20px;margin:12px 0;min-height:200px;position:relative;overflow:hidden}
+.game-timer{text-align:center;font-size:32px;font-weight:900;color:var(--primary);margin:8px 0}
+.game-timer.urgent{color:var(--error);animation:timerPulse 0.5s infinite}
+@keyframes timerPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.game-score-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(124,58,237,0.05);border-radius:12px;margin:8px 0}
+.game-label{font-size:15px;font-weight:700}
+.game-mode-label{text-align:center;padding:10px;border-radius:12px;margin:8px 0;font-weight:900;font-size:16px}
+.mode-solo{background:rgba(239,68,68,0.1);color:var(--error)}
+.mode-team{background:rgba(16,185,129,0.1);color:var(--success)}
+
+/* 게임1: 터치 그리드 */
+.touch-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.touch-item{aspect-ratio:1;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:all 0.15s;border:2px solid #E5E7EB;background:white;user-select:none;-webkit-user-select:none}
+.touch-item.active{animation:itemPop 0.3s;border-color:var(--primary-light);background:rgba(124,58,237,0.04)}
+@keyframes itemPop{0%{transform:scale(0.5);opacity:0}100%{transform:scale(1);opacity:1}}
+.touch-item.caught{background:var(--success);border-color:var(--success);color:white;transform:scale(0.9);pointer-events:none}
+.touch-item.missed{background:rgba(239,68,68,0.1);border-color:var(--error);opacity:0.3;pointer-events:none}
+.touch-item.friend-caught{background:rgba(59,130,246,0.15);border-color:#3B82F6;pointer-events:none}
+
+/* 게임2: 순서 맞추기 */
+.order-items{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.order-item{padding:14px 18px;border-radius:14px;border:2px solid #E5E7EB;background:white;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:10px}
+.order-item:hover{border-color:var(--primary-light)}
+.order-item.placed{border-color:var(--success);background:rgba(16,185,129,0.06)}
+.order-item.friend-placed{border-color:#3B82F6;background:rgba(59,130,246,0.06)}
+.order-num{width:28px;height:28px;border-radius:50%;background:var(--gradient);color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0}
+
+/* 게임3: 물방울 닦기 */
+.clean-zone{position:relative;width:100%;height:280px;border-radius:16px;background:linear-gradient(180deg,#E0F2FE 0%,#BAE6FD 100%);overflow:hidden;touch-action:none}
+.water-drop{position:absolute;width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#93C5FD,#3B82F6);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:transform 0.1s;user-select:none;-webkit-user-select:none;z-index:2}
+.water-drop:active{transform:scale(0.8)}
+.water-drop.cleaned{animation:dropClean 0.3s forwards}
+@keyframes dropClean{to{transform:scale(0);opacity:0}}
+.water-drop.friend-zone{opacity:0.5}
+.clean-divider{position:absolute;top:0;bottom:0;width:2px;background:rgba(0,0,0,0.15);z-index:5}
+.zone-label{position:absolute;top:8px;font-size:11px;font-weight:900;z-index:5;padding:3px 8px;border-radius:8px}
+
+/* 게임4: 문장 완성 */
+.sentence-frame{background:rgba(124,58,237,0.04);border-radius:16px;padding:20px;margin:12px 0;border:2px dashed var(--primary-light)}
+.sentence-text{font-size:17px;line-height:2.2}
+.word-blank{display:inline-block;min-width:60px;border-bottom:3px solid var(--primary);color:var(--primary);font-weight:900;padding:2px 6px;margin:0 2px;cursor:pointer;transition:all 0.2s}
+.word-blank.filled{background:rgba(124,58,237,0.1);border-radius:8px;border-bottom-color:transparent}
+.word-choices{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;justify-content:center}
+.word-chip{padding:10px 16px;border-radius:20px;border:2px solid #E5E7EB;background:white;cursor:pointer;font-weight:700;font-size:15px;transition:all 0.2s}
+.word-chip:hover{border-color:var(--primary)}
+.word-chip.used{opacity:0.3;pointer-events:none}
+.word-chip.friend-used{border-color:#3B82F6;background:rgba(59,130,246,0.08);pointer-events:none}
+.message-card{background:white;border-radius:16px;padding:16px;margin:8px 0;border:2px solid #E5E7EB}
+.message-card.friend-msg{border-color:#3B82F6;background:rgba(59,130,246,0.04)}
+.message-author{font-size:13px;font-weight:900;color:var(--primary);margin-bottom:4px}
+
+/* 게임5: 패턴 기억 */
+.pattern-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px auto;max-width:280px}
+.pattern-cell{aspect-ratio:1;border-radius:16px;border:3px solid #E5E7EB;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:32px;transition:all 0.2s;user-select:none;-webkit-user-select:none}
+.pattern-cell.flash{background:var(--primary);border-color:var(--primary);transform:scale(1.05);box-shadow:0 0 20px rgba(124,58,237,0.4)}
+.pattern-cell.correct{background:var(--success);border-color:var(--success)}
+.pattern-cell.wrong{background:var(--error);border-color:var(--error);animation:shake 0.3s}
+.pattern-cell.friend-flash{background:#3B82F6;border-color:#3B82F6}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+/* 비교 결과 */
+.compare-box{display:grid;grid-template-columns:1fr 60px 1fr;gap:8px;align-items:center;margin:16px 0}
+.compare-side{text-align:center;padding:16px;border-radius:16px}
+.compare-solo{background:rgba(239,68,68,0.08);border:2px solid rgba(239,68,68,0.2)}
+.compare-team{background:rgba(16,185,129,0.08);border:2px solid rgba(16,185,129,0.2)}
+.compare-score{font-size:36px;font-weight:900}
+.compare-solo .compare-score{color:var(--error)}
+.compare-team .compare-score{color:var(--success)}
+.compare-label{font-size:13px;font-weight:700;margin-top:4px}
+.compare-vs{font-size:20px;font-weight:900;color:var(--text-light)}
+
+/* 컬렉션 카드 */
+.card-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0}
+.coop-card{padding:16px;border-radius:16px;text-align:center;border:2px solid #E5E7EB;background:white;transition:all 0.3s}
+.coop-card.collected{border-color:var(--success);background:rgba(16,185,129,0.04);box-shadow:0 2px 12px rgba(16,185,129,0.15)}
+.coop-card.locked{opacity:0.4;filter:grayscale(1)}
+.coop-card .card-emoji{font-size:36px;margin-bottom:4px}
+.coop-card .card-name{font-size:15px;font-weight:900}
+.coop-card .card-desc{font-size:12px;color:var(--text-light);font-weight:500;margin-top:4px}
+.new-badge{display:inline-block;background:var(--error);color:white;font-size:10px;padding:2px 6px;border-radius:8px;font-weight:900;animation:newPulse 1s infinite}
+@keyframes newPulse{0%,100%{opacity:1}50%{opacity:0.6}}
+
+/* 실시간 우리 반 소식 */
+.live-wall{background:rgba(124,58,237,0.04);border-radius:16px;padding:16px;margin:12px 0;border:1px solid rgba(124,58,237,0.1);max-height:200px;overflow-y:auto}
+.live-wall h4{font-size:14px;color:var(--primary);margin-bottom:8px}
+.live-item{padding:8px 12px;background:white;border-radius:10px;margin:4px 0;font-size:13px;font-weight:500;animation:slideInRight 0.3s}
+@keyframes slideInRight{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
+.live-item .live-emoji{margin-right:4px}
+.live-empty{text-align:center;color:var(--text-light);font-size:13px;padding:12px}
+
+/* 프로그레스 */
+.progress-bar{width:100%;height:12px;background:#E5E7EB;border-radius:8px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;border-radius:8px;background:var(--gradient);transition:width 0.5s ease}
+
+/* 대시보드 */
+.dash-tab-buttons{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.dash-tab-btn{flex:1;min-width:60px;padding:10px 4px;border:none;background:rgba(124,58,237,0.08);color:var(--primary);border-radius:10px;font-weight:700;cursor:pointer;font-size:12px;font-family:'Noto Sans KR',sans-serif;transition:all 0.2s}
+.dash-tab-btn.active{background:var(--gradient);color:white}
+.dash-tab-content{display:none}.dash-tab-content.active{display:block}
+.student-row{background:white;border-radius:12px;padding:14px;margin:6px 0;border:1px solid #E5E7EB;cursor:pointer;transition:all 0.2s}
+.student-row:hover{border-color:var(--primary-light)}
+.student-detail{display:none;padding:12px;background:rgba(124,58,237,0.03);border-radius:10px;margin-top:8px}
+.student-row.expanded .student-detail{display:block}
+
+/* 친구 등장 애니메이션 */
+.friends-arrive{text-align:center;padding:20px}
+.friend-avatar{display:inline-block;width:60px;height:60px;border-radius:50%;background:white;border:3px solid;margin:0 8px;font-size:28px;line-height:60px;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+.friend-avatar.arrive{animation:friendArrive 0.5s ease-out}
+@keyframes friendArrive{from{transform:translateY(40px) scale(0);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+
+/* 토스트 & 모달 */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(31,41,55,0.95);color:white;padding:14px 28px;border-radius:14px;font-size:15px;font-weight:700;z-index:10000;opacity:0;transition:all 0.3s;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.flex-show{display:flex}
+.modal-content{background:white;border-radius:24px;padding:28px;max-width:400px;width:100%;text-align:center}
+.modal-icon{font-size:48px;margin-bottom:12px}
+.modal-message{font-size:16px;line-height:1.8;margin-bottom:20px;font-weight:500}
+.modal-buttons{display:flex;gap:8px}
+.modal-buttons .btn{flex:1}
+
+/* 컨페티 */
+.confetti-piece{position:fixed;top:-10px;z-index:10001;animation:confettiFall 3s ease-out forwards}
+@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+/* 반응형 */
+@media(max-width:768px){
+body{font-size:16px;padding:4px}
+.container{max-width:100%;padding:12px}
+.btn{min-height:48px;font-size:16px}
+.touch-grid{grid-template-columns:repeat(4,1fr);gap:6px}
+.touch-item{font-size:24px}
+.card-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+.clean-zone{height:240px}
+.pattern-grid{max-width:240px}
+}
+@media(min-width:769px){.container{max-width:600px}}
+
+/* 인쇄 */
+@media print{
+body *{visibility:hidden}
+#dashboard-content,#dashboard-content *{visibility:visible}
+#dashboard-content{position:absolute;left:0;top:0;width:100%}
+.btn,.nav-buttons,.tab-buttons,.dash-tab-buttons,#toast,.modal-overlay{display:none!important}
+.card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ═══ 시작 화면 ═══ -->
+<div class="screen active" id="screen-start">
+<div style="text-align:center;padding:20px 0">
+<div style="font-size:72px;margin-bottom:8px">🤝</div>
+<h1 style="font-size:26px;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent">함께하면 왜 더 잘 될까</h1>
+<p style="font-size:16px;color:var(--text-light);margin:8px 0">"혼자서는 빠르지만, 함께하면 멀리 간다"</p>
+<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0">
+<span class="badge">⏱️ 약 20~30분</span>
+<span class="badge">🎮 5가지 미션</span>
+<span class="badge">📖 8장 카드 수집</span>
+</div>
+</div>
+<button class="btn btn-primary" onclick="showScreen('screen-login')">👩‍🏫 방 만들기 / 입장하기</button>
+<button class="btn btn-secondary" onclick="startSoloMode()">🌟 혼자 체험하기</button>
+<div class="privacy-notice">
+🔐 <strong>안심하세요!</strong><br>
+방 코드는 입장할 때만 필요한 숫자일 뿐, 개인정보를 포함하지 않습니다.
+닉네임을 만들 때 실명이나 개인정보를 포함하지 않도록 해주세요.
+여러분의 익명성은 소중히 보호됩니다.
+</div>
+</div>
+
+<!-- ═══ 로그인 화면 ═══ -->
+<div class="screen" id="screen-login">
+<div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-start')">← 처음으로</button></div>
+<div class="card">
+<h3 style="text-align:center;margin-bottom:16px">👩‍🏫 방 만들기 (교사용)</h3>
+<input type="text" id="teacher-name" placeholder="교사 닉네임" maxlength="10" style="margin-bottom:8px">
+<input type="password" id="teacher-pw" placeholder="관리 비밀번호 (숫자 4자리)" inputmode="numeric" maxlength="4" style="margin-bottom:8px">
+<button class="btn btn-primary" onclick="createRoom()">🏫 방 만들기</button>
+</div>
+<div class="card">
+<h3 style="text-align:center;margin-bottom:16px">🔑 교사로 접속하기</h3>
+<input type="text" id="teacher-room-code" placeholder="방 코드 (6자리)" inputmode="numeric" maxlength="6" style="margin-bottom:8px">
+<input type="password" id="teacher-room-pw" placeholder="비밀번호 (4자리)" inputmode="numeric" maxlength="4" style="margin-bottom:8px">
+<button class="btn btn-secondary" onclick="joinAsTeacher()">입장하기</button>
+</div>
+<div class="card">
+<h3 style="text-align:center;margin-bottom:16px">🧒 학생으로 참여하기</h3>
+<input type="text" id="student-room-code" placeholder="방 코드 (6자리)" inputmode="numeric" maxlength="6" style="margin-bottom:8px">
+<input type="text" id="student-nickname" placeholder="닉네임 (실명 금지)" maxlength="8" style="margin-bottom:8px">
+<button class="btn btn-primary" onclick="joinAsStudent()">🎮 참여하기</button>
+</div>
+<div class="privacy-notice">🔐 방 코드는 숫자로만 구성되어 있어 개인정보를 포함하지 않습니다.</div>
+</div>
+
+<!-- ═══ 방 생성 완료 ═══ -->
+<div class="screen" id="screen-room-created">
+<div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-start')">← 처음으로</button></div>
+<div class="card" style="text-align:center">
+<div style="font-size:48px;margin-bottom:8px">🎉</div>
+<h2>방이 만들어졌어요!</h2>
+<div style="font-size:40px;font-weight:900;color:var(--primary);letter-spacing:8px;margin:16px 0;padding:16px;background:rgba(124,58,237,0.06);border-radius:16px" id="room-code-display">000000</div>
+<button class="btn btn-secondary btn-small" onclick="copyRoomCode()">📋 코드 복사</button>
+<p style="font-size:14px;color:var(--text-light);margin-top:12px">학생들에게 이 코드를 알려주세요!</p>
+<button class="btn btn-primary" onclick="enterDashboard()" style="margin-top:16px">📊 대시보드로 이동</button>
+</div>
+</div>
+
+<!-- ═══ 스토리 화면 ═══ -->
+<div class="screen" id="screen-story">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+</div>
+<div id="story-container"></div>
+<div class="story-progress" id="story-dots"></div>
+<div style="display:flex;gap:8px;margin-top:12px">
+<button class="btn btn-secondary" onclick="prevStory()" id="btn-story-prev" style="display:none">← 이전</button>
+<button class="btn btn-primary" onclick="nextStory()" id="btn-story-next">다음 →</button>
+</div>
+</div>
+
+<!-- ═══ 메인 화면 ═══ -->
+<div class="screen" id="screen-main">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+</div>
+<div style="text-align:center;margin-bottom:12px">
+<h2>🤝 함께하면 왜 더 잘 될까</h2>
+<div id="main-progress-area"></div>
+</div>
+
+<!-- 실시간 우리 반 소식 -->
+<div class="live-wall" id="live-wall" style="display:none">
+<h4>📡 우리 반 소식 (실시간)</h4>
+<div id="live-wall-content"><div class="live-empty">아직 소식이 없어요. 미션을 시작해보세요!</div></div>
+</div>
+
+<!-- 탭 -->
+<div class="tab-buttons">
+<button class="tab-btn active" data-tab="missions" onclick="switchTab('missions')">🎮 미션</button>
+<button class="tab-btn" data-tab="record" onclick="switchTab('record')">📝 기록</button>
+<button class="tab-btn" data-tab="collection" onclick="switchTab('collection')">📖 도감</button>
+</div>
+
+<div class="tab-content active" id="tab-missions">
+<div id="mission-list"></div>
+</div>
+<div class="tab-content" id="tab-record">
+<div id="record-content"></div>
+</div>
+<div class="tab-content" id="tab-collection">
+<div id="collection-content"></div>
+</div>
+</div>
+
+<!-- ═══ 게임 플레이 화면 ═══ -->
+<div class="screen" id="screen-game">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="exitGame()">← 미션 목록</button>
+<button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+</div>
+<div id="game-container"></div>
+</div>
+
+<!-- ═══ 완료 화면 ═══ -->
+<div class="screen" id="screen-complete">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="backToMain()">← 다시 탐험하기</button>
+<button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button>
+</div>
+<div class="card" style="text-align:center" id="complete-content"></div>
+</div>
+
+<!-- ═══ 교사 대시보드 ═══ -->
+<div class="screen" id="screen-dashboard">
+<div class="nav-buttons">
+<button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button>
+<button class="nav-btn" onclick="refreshDashboard()">🔄 새로고침</button>
+</div>
+<div style="text-align:center;margin-bottom:12px">
+<h2>📊 교사 대시보드</h2>
+<p style="font-size:14px;color:var(--text-light)">방 코드: <strong id="dash-room-code">000000</strong></p>
+</div>
+<div id="dashboard-content">
+<div class="dash-tab-buttons">
+<button class="dash-tab-btn active" data-dtab="overview" onclick="switchDashTab('overview')">📊 현황</button>
+<button class="dash-tab-btn" data-dtab="detail" onclick="switchDashTab('detail')">📋 상세</button>
+<button class="dash-tab-btn" data-dtab="export" onclick="switchDashTab('export')">📥 내보내기</button>
+<button class="dash-tab-btn" data-dtab="tts" onclick="switchDashTab('tts')">🔊 TTS</button>
+</div>
+<div class="dash-tab-content active" id="dash-overview"></div>
+<div class="dash-tab-content" id="dash-detail"></div>
+<div class="dash-tab-content" id="dash-export">
+<div class="card">
+<h3>📥 데이터 내보내기</h3>
+<button class="btn btn-primary" onclick="downloadExcel()" style="margin:8px auto">📊 엑셀 다운로드</button>
+<button class="btn btn-secondary" onclick="downloadPDF()" style="margin:8px auto">📄 PDF 저장 (인쇄)</button>
+</div>
+</div>
+<div class="dash-tab-content" id="dash-tts">
+<div class="card">
+<h3>🔊 결과 읽어주기</h3>
+<p style="font-size:13px;color:var(--text-light);margin-bottom:10px">영역을 골라 들려주세요. 📝 를 누르면 읽어줄 내용을 미리 볼 수 있어요.</p>
+<div style="display:flex;gap:6px;align-items:center;margin:8px 0">
+<button class="btn btn-primary btn-small" onclick="speakSection('overview')" style="flex:1;width:auto">▶️ 참여 현황</button>
+<button class="btn btn-secondary btn-small" onclick="previewScript('overview')">📝</button>
+</div>
+<div style="display:flex;gap:6px;align-items:center;margin:8px 0">
+<button class="btn btn-primary btn-small" onclick="speakSection('promise')" style="flex:1;width:auto">▶️ 협력 약속</button>
+<button class="btn btn-secondary btn-small" onclick="previewScript('promise')">📝</button>
+</div>
+<div style="display:flex;gap:6px;align-items:center;margin:8px 0">
+<button class="btn btn-primary btn-small" onclick="speakSection('reflection')" style="flex:1;width:auto">▶️ 활동 소감</button>
+<button class="btn btn-secondary btn-small" onclick="previewScript('reflection')">📝</button>
+</div>
+<button class="btn btn-secondary" onclick="stopSpeaking()" style="margin:10px auto">⏹️ 멈추기</button>
+</div>
+</div>
+</div>
+<div style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2);border-radius:12px;padding:12px;margin-top:12px;font-size:13px;text-align:center">
+⚠️ 수업이 끝나면 데이터 초기화를 눌러주세요. 30일 후 자동 삭제됩니다.<br>
+<button class="btn btn-small" style="background:var(--error);color:white;margin-top:8px" onclick="resetAllData()">🗑️ 데이터 초기화</button>
+</div>
+</div>
+
+</div><!-- container end -->
+
+<!-- 토스트 & 모달 -->
+<div id="toast" class="toast"></div>
+<div id="confirmModal" class="modal-overlay">
+<div class="modal-content">
+<div class="modal-icon">⚠️</div>
+<div class="modal-message" id="confirmMessage"></div>
+<div class="modal-buttons">
+<button class="btn btn-secondary" onclick="closeConfirmModal()">취소</button>
+<button class="btn btn-primary" id="confirmOkBtn" style="background:var(--error)">확인</button>
+</div>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s",
+    authDomain: "emo-dex.firebaseapp.com",
+    projectId: "emo-dex",
+    storageBucket: "emo-dex.firebasestorage.app",
+    messagingSenderId: "994736049700",
+    appId: "1:994736049700:web:8233fa7b68cd6e0cccd2b1",
+    measurementId: "G-6YLB5C6VNR"
+};
+const APP_ID = 'sel-lesson-25';
+let app, auth, db;
+let useFirebase = false;
+const localDB = {};
+
+try { app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); } catch(e) { console.log('[Firebase] Init failed:', e.message); }
+
+let currentUser = null;
+const authReady = new Promise((resolve) => {
+    if (!auth) { resolve(null); return; }
+    const timeout = setTimeout(() => { resolve(null); }, 5000);
+    onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; useFirebase = true; clearTimeout(timeout); resolve(user); } });
+    signInAnonymously(auth).catch(e => { clearTimeout(timeout); resolve(null); });
+});
+
+// ═══ DB 래퍼 ═══
+function getRoomRef(rc) { return doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', rc); }
+function getStudentRef(rc, n) { return doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', rc, 'students', n); }
+function getStudentsCol(rc) { return collection(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', rc, 'students'); }
+
+const DB = {
+    async saveRoom(rc, d) { if (useFirebase) { try { await setDoc(getRoomRef(rc), d); return; } catch(e) {} } if (!localDB.rooms) localDB.rooms = {}; localDB.rooms[rc] = { ...(localDB.rooms[rc]||{}), ...d }; },
+    async getRoom(rc) { if (useFirebase) { try { const s = await getDoc(getRoomRef(rc)); return s.exists() ? s.data() : null; } catch(e) {} } return localDB.rooms?.[rc] || null; },
+    async saveStudent(rc, n, d) { if (useFirebase) { try { await setDoc(getStudentRef(rc, n), d, { merge: true }); return; } catch(e) {} } if (!localDB.students) localDB.students = {}; if (!localDB.students[rc]) localDB.students[rc] = {}; localDB.students[rc][n] = { ...(localDB.students[rc][n]||{}), ...d }; },
+    async getStudent(rc, n) { if (useFirebase) { try { const s = await getDoc(getStudentRef(rc, n)); return s.exists() ? s.data() : null; } catch(e) {} } return localDB.students?.[rc]?.[n] || null; },
+    async getAllStudents(rc) { if (useFirebase) { try { const s = await getDocs(getStudentsCol(rc)); const r = {}; s.forEach(d => r[d.id] = d.data()); return r; } catch(e) {} } return localDB.students?.[rc] || {}; },
+    async deleteRoom(rc) { if (useFirebase) { try { const s = await getDocs(getStudentsCol(rc)); for (const d of s.docs) await deleteDoc(d.ref); await deleteDoc(getRoomRef(rc)); } catch(e) {} } if (localDB.rooms) delete localDB.rooms[rc]; if (localDB.students) delete localDB.students[rc]; },
+    // ⭐ 학생 데이터만 삭제 — 방 문서(비밀번호·만료일)는 절대 건드리지 않는다
+    async deleteStudents(rc) { if (useFirebase) { try { const s = await getDocs(getStudentsCol(rc)); for (const d of s.docs) await deleteDoc(d.ref); return; } catch(e) {} } if (localDB.students) localDB.students[rc] = {}; },
+    onStudentsChange(rc, cb) { if (useFirebase) { try { return onSnapshot(getStudentsCol(rc), (s) => { const r = {}; s.forEach(d => r[d.id] = d.data()); cb(r); }); } catch(e) {} } return null; }
+};
+
+// ═══ 상태 변수 ═══
+let currentRoomCode = '', currentNickname = '', isTeacher = false, isSoloMode = false;
+let unsubscribe = null, dashboardData = {};
+let completedMissions = new Set(), collectedCards = new Set(), missionScores = {};
+let missionBest = {}, missionPlays = {}, missionVariant = {}, coopPoints = {};
+let bestTotalScore = 0, totalPlays = 0, currentMissionIdx = -1;
+let recordDone = false, recordData = {};
+let storyIndex = 0;
+let newCards = new Set(); // 이번 세션에서 새로 얻은 카드
+
+// 게임 상태
+let gamePhase = ''; // intro, solo, solo-result, friends-arrive, team, team-result, compare, reward
+let gameTimer = null, gameTimeLeft = 0, gameScore = 0;
+// 게임별 상태
+let touchItems = [], touchCaught = 0;
+let orderSteps = [], orderPlaced = [];
+let waterDrops = [], waterCleaned = 0, waterTotal = 0;
+let sentenceBlanks = [], sentenceFilled = [];
+let patternSeq = [], patternInput = [], patternLevel = 0;
+
+// ═══ 교육 콘텐츠 ═══
+
+const STORIES = [
+    {
+        emoji: '📚',
+        title: '지민이의 큰 약속',
+        body: `<p>학급 행사가 일주일 앞으로 다가왔어요.</p>
+<p>선생님이 "누가 장식 준비를 맡아볼래?" 하고 물었을 때, <strong>지민</strong>이가 벌떡 일어났어요.</p>
+<div class="dialogue"><div class="speaker">지민</div>"저요! 제가 전부 할 수 있어요! 색종이도, 현수막도, 풍선도 다 할게요!"</div>
+<p>친구들이 놀라서 쳐다봤어요. 지민이는 자신감에 가득 차서 웃었어요.</p>
+<div class="inner-thought">💭 '내가 전부 하면 다들 놀라겠지? 멋진 장식을 만들어서 감동시켜야지!'</div>
+<p>그런데… 그날 밤, 침대에 누운 지민이는 갑자기 걱정이 밀려왔어요.</p>
+<div class="inner-thought">💭 '색종이 자르기, 현수막, 풍선, 의자 배치… 이걸 진짜 나 혼자 다 할 수 있을까?'</div>`
+    },
+    {
+        emoji: '😢',
+        title: '혼자서는 너무 먼 길',
+        body: `<p>다음 날 방과 후, 빈 교실에 혼자 남은 지민이.</p>
+<p>색종이를 자르기 시작했어요. 30분이 지나고, 1시간이 지나고…</p>
+<p>손끝이 가위에 눌려 <strong>빨갛게</strong> 부어올랐어요. 현수막에 쓴 글씨는 점점 <strong>비뚤어지고</strong>…</p>
+<div class="dialogue"><div class="speaker">지민 (혼잣말)</div>"아… 풍선은 아직 손도 못 댔는데…"</div>
+<p>시계를 봤어요. 벌써 5시. <strong>2시간</strong>이나 지났는데 절반도 못 끝냈어요.</p>
+<p>눈이 뜨거워졌어요. 하지만 자기가 "다 할 수 있다"고 큰소리쳤으니, 도움을 요청하는 건…</p>
+<div class="inner-thought">💭 '부끄러워… 다 한다고 해놓고 못 하겠다니… 친구들이 뭐라고 할까…'</div>
+<p>그때, 교실 문이 열렸어요.</p>`
+    },
+    {
+        emoji: '💛',
+        title: '달라진 순간',
+        body: `<div class="dialogue"><div class="speaker">혜진</div>"지민아! 아직 여기 있었어? 나 뭐 도와줄 거 없어?"</div>
+<p>지민이가 고개를 들었어요. 혜진이가 환하게 웃고 있었어요.</p>
+<div class="dialogue"><div class="speaker">지민 (작은 목소리로)</div>"…사실 좀 힘들어. 생각보다 할 게 너무 많아서…"</div>
+<p>혜진이가 지민이 옆에 앉았어요.</p>
+<div class="dialogue"><div class="speaker">혜진</div>"그럴 수 있지! 나도 자신있게 말하고 나중에 후회한 적 있어. 😊"</div>
+<p>그때 <strong>준서</strong>와 <strong>서윤</strong>이도 교실에 들어왔어요.</p>
+<div class="dialogue"><div class="speaker">준서</div>"야, 나 글씨 잘 쓰잖아. 현수막 맡을까?"</div>
+<div class="dialogue"><div class="speaker">서윤</div>"풍선은 내가! 묶는 거 잘하거든! 🎈"</div>
+<p>네 명이 역할을 나누자, 놀라운 일이 일어났어요.</p>
+<p style="text-align:center;font-size:20px;font-weight:900;color:var(--primary);margin:16px 0">
+혼자서 2시간 넘게 헤맨 일이<br>함께하니 <span style="font-size:28px">30분</span> 만에 끝났어요! ✨</p>
+<div class="dialogue"><div class="speaker">지민 (눈물이 글썽이며)</div>"고마워, 진짜… 혼자 하겠다고 해서 미안해."</div>
+<div class="dialogue"><div class="speaker">혜진</div>"미안하긴! 함께해서 우리도 재밌었어. 😄"</div>
+<p>지민이는 그날 알게 됐어요.<br><strong>도움을 요청하는 건 약한 게 아니라, 함께 더 좋은 것을 만드는 시작이라는 것을.</strong> 💛</p>`
+    },
+    {
+        emoji: '🔍',
+        title: '그런데, 늘 잘 되는 건 아니야',
+        body: `<p>일주일 뒤, 이번엔 <strong>모둠 신문 만들기</strong>였어요.</p>
+<p>이번에는 처음부터 다 같이 하기로 했는데… 이상하게 자꾸 삐걱거렸어요.</p>
+<div class="dialogue"><div class="speaker">준서</div>"어? 그건 내가 하기로 한 거 아니었어?"</div>
+<div class="dialogue"><div class="speaker">서윤</div>"난 아무도 말 안 해줘서 그냥 기다리고 있었는데…"</div>
+<div class="inner-thought">💭 (지민) '같이 하면 무조건 잘 되는 줄 알았는데… 왜 이러지?'</div>
+<p>혜진이가 조용히 종이 한 장을 꺼내 가운데에 놓았어요.</p>
+<div class="dialogue"><div class="speaker">혜진</div>"우리 지금 뭐가 막혔는지 하나씩 말해볼까? 누가 뭘 맡았는지부터 다시 적어보자."</div>
+<p>다섯 명이 돌아가며 말했어요. 그러자 막혔던 지점이 <strong>눈에 보이기 시작</strong>했어요.</p>
+<p style="text-align:center;font-size:17px;font-weight:900;color:var(--primary);margin:14px 0">
+함께한다고 저절로 잘 되는 게 아니라,<br><strong>잘 되게 만드는 방법</strong>이 따로 있었어요.</p>`
+    },
+    {
+        emoji: '🤝',
+        title: '이제 너희 차례야',
+        body: `<p>지민이네 반은 그날 <strong>협력이 잘 되는 조건</strong>을 칠판에 적었어요.</p>
+<div class="dialogue"><div class="speaker">우리 반 협력 조건</div>① 누가 무엇을 맡는지 <strong>분명히</strong> 정하기<br>② 막히면 <strong>바로 말하기</strong><br>③ 다른 사람 이야기 <strong>끝까지 듣기</strong><br>④ 맡은 건 <strong>끝까지</strong> 하기</div>
+<p>이제 여러분 차례예요. 앞으로 <strong>5가지 미션</strong>이 기다리고 있어요.</p>
+<p>각 미션은 두 번 도전해요.</p>
+<div class="inner-thought">1️⃣ 먼저 <strong>혼자</strong> 해보고 → 2️⃣ 그다음 <strong>친구들과 함께</strong> 해봐요.<br>두 점수를 나란히 놓고 비교하면, 차이가 눈에 보일 거예요.</div>
+<p>미션을 해낼 때마다 <strong>협력 카드</strong>를 한 장씩 모을 수 있어요. 전부 8장!</p>
+<div class="inner-thought">🎮 미션 5개 = 카드 5장<br>✍️ 협력 기록 제출 = 카드 2장<br>🏆 미션 5개 모두 완료 = 보너스 카드 1장<br><strong>5 + 2 + 1 = 8장!</strong></div>
+<p style="text-align:center;font-size:19px;font-weight:900;color:var(--primary);margin:14px 0">
+혼자서는 빠르지만,<br>함께하면 멀리 갈 수 있어요. 🚀</p>`
+    }
+];
+
+// 협력 카드 8장
+const COOP_CARDS = [
+    { id: 'role', emoji: '🎯', name: '역할 나누기', desc: '각자 잘하는 일을 맡으면 효율 UP!' },
+    { id: 'comm', emoji: '💬', name: '소통하기', desc: '내 상황과 생각을 솔직하게 나눠요' },
+    { id: 'care', emoji: '🤲', name: '배려하기', desc: '힘든 친구를 살피고 도와줘요' },
+    { id: 'encourage', emoji: '👏', name: '격려하기', desc: '친구의 노력을 알아주고 응원해요' },
+    { id: 'join', emoji: '🙋', name: '적극 참여', desc: '시키지 않아도 스스로 찾아서 해요' },
+    { id: 'respect', emoji: '👂', name: '의견 존중', desc: '다른 사람의 생각도 소중하게 들어요' },
+    { id: 'trust', emoji: '🤝', name: '신뢰 쌓기', desc: '약속을 지키고 믿음을 줘요' },
+    { id: 'responsible', emoji: '💪', name: '책임감', desc: '맡은 일은 끝까지 해내요' }
+];
+
+// ═══ 5가지 미션 (각기 다른 게임 메커니즘!) ═══
+const MISSIONS = [
+    {
+        title: '학급 행사 장식',
+        emoji: '🎪', type: 'touch',
+        typeLabel: '⏱️ 터치 챌린지',
+        situation: '내일이 학급 행사인데 교실 장식이 하나도 안 됐어요! 12개의 장식 아이템을 시간 안에 터치해서 준비해야 해요.',
+        soloMsg: '혼자서 12개를 전부 터치하세요! 시간이 촉박해요…',
+        teamMsg: '친구들이 도와줘요! 여러분은 보라색 아이템만 터치하면 돼요!',
+        soloTime: 6, teamTime: 10,
+        friends: [{name:'혜진',emoji:'✂️',color:'#EC4899'},{name:'준서',emoji:'✍️',color:'#3B82F6'},{name:'서윤',emoji:'🎈',color:'#10B981'}],
+        cardReward: 'role',
+        lesson: '혼자 하면 시간이 부족하지만, 역할을 나누면 여유 있게 완성할 수 있어요!'
+    },
+    {
+        title: '모둠 발표 준비',
+        emoji: '📊', type: 'order',
+        typeLabel: '🧩 순서 맞추기',
+        situation: '사회 시간 모둠 발표! 조사→정리→디자인→연습→발표→질문대비, 6단계를 올바른 순서로 준비해야 해요.',
+        soloMsg: '6단계를 혼자서 올바른 순서로 놓아보세요!',
+        teamMsg: '친구들이 자기 분야의 순서를 잡아줬어요! 나머지를 완성하세요!',
+        soloTime: 15, teamTime: 20,
+        friends: [{name:'민재',emoji:'🔍',color:'#F59E0B'},{name:'하은',emoji:'🎨',color:'#EC4899'},{name:'도윤',emoji:'🎤',color:'#3B82F6'}],
+        cardReward: 'comm',
+        lesson: '함께 준비하면 모두가 내용을 알고, 서로의 부족한 점을 채울 수 있어요!'
+    },
+    {
+        title: '점심시간 대청소',
+        emoji: '🧹', type: 'clean',
+        typeLabel: '💧 물방울 닦기',
+        situation: '교실 바닥에 물이 쏟아졌어요! 점심시간 끝나기 전에 물방울을 모두 닦아야 해요!',
+        soloMsg: '물방울이 계속 나타나요! 혼자서 전부 닦아보세요!',
+        teamMsg: '친구들이 각자 구역을 맡았어요! 여러분은 보라색 구역만 닦으면 돼요!',
+        soloTime: 8, teamTime: 10,
+        friends: [{name:'시우',emoji:'🪣',color:'#3B82F6'},{name:'유나',emoji:'🧤',color:'#10B981'},{name:'태민',emoji:'😊',color:'#F59E0B'}],
+        cardReward: 'care',
+        lesson: '실수한 친구를 혼자 두지 않고 함께 해결하면, 문제도 풀리고 마음도 따뜻해져요!'
+    },
+    {
+        title: '전학 가는 친구 선물',
+        emoji: '🎁', type: 'sentence',
+        typeLabel: '💌 마음 편지 완성',
+        situation: '내일 전학 가는 수아에게 마음을 담은 편지를 쓰고 싶어요. 따뜻한 단어를 골라 문장을 완성하세요!',
+        soloMsg: '혼자서 모든 빈칸을 채워 편지를 완성해보세요!',
+        teamMsg: '친구들이 각자 한 문장씩 써줬어요! 마지막 문장을 완성하세요!',
+        soloTime: 25, teamTime: 30,
+        friends: [{name:'지아',emoji:'📸',color:'#EC4899'},{name:'현우',emoji:'🎀',color:'#3B82F6'},{name:'소율',emoji:'💌',color:'#10B981'}],
+        cardReward: 'encourage',
+        lesson: '한 명의 마음이 아니라 여러 명의 마음이 모이면, 감동은 훨씬 커져요!'
+    },
+    {
+        title: '체육대회 응원 준비',
+        emoji: '📣', type: 'pattern',
+        typeLabel: '🎵 패턴 기억하기',
+        situation: '체육대회 응원을 만들어야 해요! 응원 패턴을 기억해서 따라해보세요!',
+        soloMsg: '혼자서 전체 패턴을 기억하고 따라해보세요!',
+        teamMsg: '친구들이 앞부분을 기억해줘요! 여러분은 마지막 부분만!',
+        soloTime: 0, teamTime: 0, // 패턴게임은 시간 제한 없음
+        friends: [{name:'윤아',emoji:'🎵',color:'#EC4899'},{name:'정훈',emoji:'🎨',color:'#F59E0B'},{name:'수빈',emoji:'💡',color:'#3B82F6'}],
+        cardReward: 'join',
+        lesson: '모두가 참여해서 만든 응원이야말로 진짜 하나 되는 응원이에요!'
+    }
+];
+
+// ═══ 미션 변형 세트 — 재도전할 때마다 새 내용 (0번은 원본 그대로) ═══
+
+const TOUCH_SETS = [
+    ['🎈','🎊','✂️','🎀','🌸','⭐','🎪','🎨','🎵','🎭','🎯','🎲'],
+    ['🖍️','📏','🧵','🪄','🎏','🏮','🪅','🧶','📌','🖼️','🌈','🎬'],
+    ['🍎','🌻','🦋','🐢','🚀','🎸','⚽','🧩','📚','🍀','🥁','🛎️']
+];
+
+const ORDER_SETS = [
+    [
+        {text:'📚 주제 정하고 역할 나누기', order:1},
+        {text:'🔍 각자 맡은 부분 조사하기', order:2},
+        {text:'📝 조사한 내용 정리하기', order:3},
+        {text:'🎨 발표 자료 만들기', order:4},
+        {text:'🎤 발표 연습하기', order:5},
+        {text:'❓ 예상 질문 대비하기', order:6}
+    ],
+    [
+        {text:'🗞️ 어떤 기사를 쓸지 함께 정하기', order:1},
+        {text:'🎙️ 나눠서 취재하고 사진 찍기', order:2},
+        {text:'✍️ 각자 맡은 기사 쓰기', order:3},
+        {text:'📐 기사 배치하고 편집하기', order:4},
+        {text:'👀 다 같이 읽으며 고치기', order:5},
+        {text:'📰 인쇄해서 반 친구들에게 나눠주기', order:6}
+    ],
+    [
+        {text:'🎭 무대에서 할 공연 정하기', order:1},
+        {text:'🙋 배역과 등장 순서 나누기', order:2},
+        {text:'🗓️ 연습 계획 함께 세우기', order:3},
+        {text:'🎽 소품과 의상 준비하기', order:4},
+        {text:'🎬 처음부터 끝까지 리허설', order:5},
+        {text:'👏 진짜 무대에 함께 서기', order:6}
+    ]
+];
+
+const CLEAN_SETS = [ {emoji:'💧'}, {emoji:'💦'}, {emoji:'🫧'} ];
+
+const SENTENCE_SETS = [
+    [
+        {text:'수아야, 네가 ___ 우리 반이 정말 ___ 거야.',blanks:['전학 가면','보고 싶을'],wrong:['화를 내면','시끄러울']},
+        {text:'함께 ___ 시간이 정말 ___ 추억이야.',blanks:['웃던','소중한'],wrong:['싸우던','흔한']},
+        {text:'새로운 학교에서도 ___하고 ___ 친구를 만나길 바라!',blanks:['행복','좋은'],wrong:['조용','무서운']},
+        {text:'우리의 ___은 절대로 ___지지 않을 거야.',blanks:['우정','끊어'],wrong:['싸움','이어']}
+    ],
+    [
+        {text:'수아야, 같이 ___ 운동장이 자꾸 ___ 거야.',blanks:['뛰놀던','생각날'],wrong:['다투던','사라질']},
+        {text:'네가 ___ 건네준 마음, 나는 ___ 기억할게.',blanks:['먼저','오래'],wrong:['억지로','금방']},
+        {text:'멀리 있어도 우리는 ___ 마음이고, ___ 응원할게.',blanks:['같은','언제나'],wrong:['다른','가끔']},
+        {text:'다시 만나는 날엔 ___ 얼굴로 ___ 인사하자!',blanks:['웃는','반갑게'],wrong:['우는','조용히']}
+    ]
+];
+
+const PATTERN_SETS = [
+    { emojis:['👏','✊','🙌','👋','🤜','💪','🎵','⭐','🔥'], len:7 },
+    { emojis:['🥁','📣','🎺','🙆','🕺','💃','🎊','🏳️','🎉'], len:7 },
+    { emojis:['🟣','🔵','🟢','🟡','🟠','🔴','⚪','🟤','⬛'], len:7 }
+];
+
+const VARIANT_SETS = { touch:TOUCH_SETS, order:ORDER_SETS, clean:CLEAN_SETS, sentence:SENTENCE_SETS, pattern:PATTERN_SETS };
+const VARIANT_LABELS = {
+    touch:['','교실 꾸미기 2탄','우리 반 작품 전시회'],
+    order:['','학급 신문 만들기','학예회 무대 준비'],
+    clean:['','물놀이 뒷정리','비 오는 날 복도'],
+    sentence:['','수아에게 쓰는 두 번째 편지'],
+    pattern:['','새로운 응원 동작','색깔 응원 카드']
+};
+
+// 협력 포인트 (미션마다 한 번 고르는 짧은 성찰)
+const COOP_POINTS = [
+    { id:'divide', emoji:'🎯', text:'역할을 나누니까 훨씬 빨라졌어요' },
+    { id:'talk',   emoji:'💬', text:'서로 말해주니까 실수가 줄었어요' },
+    { id:'power',  emoji:'💛', text:'함께라서 끝까지 할 힘이 났어요' }
+];
+const COOP_POINT_LABELS = { divide:'역할 나누기', talk:'서로 알려주기', power:'끝까지 할 힘' };
+
+// ═══ 공통 함수 ═══
+
+function showToast(msg, type='info') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = type==='error'?'rgba(239,68,68,0.95)':type==='success'?'rgba(16,185,129,0.95)':'rgba(31,41,55,0.95)';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+window.showScreen = function(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const t = document.getElementById(id);
+    if (t) { t.classList.add('active'); window.scrollTo(0,0); }
+};
+
+let confirmCallback = null;
+window.showConfirmModal = function(msg, onConfirm) {
+    document.getElementById('confirmMessage').innerHTML = msg;
+    document.getElementById('confirmModal').classList.add('flex-show');
+    confirmCallback = onConfirm;
+    document.getElementById('confirmOkBtn').onclick = () => {
+        const cb = confirmCallback;
+        closeConfirmModal();
+        if (cb) cb();
+    };
+};
+window.closeConfirmModal = function() {
+    document.getElementById('confirmModal').classList.remove('flex-show');
+    confirmCallback = null;
+    document.getElementById('confirmOkBtn').textContent = '확인';
+    document.getElementById('confirmOkBtn').style.background = 'var(--error)';
+};
+
+function simpleHash(s) { let h=0; for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;} return Math.abs(h).toString(36); }
+
+// ═══ 이스케이프 헬퍼 (닉네임/자유입력 XSS 방지) ═══
+const ESC_MAP={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
+function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,c=>ESC_MAP[c]); }
+
+// ═══ 게임 타이머 레지스트리 (중복 실행·누수·유령 인터벌 방지) ═══
+let gameIntervals=[], gameTimeouts=[], gameHandlers={};
+function gInterval(fn,ms){ const id=setInterval(fn,ms); gameIntervals.push(id); return id; }
+function gTimeout(fn,ms){ const id=setTimeout(fn,ms); gameTimeouts.push(id); return id; }
+function clearGameTimers(){
+    gameIntervals.forEach(id=>clearInterval(id)); gameIntervals=[];
+    gameTimeouts.forEach(id=>clearTimeout(id)); gameTimeouts=[];
+    if(gameTimer){ clearInterval(gameTimer); gameTimer=null; }
+}
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+function clampScore(n){ n=Math.round(Number(n)||0); return Math.max(0,Math.min(100,n)); }
+
+async function copyToClipboard(text) {
+    try { await navigator.clipboard.writeText(text); showToast('✅ 복사됨!','success'); } catch(e) {
+        const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0;left:-9999px';
+        document.body.appendChild(ta);ta.focus();ta.select();
+        try{document.execCommand('copy');showToast('✅ 복사됨!','success');}catch(e2){showToast('📋 코드: '+text+' (직접 복사해주세요)');}
+        document.body.removeChild(ta);
+    }
+}
+
+function launchConfetti() {
+    const colors=['#7C3AED','#A78BFA','#10B981','#F59E0B','#EC4899','#3B82F6'];
+    for(let i=0;i<50;i++){const c=document.createElement('div');c.className='confetti-piece';c.style.left=Math.random()*100+'%';c.style.background=colors[Math.floor(Math.random()*colors.length)];c.style.animationDelay=Math.random()*2+'s';c.style.borderRadius=Math.random()>0.5?'50%':'2px';c.style.width=(6+Math.random()*10)+'px';c.style.height=(6+Math.random()*10)+'px';document.body.appendChild(c);setTimeout(()=>c.remove(),4000);}
+}
+
+// ═══ 방 시스템 ═══
+
+window.createRoom = async function() {
+    await authReady;
+    const name=document.getElementById('teacher-name').value.trim();
+    const pw=document.getElementById('teacher-pw').value.trim();
+    if(!name){showToast('닉네임을 입력해주세요.','error');return;}
+    if(!pw||pw.length!==4||!/^\d{4}$/.test(pw)){showToast('비밀번호는 숫자 4자리로 입력해주세요.','error');return;}
+    const code=String(Math.floor(Math.random()*900000)+100000);
+    const exp=new Date();exp.setDate(exp.getDate()+30);
+    await DB.saveRoom(code,{teacherName:name,password:simpleHash(pw),createdAt:new Date().toISOString(),expiresAt:exp.toISOString()});
+    currentRoomCode=code;isTeacher=true;isSoloMode=false;
+    document.getElementById('room-code-display').textContent=code;
+    showScreen('screen-room-created');
+    showToast('✅ 방이 만들어졌습니다!','success');
+};
+window.copyRoomCode=function(){copyToClipboard(currentRoomCode);};
+
+window.joinAsTeacher = async function() {
+    await authReady;
+    const code=document.getElementById('teacher-room-code').value.trim();
+    const pw=document.getElementById('teacher-room-pw').value.trim();
+    if(!code||!pw){showToast('방 코드와 비밀번호를 입력해주세요.','error');return;}
+    const room=await DB.getRoom(code);
+    if(!room){showToast('존재하지 않는 방입니다.','error');return;}
+    if(room.expiresAt&&new Date(room.expiresAt)<new Date()){await DB.deleteRoom(code);showToast('만료된 방입니다.','error');return;}
+    if(room.password!==simpleHash(pw)){showToast('비밀번호가 틀렸습니다.','error');return;}
+    currentRoomCode=code;isTeacher=true;isSoloMode=false;
+    enterDashboard();
+};
+
+window.enterDashboard = function() {
+    document.getElementById('dash-room-code').textContent=currentRoomCode;
+    showScreen('screen-dashboard');
+    startDashboardListener();
+};
+
+window.joinAsStudent = async function() {
+    await authReady;
+    const code=document.getElementById('student-room-code').value.trim();
+    const nick=document.getElementById('student-nickname').value.trim();
+    if(!code||!nick){showToast('방 코드와 닉네임을 입력해주세요.','error');return;}
+    const room=await DB.getRoom(code);
+    if(!room){showToast('존재하지 않는 방입니다.','error');return;}
+    if(room.expiresAt&&new Date(room.expiresAt)<new Date()){await DB.deleteRoom(code);showToast('만료된 방입니다.','error');return;}
+
+    const existing=await DB.getStudent(code,nick);
+    if(existing){
+        showConfirmModal(
+            `<strong>${esc(nick)}</strong>님, 이전에 참여한 기록이 있어요!<br><br>`+
+            `📖 협력 카드: ${existing.collectedCount||0}개 수집<br>`+
+            `🎮 미션 완료: ${(existing.completedMissions||[]).length}개<br><br>`+
+            `이어서 할까요?`,
+            async()=>{
+                currentRoomCode=code;currentNickname=nick;isTeacher=false;isSoloMode=false;
+                restoreStudentData(existing);
+                await DB.saveStudent(code,nick,{lastVisit:new Date().toISOString()});
+                showToast(`🎉 ${nick}님, 다시 오셨군요!`,'success');
+                goToMainContent();
+            }
+        );
+        document.getElementById('confirmOkBtn').textContent='이어하기';
+        document.getElementById('confirmOkBtn').style.background='var(--primary)';
+        return;
+    }
+    currentRoomCode=code;currentNickname=nick;isTeacher=false;isSoloMode=false;
+    resetGameState();
+    await DB.saveStudent(code,nick,{joinedAt:new Date().toISOString(),collectedList:[],collectedCount:0,completedMissions:[],missionScores:{},missionBest:{},missionPlays:{},coopPoints:{},bestScore:0,totalPlays:0});
+    enterStory();
+};
+
+window.startSoloMode = function() {
+    isSoloMode=true;isTeacher=false;
+    currentNickname='탐험가';currentRoomCode='';
+    resetGameState();
+    enterStory();
+};
+
+function resetGameState() {
+    clearGameTimers();gameHandlers={};
+    completedMissions=new Set();collectedCards=new Set();missionScores={};
+    missionBest={};missionPlays={};missionVariant={};coopPoints={};
+    bestTotalScore=0;totalPlays=0;currentMissionIdx=-1;
+    recordDone=false;recordData={failReason:'',coopPromise:'',reflection:''};newCards=new Set();
+}
+function restoreStudentData(d) {
+    clearGameTimers();gameHandlers={};
+    d=d||{};
+    completedMissions=new Set((d.completedMissions||[]).map(Number).filter(n=>Number.isInteger(n)&&MISSIONS[n]));
+    collectedCards=new Set((d.collectedList||[]).filter(id=>COOP_CARDS.some(c=>c.id===id)));
+    missionScores=d.missionScores||{};
+    missionBest=d.missionBest||{};
+    missionPlays=d.missionPlays||{};
+    missionVariant={};
+    coopPoints=d.coopPoints||{};
+    // 이전 버전 데이터 호환: missionBest가 없으면 missionScores에서 복원
+    MISSIONS.forEach((_,i)=>{ if(missionBest[i]==null&&typeof missionScores[i]==='number')missionBest[i]=missionScores[i]; });
+    bestTotalScore=d.bestScore||0;totalPlays=d.totalPlays||0;
+    recordDone=!!d.recordCompletedAt;
+    recordData={failReason:d.failReason||'',coopPromise:d.coopPromise||'',reflection:d.reflection||''};
+    newCards=new Set();
+    syncCardRewards();   // ⭐ 이어하기 데이터에 보너스 카드가 빠져 있던 문제 보정
+}
+
+// ⭐ 미션 5개 ↔ 카드 8장 정합성 보정
+//    미션 5장 + 협력 기록 제출 2장 + 전 미션 완주 1장 = 8장.
+//    예전에는 보너스 3장이 '그 순간에만' 지급돼, 이어하기로 들어오면
+//    미션 5/5인데 카드가 5/8에서 멈춰 100% 수집이 불가능했다.
+//    → 저장된 상태에서 매번 다시 계산해 항상 앞뒤가 맞게 만든다.
+function syncCardRewards() {
+    const before=collectedCards.size;
+    completedMissions.forEach(i=>{
+        const r=MISSIONS[i]&&MISSIONS[i].cardReward;
+        if(r&&!collectedCards.has(r))collectedCards.add(r);
+    });
+    if(recordDone){
+        if(!collectedCards.has('trust'))collectedCards.add('trust');
+        if(!collectedCards.has('responsible'))collectedCards.add('responsible');
+    }
+    if(completedMissions.size>=MISSIONS.length&&!collectedCards.has('respect'))collectedCards.add('respect');
+
+    const changed=collectedCards.size!==before;
+    if(changed&&!isSoloMode&&currentRoomCode&&currentNickname){
+        DB.saveStudent(currentRoomCode,currentNickname,{
+            collectedList:Array.from(collectedCards),
+            collectedCount:collectedCards.size
+        });
+    }
+    return changed;
+}
+
+// ═══ 스토리 ═══
+
+function enterStory() { storyIndex=0; renderStory(); showScreen('screen-story'); }
+
+function renderStory() {
+    const s=STORIES[storyIndex];
+    const c=document.getElementById('story-container');
+    c.innerHTML=`
+    <div class="story-panel">
+        <div class="story-header"><h3>${s.title}</h3></div>
+        <div class="story-body">
+            <div class="story-emoji-big">${s.emoji}</div>
+            <div class="story-text">${s.body}</div>
+        </div>
+    </div>`;
+    // dots
+    let dots='';
+    for(let i=0;i<STORIES.length;i++){
+        dots+=`<div class="story-dot ${i<storyIndex?'done':''} ${i===storyIndex?'active':''}"></div>`;
+    }
+    document.getElementById('story-dots').innerHTML=dots;
+    document.getElementById('btn-story-prev').style.display=storyIndex>0?'block':'none';
+    document.getElementById('btn-story-next').textContent=storyIndex<STORIES.length-1?'다음 →':'시작하기! 🚀';
+}
+
+window.nextStory = function() {
+    if(storyIndex<STORIES.length-1){storyIndex++;renderStory();}
+    else{goToMainContent();}
+};
+window.prevStory = function() {
+    if(storyIndex>0){storyIndex--;renderStory();}
+};
+
+// ═══ 메인 화면 ═══
+
+function goToMainContent() {
+    renderMissionList();renderRecordContent();renderCollectionContent();updateMainProgress();
+    showScreen('screen-main');
+    if(!isSoloMode) startLiveWall();
+}
+
+window.backToMain = function() {
+    renderMissionList();renderRecordContent();renderCollectionContent();updateMainProgress();
+    showScreen('screen-main');
+    showToast('📖 미션을 더 도전해보세요!','success');
+};
+
+function updateMainProgress() {
+    syncCardRewards();
+    const mDone=completedMissions.size, mTotal=MISSIONS.length;
+    const cDone=collectedCards.size, cTotal=COOP_CARDS.length;
+    const pct=Math.round(((mDone/mTotal)*70+(recordDone?30:0)));
+    document.getElementById('main-progress-area').innerHTML=`
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:8px 0">
+        <span class="badge">🎮 미션 ${mDone}/${mTotal}</span>
+        <span class="badge">📖 카드 ${cDone}/${cTotal}</span>
+        ${recordDone?'<span class="badge" style="background:rgba(16,185,129,0.1);color:var(--success)">✅ 기록 완료</span>':''}
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div style="font-size:13px;color:var(--text-light);text-align:center">전체 진행률 ${pct}%</div>`;
+}
+
+window.switchTab = function(tab) {
+    const order=['missions','record','collection'];
+    document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(b.dataset.tab||order[i])===tab));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    const el=document.getElementById('tab-'+tab);
+    if(el)el.classList.add('active');
+    // 탭을 열 때마다 최신 상태로 갱신 (오래된 화면이 남아 있던 문제)
+    if(tab==='missions')renderMissionList();
+    else if(tab==='record')renderRecordContent();
+    else if(tab==='collection')renderCollectionContent();
+    updateMainProgress();
+};
+
+// ═══ 미션 목록 ═══
+
+function renderMissionList() {
+    let html='';
+    MISSIONS.forEach((m,i)=>{
+        const done=completedMissions.has(i);
+        const score=missionBest[i]!=null?missionBest[i]:missionScores[i];
+        html+=`
+        <div class="mission-card ${done?'completed':''}" onclick="startMission(${i})">
+            <div class="mission-header">
+                <div style="display:flex;align-items:center;gap:10px">
+                    <div class="mission-num ${done?'done':''}">${done?'✓':(i+1)}</div>
+                    <div>
+                        <div class="mission-title">${m.emoji} ${m.title}</div>
+                        <div class="mission-type">${m.typeLabel}</div>
+                    </div>
+                </div>
+                <div class="mission-status">
+                    ${done?`<span style="color:var(--success)">✅ ${score||0}점</span>`:'미완료'}
+                </div>
+            </div>
+        </div>`;
+    });
+    document.getElementById('mission-list').innerHTML=html;
+}
+
+// ═══ 게임 시스템 ═══
+
+function variantIdx(){ const v=missionVariant[currentMissionIdx]; return Number.isInteger(v)?v:0; }
+function variantLabel(){
+    const m=MISSIONS[currentMissionIdx]; if(!m)return '';
+    const v=variantIdx(); if(!v)return '';
+    return (VARIANT_LABELS[m.type]||[])[v]||'';
+}
+
+window.startMission = function(idx) {
+    idx=Number(idx);
+    if(!Number.isInteger(idx)||!MISSIONS[idx]){ showToast('미션을 찾을 수 없어요.','error'); return; }
+    clearGameTimers(); gameHandlers={};
+    currentMissionIdx=idx;
+    const sets=VARIANT_SETS[MISSIONS[idx].type]||[0];
+    missionVariant[idx]=(missionPlays[idx]||0)%sets.length;
+    gamePhase='intro';
+    showScreen('screen-game');
+    renderGamePhase();
+};
+
+window.exitGame = function() {
+    clearGameTimers(); gameHandlers={};
+    gamePhase='';
+    const gc=document.getElementById('game-container');
+    if(gc)gc.innerHTML='';   // 남은 게임 DOM 제거 (유령 요소 오매칭 방지)
+    backToMain();
+};
+
+// 게임 점수 확정 — 모든 게임이 이 한 곳으로만 들어온다
+function submitGameScore(isSolo,score){
+    score=clampScore(score);
+    if(!MISSIONS[currentMissionIdx])return;
+    if(isSolo){ missionScores[currentMissionIdx+'_solo']=score; gamePhase='solo-result'; }
+    else { missionScores[currentMissionIdx]=score; gamePhase='compare'; }
+    renderGamePhase();
+}
+
+function renderGamePhase() {
+    clearGameTimers();
+    gameHandlers={};
+    const m=MISSIONS[currentMissionIdx];
+    const gc=document.getElementById('game-container');
+    if(!m||!gc){ return; }
+
+    switch(gamePhase) {
+        case 'intro': {
+            const vl=variantLabel();
+            gc.innerHTML=`
+            <div class="card" style="text-align:center">
+                <div style="font-size:56px;margin-bottom:8px">${m.emoji}</div>
+                <h2>${m.title}</h2>
+                <div class="badge" style="margin:8px 0">${m.typeLabel}</div>
+                ${vl?`<div class="badge" style="display:block;background:rgba(16,185,129,0.12);color:var(--success);margin:6px auto;max-width:320px">🔄 새로운 도전: ${esc(vl)}</div>`:''}
+                <p style="font-size:16px;font-weight:500;margin:12px 0">${m.situation}</p>
+                ${(missionPlays[currentMissionIdx]||0)>0?`<div style="font-size:13px;color:var(--text-light)">🏅 내 최고 기록 ${missionBest[currentMissionIdx]||0}점 · ${missionPlays[currentMissionIdx]}번 도전</div>`:''}
+                <div style="background:rgba(239,68,68,0.08);border-radius:12px;padding:12px;margin:12px 0">
+                    <p style="font-size:14px;color:var(--error);font-weight:900">🤔 먼저 혼자서 도전해볼까요?</p>
+                </div>
+                <button class="btn btn-primary" onclick="startSoloRound()">혼자 도전하기! 💪</button>
+            </div>`;
+            break;
+        }
+        case 'solo': renderGamePlay('solo'); break;
+        case 'solo-result': renderSoloResult(); break;
+        case 'friends-arrive': renderFriendsArrive(); break;
+        case 'team': renderGamePlay('team'); break;
+        case 'compare': renderCompare(); break;
+        case 'reward': renderReward(); break;
+        default: break;
+    }
+}
+
+window.startSoloRound = function() {
+    if(gamePhase==='solo')return;
+    gamePhase='solo';
+    renderGamePhase();
+};
+
+// ═══ 각 게임별 구현 ═══
+
+function renderGamePlay(mode) {
+    const m=MISSIONS[currentMissionIdx];
+    if(!m)return;
+    switch(m.type) {
+        case 'touch': renderTouchGame(mode); break;
+        case 'order': renderOrderGame(mode); break;
+        case 'clean': renderCleanGame(mode); break;
+        case 'sentence': renderSentenceGame(mode); break;
+        case 'pattern': renderPatternGame(mode); break;
+        default: showToast('알 수 없는 미션 유형이에요.','error');
+    }
+}
+
+// ── 게임1: 터치 챌린지 ──
+
+function renderTouchGame(mode) {
+    const m=MISSIONS[currentMissionIdx];
+    const gc=document.getElementById('game-container');
+    const items=[...(TOUCH_SETS[variantIdx()]||TOUCH_SETS[0])];
+    const isSolo=mode==='solo';
+    const timeLimit=isSolo?m.soloTime:m.teamTime;
+    const TOTAL=items.length;
+    const FRIEND_POS=new Set([1,3,5,7,9,10]);
+    const friendItems=isSolo?new Set():FRIEND_POS;
+
+    let finished=false, friendCaught=0;
+    touchCaught=0;
+
+    gc.innerHTML=`
+    <div class="game-mode-label ${isSolo?'mode-solo':'mode-team'}">
+        ${isSolo?'😰 혼자 모드':'🤝 함께 모드'}
+    </div>
+    <p style="font-size:14px;text-align:center;margin:4px 0">${isSolo?m.soloMsg:m.teamMsg}</p>
+    <div class="game-score-bar">
+        <span class="game-label">수집: <strong id="touch-score">0</strong>/${TOTAL}</span>
+        <span class="game-timer" id="touch-timer">${timeLimit}</span>
+    </div>
+    <div class="touch-grid" id="touch-grid"></div>
+    ${!isSolo?'<div style="font-size:12px;text-align:center;color:var(--text-light)">💜 보라테두리 = 내 아이템 | 💙 파란색 = 친구가 수집</div>':''}`;
+
+    const grid=document.getElementById('touch-grid');
+    if(!grid)return;
+    const shuffled=shuffle([...items]);
+
+    shuffled.forEach((item,idx)=>{
+        const div=document.createElement('div');
+        div.className='touch-item';
+        div.dataset.idx=idx;
+        if(!isSolo&&friendItems.has(idx)){ div.style.borderColor='#93C5FD'; div.style.opacity='0.6'; }
+        else if(!isSolo){ div.style.borderColor='var(--primary)'; div.style.borderWidth='3px'; }
+        grid.appendChild(div);
+    });
+
+    function updateTouchScore(){
+        const el=document.getElementById('touch-score');
+        if(el)el.textContent=touchCaught+friendCaught;
+    }
+
+    let appeared=0;
+    const appearIv=gInterval(()=>{
+        if(finished||appeared>=TOTAL){ clearInterval(appearIv); return; }
+        const pos=appeared;
+        const el=grid.children[pos];
+        if(el&&!el.classList.contains('friend-caught')){
+            el.textContent=shuffled[pos];
+            el.classList.add('active');
+            if(isSolo||!friendItems.has(pos)){
+                el.onclick=()=>{
+                    if(finished)return;
+                    if(el.classList.contains('caught')||el.classList.contains('friend-caught'))return;
+                    el.classList.add('caught');
+                    touchCaught++;
+                    updateTouchScore();
+                };
+            }
+        }
+        appeared++;
+    }, isSolo?400:300);
+
+    if(!isSolo){
+        gTimeout(()=>{
+            if(finished)return;
+            const friendArr=[...friendItems];
+            let fi=0;
+            const friendIv=gInterval(()=>{
+                if(finished||fi>=friendArr.length){ clearInterval(friendIv); return; }
+                const el=grid.children[friendArr[fi]];
+                if(el&&!el.classList.contains('caught')&&!el.classList.contains('friend-caught')){
+                    el.classList.add('friend-caught');
+                    el.textContent='✓';
+                    friendCaught++;
+                    updateTouchScore();
+                }
+                fi++;
+            },800);
+        },1500);
+    }
+
+    function finish(){
+        if(finished)return;
+        finished=true;
+        clearGameTimers();
+        [...grid.children].forEach(el=>{
+            if(!el.classList.contains('caught')&&!el.classList.contains('friend-caught'))el.classList.add('missed');
+        });
+        const score=(touchCaught+friendCaught)/TOTAL*100;
+        gTimeout(()=>submitGameScore(isSolo,score),800);
+    }
+
+    gameTimeLeft=timeLimit;
+    const t0=document.getElementById('touch-timer'); if(t0)t0.textContent=gameTimeLeft;
+    gameTimer=gInterval(()=>{
+        gameTimeLeft--;
+        const te=document.getElementById('touch-timer');
+        if(te){ te.textContent=Math.max(0,gameTimeLeft); if(gameTimeLeft<=3)te.classList.add('urgent'); }
+        if(gameTimeLeft<=0)finish();
+    },1000);
+}
+
+// ── 게임2: 순서 맞추기 ──
+
+function renderOrderGame(mode) {
+    const m=MISSIONS[currentMissionIdx];
+    const gc=document.getElementById('game-container');
+    const isSolo=mode==='solo';
+    const steps=(ORDER_SETS[variantIdx()]||ORDER_SETS[0]).map(x=>({...x}));
+    const N=steps.length;
+    const shuffled=shuffle([...steps]);
+    const friendPlaced=isSolo?new Set():new Set([1,2,4]);
+
+    orderPlaced=[];
+    let wrongCount=0, finished=false, friendTurnCount=0;
+
+    gc.innerHTML=`
+    <div class="game-mode-label ${isSolo?'mode-solo':'mode-team'}">
+        ${isSolo?'😰 혼자 모드':'🤝 함께 모드'}
+    </div>
+    <p style="font-size:14px;text-align:center;margin:4px 0">${isSolo?m.soloMsg:m.teamMsg}</p>
+    <div class="game-score-bar">
+        <span class="game-label">배치: <strong id="order-count">0</strong>/${N}</span>
+        <span style="font-size:14px;color:var(--text-light)">올바른 순서로 터치하세요!</span>
+    </div>
+    <div class="order-items" id="order-list"></div>`;
+
+    const list=document.getElementById('order-list');
+    if(!list)return;
+
+    function nextNeeded(){ for(let o=1;o<=N;o++){ if(orderPlaced.indexOf(o)<0)return o; } return N+1; }
+    function updateCount(){ const el=document.getElementById('order-count'); if(el)el.textContent=orderPlaced.length; }
+
+    function place(order){
+        if(finished)return false;
+        if(orderPlaced.indexOf(order)>=0)return false;
+        if(order!==nextNeeded())return false;
+        orderPlaced.push(order);
+        updateCount();
+        renderList();
+        if(orderPlaced.length>=N){
+            finished=true;
+            clearGameTimers();
+            const score=isSolo?Math.max(0,(N-wrongCount)/N*100):100;
+            gTimeout(()=>submitGameScore(isSolo,score),500);
+        }
+        return true;
+    }
+
+    function renderList(){
+        list.innerHTML='';
+        shuffled.forEach((step)=>{
+            const placed=orderPlaced.indexOf(step.order)>=0;
+            const isFriendStep=!isSolo&&friendPlaced.has(step.order);
+            const div=document.createElement('div');
+            div.className=`order-item ${placed?'placed':''} ${isFriendStep?'friend-placed':''}`;
+            div.innerHTML=`
+                ${placed?`<div class="order-num" ${isFriendStep?'style="background:#3B82F6"':''}>${step.order}</div>`:'<div style="width:28px;height:28px;border-radius:50%;border:2px dashed var(--primary-light);flex-shrink:0"></div>'}
+                <span>${step.text}</span>`;
+            if(!placed&&isFriendStep){
+                div.style.opacity='0.65';
+                div.onclick=()=>showToast('💙 이 단계는 친구가 맡았어요! 곧 해줄 거예요.');
+            }else if(!placed){
+                div.onclick=()=>{
+                    if(finished)return;
+                    if(step.order===nextNeeded()){ place(step.order); }
+                    else{
+                        wrongCount++;
+                        div.style.background='rgba(239,68,68,0.1)';
+                        div.style.borderColor='var(--error)';
+                        gTimeout(()=>{ div.style.background=''; div.style.borderColor=''; },500);
+                        showToast('순서가 맞지 않아요! 다시 생각해보세요.','error');
+                    }
+                };
+            }
+            list.appendChild(div);
+        });
+    }
+
+    renderList();
+
+    // 팀 모드: 친구는 "자기 차례가 되면" 배치한다 (동시 배치 충돌·중복 제거)
+    if(!isSolo){
+        const friendIv=gInterval(()=>{
+            if(finished){ clearInterval(friendIv); return; }
+            const n=nextNeeded();
+            if(n<=N&&friendPlaced.has(n)){
+                const f=m.friends[friendTurnCount%m.friends.length];
+                if(place(n)){
+                    friendTurnCount++;
+                    showToast(`💙 ${(f&&f.name)||'친구'}님이 ${n}번 단계를 맡았어요!`,'success');
+                }
+            }
+        },1200);
+    }
+}
+
+// ── 게임3: 물방울 닦기 ──
+
+function renderCleanGame(mode) {
+    const m=MISSIONS[currentMissionIdx];
+    const gc=document.getElementById('game-container');
+    const isSolo=mode==='solo';
+    const timeLimit=isSolo?m.soloTime:m.teamTime;
+    const dropEmoji=((CLEAN_SETS[variantIdx()]||CLEAN_SETS[0]).emoji)||'💧';
+
+    waterCleaned=0; waterTotal=0;
+    let finished=false, friendClean=0;
+
+    gc.innerHTML=`
+    <div class="game-mode-label ${isSolo?'mode-solo':'mode-team'}">
+        ${isSolo?'😰 혼자 모드':'🤝 함께 모드'}
+    </div>
+    <p style="font-size:14px;text-align:center;margin:4px 0">${isSolo?m.soloMsg:m.teamMsg}</p>
+    <div class="game-score-bar">
+        <span class="game-label">닦은 물방울: <strong id="clean-score">0</strong></span>
+        <span class="game-timer" id="clean-timer">${timeLimit}</span>
+    </div>
+    <div class="clean-zone" id="clean-zone">
+        ${!isSolo?`
+        <div class="clean-divider" style="left:25%"></div>
+        <div class="clean-divider" style="left:50%"></div>
+        <div class="clean-divider" style="left:75%"></div>
+        <div class="zone-label" style="left:5%;color:#3B82F6;background:rgba(59,130,246,0.1)">시우</div>
+        <div class="zone-label" style="left:30%;color:#10B981;background:rgba(16,185,129,0.1)">유나</div>
+        <div class="zone-label" style="left:55%;color:#F59E0B;background:rgba(245,158,11,0.1)">태민</div>
+        <div class="zone-label" style="left:80%;color:var(--primary);background:rgba(124,58,237,0.1)">나 💜</div>
+        `:''}
+    </div>`;
+
+    const zone=document.getElementById('clean-zone');
+    if(!zone)return;
+    const zoneW=Math.max(200, zone.clientWidth||zone.offsetWidth||300);
+    const zoneH=Math.max(180, zone.clientHeight||zone.offsetHeight||280);
+
+    let spawned=0, spawnIv=null;
+    const maxDrops=20;
+
+    function updateCleanScore(){
+        const el=document.getElementById('clean-score');
+        if(el)el.textContent=waterCleaned;
+    }
+    // ⭐ 중복 카운트 방지 (더블탭/클릭+터치 동시 발생 시 점수 100% 초과하던 버그)
+    function cleanDrop(drop){
+        if(finished)return;
+        if(drop.dataset.done==='1')return;
+        drop.dataset.done='1';
+        drop.classList.add('cleaned');
+        waterCleaned++;
+        updateCleanScore();
+        gTimeout(()=>{ if(drop.parentNode)drop.parentNode.removeChild(drop); },300);
+    }
+    function spawnDrop(){
+        if(finished)return;
+        if(spawned>=maxDrops){ if(spawnIv){ clearInterval(spawnIv); spawnIv=null; } return; }
+        spawned++; waterTotal++;
+        const drop=document.createElement('div');
+        drop.className='water-drop';
+        const x=Math.random()*(zoneW-40);
+        const y=30+Math.random()*(zoneH-70);
+        drop.style.left=x+'px';
+        drop.style.top=y+'px';
+        drop.textContent=dropEmoji;
+        const isMyZone=isSolo||(x/zoneW>0.75);
+        if(!isSolo&&!isMyZone){
+            drop.style.opacity='0.5';
+            gTimeout(()=>{ if(!finished&&drop.dataset.done!=='1'){ friendClean++; cleanDrop(drop); } },600+Math.random()*1200);
+        }else{
+            const h=(e)=>{ if(e&&e.preventDefault)e.preventDefault(); cleanDrop(drop); };
+            drop.onclick=h; drop.ontouchstart=h;
+        }
+        zone.appendChild(drop);
+        if(isSolo){
+            gTimeout(()=>{ if(drop.parentNode&&drop.dataset.done!=='1')drop.parentNode.removeChild(drop); },3000);
+        }
+    }
+
+    spawnIv=gInterval(spawnDrop, isSolo?400:500);
+    spawnDrop(); spawnDrop(); spawnDrop();
+
+    function finish(){
+        if(finished)return;
+        finished=true;
+        clearGameTimers();
+        const score=waterTotal>0?(waterCleaned/waterTotal*100):0;
+        gTimeout(()=>submitGameScore(isSolo,score),500);
+    }
+
+    gameTimeLeft=timeLimit;
+    gameTimer=gInterval(()=>{
+        gameTimeLeft--;
+        const te=document.getElementById('clean-timer');
+        if(te){ te.textContent=Math.max(0,gameTimeLeft); if(gameTimeLeft<=3)te.classList.add('urgent'); }
+        if(gameTimeLeft<=0)finish();
+    },1000);
+}
+
+// ── 게임4: 문장 완성 ──
+
+function renderSentenceGame(mode) {
+    const m=MISSIONS[currentMissionIdx];
+    const gc=document.getElementById('game-container');
+    const isSolo=mode==='solo';
+    const sentences=(SENTENCE_SETS[variantIdx()]||SENTENCE_SETS[0]);
+    const N=sentences.length;
+    const friendDone=isSolo?0:Math.max(0,N-1);
+    const myStart=friendDone;
+    let finished=false;
+
+    // 빈칸을 고정 길이 배열로 관리 → 이미 채운 칸을 다시 눌러 지울 수 있다
+    sentenceFilled=sentences.map(s=>new Array(s.blanks.length).fill(null));
+    const choiceSets=sentences.map(s=>shuffle([...s.blanks,...s.wrong]));
+
+    gc.innerHTML=`
+    <div class="game-mode-label ${isSolo?'mode-solo':'mode-team'}">
+        ${isSolo?'😰 혼자 모드':'🤝 함께 모드'}
+    </div>
+    <p style="font-size:14px;text-align:center;margin:4px 0">${isSolo?m.soloMsg:m.teamMsg}</p>
+    <div id="sentence-area"></div>`;
+
+    function blankCount(from){ let t=0; for(let i=from;i<N;i++)t+=sentences[i].blanks.length; return t; }
+    function myDone(){ for(let i=myStart;i<N;i++){ if(sentenceFilled[i].indexOf(null)>=0)return false; } return true; }
+
+    function renderSentences(){
+        const area=document.getElementById('sentence-area');
+        if(!area)return;
+        let html='';
+        sentences.forEach((sn,si)=>{
+            if(!isSolo&&si<friendDone){
+                let txt=sn.text;
+                sn.blanks.forEach(b=>{ txt=txt.replace('___',`<strong style="color:#3B82F6">${esc(b)}</strong>`); });
+                const f=m.friends[si%m.friends.length];
+                html+=`<div class="message-card friend-msg">
+                    <div class="message-author">💙 ${esc((f&&f.name)||'친구')}</div>
+                    <p style="font-size:15px;font-weight:500">${txt}</p>
+                </div>`;
+            }else{
+                const filled=sentenceFilled[si];
+                let bi=0;
+                const display=sn.text.replace(/___/g,()=>{
+                    const k=bi++;
+                    const val=filled[k];
+                    return val
+                        ? `<span class="word-blank filled" onclick="clearBlank(${si},${k})">${esc(val)}</span>`
+                        : `<span class="word-blank">___</span>`;
+                });
+                html+=`<div class="message-card" style="border-color:var(--primary)">
+                    <div class="message-author">💜 나의 문장</div>
+                    <div class="sentence-frame"><div class="sentence-text">${display}</div></div>
+                    <div class="word-choices" id="words-${si}">
+                        ${choiceSets[si].map((w,wi)=>`<span class="word-chip ${(filled.indexOf(w)>=0||filled.indexOf(null)<0)?'used':''}" onclick="pickWord(${si},${wi})">${esc(w)}</span>`).join('')}
+                    </div>
+                </div>`;
+            }
+        });
+        html+= myDone()
+            ? `<button class="btn btn-success" onclick="finishSentence()" style="margin-top:12px">✅ 편지 완성!</button>`
+            : `<p style="text-align:center;font-size:13px;color:var(--text-light);margin-top:8px">💡 채운 낱말을 다시 누르면 지울 수 있어요.</p>`;
+        area.innerHTML=html;
+    }
+
+    gameHandlers.pickWord=function(si,wi){
+        if(finished)return;
+        if(!sentences[si]||!sentenceFilled[si])return;
+        const w=(choiceSets[si]||[])[wi];
+        if(w==null)return;
+        const filled=sentenceFilled[si];
+        if(filled.indexOf(w)>=0)return;
+        const k=filled.indexOf(null);
+        if(k<0)return;
+        filled[k]=w;
+        renderSentences();
+    };
+    gameHandlers.clearBlank=function(si,bi){
+        if(finished)return;
+        if(sentenceFilled[si]&&bi>=0&&bi<sentenceFilled[si].length)sentenceFilled[si][bi]=null;
+        renderSentences();
+    };
+    gameHandlers.finishSentence=function(){
+        if(finished)return;
+        if(!myDone()){ showToast('빈칸을 모두 채워주세요.','error'); return; }
+        finished=true;
+        let correct=0;
+        for(let i=myStart;i<N;i++){
+            sentences[i].blanks.forEach((b,bi)=>{ if(sentenceFilled[i][bi]===b)correct++; });
+        }
+        const mine=blankCount(myStart), all=blankCount(0);
+        const score=isSolo?(correct/Math.max(1,mine)*100):((correct+(all-mine))/Math.max(1,all)*100);
+        submitGameScore(isSolo,score);
+    };
+
+    renderSentences();
+}
+
+// ── 게임5: 패턴 기억 ──
+
+function renderPatternGame(mode) {
+    const m=MISSIONS[currentMissionIdx];
+    const gc=document.getElementById('game-container');
+    const isSolo=mode==='solo';
+    const set=PATTERN_SETS[variantIdx()]||PATTERN_SETS[0];
+    const emojis=set.emojis;
+    const totalLen=set.len;
+    const friendLen=isSolo?0:Math.max(1,totalLen-2);
+    const myLen=totalLen-friendLen;
+
+    let locked=true, finished=false;
+    patternSeq=[]; patternInput=[]; patternLevel=0;
+    for(let i=0;i<totalLen;i++)patternSeq.push(Math.floor(Math.random()*emojis.length));
+
+    gc.innerHTML=`
+    <div class="game-mode-label ${isSolo?'mode-solo':'mode-team'}">
+        ${isSolo?'😰 혼자 모드':'🤝 함께 모드'}
+    </div>
+    <p style="font-size:14px;text-align:center;margin:4px 0">${isSolo?m.soloMsg:m.teamMsg}</p>
+    <div class="game-score-bar">
+        <span class="game-label" id="pattern-status">👀 패턴을 잘 봐주세요…</span>
+    </div>
+    <div class="pattern-grid" id="pattern-grid" style="opacity:0.7">
+        ${emojis.map((e,i)=>`<div class="pattern-cell" data-idx="${i}" onclick="patternTap(${i})">${e}</div>`).join('')}
+    </div>
+    <div id="pattern-progress" style="text-align:center;margin:8px 0"></div>`;
+
+    const grid=document.getElementById('pattern-grid');
+    if(!grid)return;
+    // ⭐ data-idx 조회를 패턴 그리드 안으로 한정 (터치 게임 셀과 오매칭되던 문제)
+    function cellAt(i){ return grid.querySelector('.pattern-cell[data-idx="'+i+'"]'); }
+    function status(t){ const el=document.getElementById('pattern-status'); if(el)el.textContent=t; }
+    function setLocked(v){ locked=v; grid.style.opacity=v?'0.7':'1'; }
+    function updateProgress(){
+        const el=document.getElementById('pattern-progress');
+        if(!el)return;
+        el.innerHTML=patternSeq.map((_,i)=>{
+            if(i<patternInput.length){
+                const ok=patternInput[i]===patternSeq[i];
+                return `<span style="color:${ok?'var(--success)':'var(--error)'}">${ok?'✓':'✗'}</span>`;
+            }
+            return `<span style="color:#E5E7EB">○</span>`;
+        }).join(' ');
+    }
+
+    function startInput(){
+        if(finished)return;
+        if(isSolo){
+            setLocked(false);
+            status(`${totalLen}개 동작을 순서대로 터치하세요!`);
+            return;
+        }
+        status(`💙 친구들이 앞의 ${friendLen}개를 기억하고 있어요…`);
+        let fi=0;
+        const fIv=gInterval(()=>{
+            if(finished){ clearInterval(fIv); return; }
+            if(fi>=friendLen){
+                clearInterval(fIv);
+                setLocked(false);
+                status(`이제 나머지 ${myLen}개만 순서대로 터치하세요!`);
+                return;
+            }
+            const v=patternSeq[fi];
+            const cell=cellAt(v);
+            if(cell){ cell.classList.add('friend-flash'); gTimeout(()=>cell.classList.remove('friend-flash'),400); }
+            patternInput.push(v);
+            updateProgress();
+            fi++;
+        },600);
+    }
+
+    let showIdx=0;
+    const showIv=gInterval(()=>{
+        if(finished){ clearInterval(showIv); return; }
+        if(showIdx>=totalLen){
+            clearInterval(showIv);
+            gTimeout(startInput,600);
+            return;
+        }
+        const cell=cellAt(patternSeq[showIdx]);
+        if(cell){ cell.classList.add('flash'); gTimeout(()=>cell.classList.remove('flash'),450); }
+        status(`👀 ${showIdx+1} / ${totalLen} 번째 동작`);
+        showIdx++;
+    },800);
+
+    // ⭐ 시연 중에는 입력을 막는다 (기존: 패턴이 나오는 동안 터치가 그대로 입력돼 게임이 즉시 끝나던 버그)
+    gameHandlers.patternTap=function(idx){
+        if(locked){ showToast('👀 아직이에요! 패턴을 먼저 봐주세요.'); return; }
+        if(finished)return;
+        const pos=patternInput.length;
+        if(pos>=totalLen)return;
+        const cell=cellAt(idx);
+        const ok=patternSeq[pos]===idx;
+        if(cell){ cell.classList.add(ok?'correct':'wrong'); gTimeout(()=>cell.classList.remove(ok?'correct':'wrong'),300); }
+        patternInput.push(idx);
+        updateProgress();
+        if(patternInput.length>=totalLen){
+            finished=true;
+            setLocked(true);
+            let correct=0;
+            patternInput.forEach((v,i)=>{ if(v===patternSeq[i])correct++; });
+            const score=correct/totalLen*100;
+            clearGameTimers();
+            gTimeout(()=>submitGameScore(isSolo,score),800);
+        }
+    };
+
+    updateProgress();
+}
+
+// 게임 내 동적 핸들러 — 항상 window에 존재하도록 모듈 최상단에서 고정 노출
+window.pickWord=function(si,wi){ if(gameHandlers.pickWord)gameHandlers.pickWord(Number(si),Number(wi)); };
+window.clearBlank=function(si,bi){ if(gameHandlers.clearBlank)gameHandlers.clearBlank(Number(si),Number(bi)); };
+window.finishSentence=function(){ if(gameHandlers.finishSentence)gameHandlers.finishSentence(); };
+window.patternTap=function(i){ if(gameHandlers.patternTap)gameHandlers.patternTap(Number(i)); };
+
+// ═══ 게임 결과 화면들 ═══
+
+function renderSoloResult() {
+    const score=missionScores[currentMissionIdx+'_solo']||0;
+    const gc=document.getElementById('game-container');
+    if(!gc)return;
+    gc.innerHTML=`
+    <div class="card" style="text-align:center">
+        <div style="font-size:48px;margin-bottom:8px">${score>=70?'😅':'😰'}</div>
+        <h2>혼자 도전 결과</h2>
+        <div style="font-size:48px;font-weight:900;color:var(--error);margin:12px 0">${score}점</div>
+        <p style="font-size:16px;font-weight:500;color:var(--text-light);margin:8px 0">
+            ${score>=70?'나쁘지 않지만… 더 잘할 수 있지 않을까요?':'혼자서는 역시 힘들었어요… 😢'}
+        </p>
+        <div style="background:rgba(16,185,129,0.08);border-radius:12px;padding:16px;margin:16px 0">
+            <p style="font-size:15px">그런데 만약… <strong>친구들이 함께 한다면</strong> 어떨까요? 🤔</p>
+        </div>
+        <button class="btn btn-success" onclick="startFriendsArrive()">친구들 부르기! 📢</button>
+    </div>`;
+}
+
+window.startFriendsArrive = function() {
+    if(gamePhase==='friends-arrive')return;
+    gamePhase='friends-arrive';
+    renderGamePhase();
+};
+
+function renderFriendsArrive() {
+    const m=MISSIONS[currentMissionIdx];
+    const gc=document.getElementById('game-container');
+    if(!m||!gc)return;
+
+    gc.innerHTML=`
+    <div class="card" style="text-align:center">
+        <h2 style="margin-bottom:16px">🌟 친구들이 달려왔어요!</h2>
+        <div class="friends-arrive" id="friends-area"></div>
+        <div id="friends-msg" style="margin-top:16px"></div>
+        <div id="friends-go"></div>
+    </div>`;
+
+    const area=document.getElementById('friends-area');
+    const msgEl=document.getElementById('friends-msg');
+
+    m.friends.forEach((f,i)=>{
+        gTimeout(()=>{
+            if(!area||!area.isConnected&&area.parentNode===null)return;
+            const avatar=document.createElement('div');
+            avatar.className='friend-avatar arrive';
+            avatar.style.borderColor=f.color;
+            avatar.textContent=f.emoji;
+            area.appendChild(avatar);
+            const messages=[
+                `"${esc(f.name)}입니다! 제가 도와줄게요!" 😊`,
+                `"${esc(f.name)}이에요! 함께하면 잘 될 거예요!" ✨`,
+                `"${esc(f.name)} 왔어요! 같이 해요!" 💪`
+            ];
+            if(msgEl)msgEl.innerHTML=`<div class="dialogue"><div class="speaker">${esc(f.name)}</div>${messages[i%messages.length]}</div>`;
+        }, i*800+300);
+    });
+
+    gTimeout(()=>{
+        const go=document.getElementById('friends-go');
+        if(!go)return;
+        go.innerHTML=`
+        <div style="margin-top:16px">
+            <p style="font-size:16px;font-weight:900;color:var(--primary)">이제 함께 도전해볼까요?</p>
+            <button class="btn btn-primary" onclick="startTeamRound()" style="margin-top:8px">함께 도전! 🤝</button>
+        </div>`;
+    }, m.friends.length*800+600);
+}
+
+window.startTeamRound = function() {
+    if(gamePhase==='team')return;
+    gamePhase='team';
+    renderGamePhase();
+};
+
+function renderCompare() {
+    const m=MISSIONS[currentMissionIdx];
+    const soloScore=missionScores[currentMissionIdx+'_solo']||0;
+    const teamScore=missionScores[currentMissionIdx]||0;
+    const gc=document.getElementById('game-container');
+    if(!m||!gc)return;
+    const diff=teamScore-soloScore;
+
+    gc.innerHTML=`
+    <div class="card" style="text-align:center">
+        <h2>📊 결과 비교</h2>
+        <div class="compare-box">
+            <div class="compare-side compare-solo">
+                <div style="font-size:14px;font-weight:700">😰 혼자</div>
+                <div class="compare-score">${soloScore}</div>
+                <div class="compare-label">점</div>
+            </div>
+            <div class="compare-vs">VS</div>
+            <div class="compare-side compare-team">
+                <div style="font-size:14px;font-weight:700">🤝 함께</div>
+                <div class="compare-score">${teamScore}</div>
+                <div class="compare-label">점</div>
+            </div>
+        </div>
+        ${diff>0?`<div style="background:rgba(16,185,129,0.1);border-radius:12px;padding:12px;margin:12px 0">
+            <p style="font-size:18px;font-weight:900;color:var(--success)">🎉 +${diff}점 향상!</p>
+        </div>`:''}
+        <div style="background:rgba(124,58,237,0.06);border-radius:12px;padding:14px;margin:12px 0">
+            <p style="font-size:15px;font-weight:500">${m.lesson}</p>
+        </div>
+        <div style="background:rgba(124,58,237,0.03);border-radius:12px;padding:14px;margin:12px 0;text-align:left">
+            <p style="font-size:15px;font-weight:900;margin-bottom:8px">🤔 이번 미션에서 가장 크게 느낀 건?</p>
+            <div id="coop-point-list"></div>
+        </div>
+        <button class="btn btn-primary" onclick="showReward()">🎁 보상 받기!</button>
+    </div>`;
+
+    const cp=document.getElementById('coop-point-list');
+    if(cp){
+        cp.innerHTML=COOP_POINTS.map(o=>`<button class="choice-btn" data-cp="${o.id}" onclick="pickCoopPoint('${o.id}')" style="font-size:15px">${o.emoji} ${o.text}</button>`).join('');
+    }
+}
+
+window.pickCoopPoint = function(id) {
+    if(!COOP_POINTS.some(o=>o.id===id))return;
+    coopPoints[id]=(coopPoints[id]||0)+1;
+    document.querySelectorAll('#coop-point-list .choice-btn').forEach(b=>b.classList.toggle('selected',b.dataset.cp===id));
+    if(!isSoloMode){
+        DB.saveStudent(currentRoomCode,currentNickname,{coopPoints:coopPoints});
+    }
+    showToast('💬 마음을 기록했어요!','success');
+};
+
+window.showReward = function() {
+    if(gamePhase==='reward')return;
+    gamePhase='reward';
+    renderGamePhase();
+};
+
+function renderReward() {
+    const m=MISSIONS[currentMissionIdx];
+    const gc=document.getElementById('game-container');
+    if(!m||!gc)return;
+    const card=COOP_CARDS.find(c=>c.id===m.cardReward);
+    const isNew=!collectedCards.has(m.cardReward);
+    const prevCards=new Set(collectedCards);
+
+    completedMissions.add(currentMissionIdx);
+    missionPlays[currentMissionIdx]=(missionPlays[currentMissionIdx]||0)+1;
+
+    const teamScore=missionScores[currentMissionIdx]||0;
+    const prevBest=missionBest[currentMissionIdx]||0;
+    const isNewBest=teamScore>prevBest;
+    if(isNewBest)missionBest[currentMissionIdx]=teamScore;
+
+    if(isNew&&card){ collectedCards.add(m.cardReward); newCards.add(m.cardReward); }
+
+    // ⭐ 보너스 카드('의견 존중')는 syncCardRewards()가 상태에서 다시 계산한다 → 이어하기에서도 빠지지 않는다
+    syncCardRewards();
+    collectedCards.forEach(id=>{ if(!prevCards.has(id))newCards.add(id); });
+    const allClearCard=collectedCards.has('respect')&&!prevCards.has('respect');
+
+    saveProgress();
+
+    const allDone=completedMissions.size>=MISSIONS.length&&recordDone;
+
+    gc.innerHTML=`
+    <div class="card" style="text-align:center">
+        <h2>🏆 미션 완료!</h2>
+        ${card?`
+        <div style="font-size:64px;margin:12px 0">${card.emoji}</div>
+        <h3 style="color:var(--primary)">${isNew?'🆕 새 카드 획득!':'이미 보유한 카드'}</h3>
+        <p style="font-size:20px;font-weight:900;margin:4px 0">${card.name}</p>
+        <p style="font-size:15px;color:var(--text-light)">${card.desc}</p>
+        `:''}
+        ${allClearCard?`<div style="background:rgba(16,185,129,0.1);border-radius:12px;padding:12px;margin:10px 0">
+            <p style="font-size:15px;font-weight:900;color:var(--success)">🎊 5가지 미션 완주! 👂 <strong>의견 존중</strong> 카드를 추가로 얻었어요!</p></div>`:''}
+        <div style="background:rgba(124,58,237,0.05);border-radius:12px;padding:12px;margin:12px 0">
+            <p style="font-size:15px">이번 점수 <strong>${teamScore}점</strong> · 내 최고 기록 <strong>${missionBest[currentMissionIdx]||0}점</strong> · ${missionPlays[currentMissionIdx]}번째 도전</p>
+            ${isNewBest&&missionPlays[currentMissionIdx]>1?'<p style="font-size:16px;font-weight:900;color:var(--warning)">🔥 NEW BEST 기록 갱신!</p>':''}
+        </div>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+            ${allDone?'<button class="btn btn-success" onclick="showCompleteScreen()">🏆 마무리 화면 보기</button>':''}
+            <button class="btn btn-primary" onclick="backToMain()">🎮 다른 미션 도전하기</button>
+            <button class="btn btn-secondary" onclick="startMission(${currentMissionIdx})">🔄 이 미션 다시 하기 (내용이 바뀌어요!)</button>
+        </div>
+    </div>`;
+
+    if(isNew||allClearCard)launchConfetti();
+
+    if(!isSoloMode){
+        DB.saveStudent(currentRoomCode,currentNickname,{
+            lastActivity:`${m.emoji} ${m.title} 완료! (${teamScore}점)`,
+            lastActivityAt:new Date().toISOString()
+        });
+    }
+}
+
+async function saveProgress() {
+    if(isSoloMode)return;
+    if(!currentRoomCode||!currentNickname)return;
+    totalPlays=Object.values(missionPlays).reduce((a,b)=>a+(Number(b)||0),0);
+    const teamTotal=MISSIONS.reduce((a,_,i)=>a+(Number(missionBest[i])||0),0);
+    if(teamTotal>bestTotalScore)bestTotalScore=teamTotal;
+    await DB.saveStudent(currentRoomCode,currentNickname,{
+        completedMissions:Array.from(completedMissions),
+        collectedList:Array.from(collectedCards),
+        collectedCount:collectedCards.size,
+        missionScores:missionScores,
+        missionBest:missionBest,
+        missionPlays:missionPlays,
+        bestScore:bestTotalScore,
+        totalPlays:totalPlays
+    });
+}
+
+// ═══ 협력 기록 ═══
+
+function syncRecordInputs(){
+    const p=document.getElementById('coop-promise');
+    const r=document.getElementById('reflection');
+    if(p)recordData.coopPromise=p.value;
+    if(r)recordData.reflection=r.value;
+}
+
+let recordSaveTimer=null;
+// ⭐ 제출 전에 나가도 글이 남도록 입력 즉시 저장 (디바운스)
+window.onRecordInput = function() {
+    syncRecordInputs();
+    if(isSoloMode||!currentRoomCode||!currentNickname)return;
+    if(recordSaveTimer)clearTimeout(recordSaveTimer);
+    recordSaveTimer=setTimeout(()=>{
+        DB.saveStudent(currentRoomCode,currentNickname,{
+            coopPromise:recordData.coopPromise||'',
+            reflection:recordData.reflection||'',
+            draftAt:new Date().toISOString()
+        });
+    },800);
+};
+
+function renderRecordContent() {
+    const el=document.getElementById('record-content');
+    if(!el)return;
+    syncRecordInputs();
+    const canRecord=completedMissions.size>=3;
+
+    if(!canRecord){
+        el.innerHTML=`
+        <div class="card" style="text-align:center">
+            <div style="font-size:48px">🔒</div>
+            <h3>미션 3개 이상 완료하면 열려요!</h3>
+            <p style="font-size:14px;color:var(--text-light)">현재 ${completedMissions.size}/3 완료</p>
+            <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,completedMissions.size/3*100)}%"></div></div>
+        </div>`;
+        return;
+    }
+
+    el.innerHTML=`
+    <div class="card">
+        <h3>✍️ 협력 기록장</h3>
+        ${recordDone?'<div style="color:var(--success);font-size:14px;margin-bottom:8px">✅ 작성 완료! 수정할 수 있어요.</div>':''}
+        <div style="margin:12px 0">
+            <label style="font-size:15px;display:block;margin-bottom:6px">🤔 협력이 잘 안 될 때는 보통 왜일까요?</label>
+            <div id="fail-reasons"></div>
+        </div>
+        <div style="margin:12px 0">
+            <label style="font-size:15px;display:block;margin-bottom:6px">🤝 우리 반 협력 약속 한 가지를 적어볼까요?</label>
+            <textarea id="coop-promise" oninput="onRecordInput()" placeholder="예: 역할을 정할 때 서로의 의견을 먼저 물어보기" maxlength="200">${esc(recordData.coopPromise||'')}</textarea>
+        </div>
+        <div style="margin:12px 0">
+            <label style="font-size:15px;display:block;margin-bottom:6px">💬 오늘 활동 소감</label>
+            <textarea id="reflection" oninput="onRecordInput()" placeholder="혼자 할 때와 함께 할 때 어떤 차이를 느꼈나요?" maxlength="300">${esc(recordData.reflection||'')}</textarea>
+        </div>
+        <button class="btn btn-primary" onclick="submitRecord()">${recordDone?'📝 수정 저장하기':'📝 기록 제출하기'}</button>
+    </div>`;
+
+    const reasons=[
+        {id:'unfair',emoji:'⚖️',text:'역할이 공평하지 않을 때'},
+        {id:'nocomm',emoji:'🤐',text:'소통이 잘 안 될 때'},
+        {id:'freeride',emoji:'😴',text:'누군가 안 할 때'},
+        {id:'dictator',emoji:'👑',text:'한 명이 다 정할 때'},
+        {id:'norespect',emoji:'🙉',text:'의견을 무시할 때'}
+    ];
+    const rEl=document.getElementById('fail-reasons');
+    if(rEl){
+        rEl.innerHTML=reasons.map(r=>`
+        <button class="choice-btn ${recordData.failReason===r.id?'selected':''}" data-rid="${r.id}" onclick="selectFailReason('${r.id}')" style="font-size:15px">
+            ${r.emoji} ${r.text}
+        </button>`).join('');
+    }
+}
+
+// ⭐ 전체 재렌더를 하지 않는다 (이전엔 원인을 고르는 순간 입력 중이던 약속·소감이 지워졌다)
+window.selectFailReason = function(id) {
+    syncRecordInputs();
+    recordData.failReason=id;
+    document.querySelectorAll('#fail-reasons .choice-btn').forEach(b=>b.classList.toggle('selected',b.dataset.rid===id));
+    if(!isSoloMode&&currentRoomCode&&currentNickname){
+        DB.saveStudent(currentRoomCode,currentNickname,{failReason:id});
+    }
+};
+
+window.submitRecord = async function() {
+    syncRecordInputs();
+    const promise=(recordData.coopPromise||'').trim();
+    const reflection=(recordData.reflection||'').trim();
+    if(!recordData.failReason){showToast('협력 실패 원인을 선택해주세요.','error');return;}
+    if(!promise){showToast('협력 약속을 적어주세요.','error');return;}
+
+    recordData.coopPromise=promise;
+    recordData.reflection=reflection;
+    recordDone=true;
+
+    if(!collectedCards.has('trust')){collectedCards.add('trust');newCards.add('trust');showToast('🤝 신뢰 쌓기 카드 획득!','success');}
+    if(!collectedCards.has('responsible')){collectedCards.add('responsible');newCards.add('responsible');showToast('💪 책임감 카드 획득!','success');}
+    syncCardRewards();
+
+    if(!isSoloMode){
+        await DB.saveStudent(currentRoomCode,currentNickname,{
+            failReason:recordData.failReason,
+            coopPromise:promise,
+            reflection:reflection,
+            recordCompletedAt:new Date().toISOString(),
+            collectedList:Array.from(collectedCards),
+            collectedCount:collectedCards.size,
+            lastActivity:'📝 협력 기록 완료!',
+            lastActivityAt:new Date().toISOString()
+        });
+    }
+
+    showToast('✅ 기록이 저장되었습니다!','success');
+    renderRecordContent();renderCollectionContent();updateMainProgress();
+
+    if(completedMissions.size>=MISSIONS.length){setTimeout(()=>showComplete(),600);}
+};
+
+// ═══ 카드 도감 ═══
+
+function renderCollectionContent() {
+    const el=document.getElementById('collection-content');
+    if(!el)return;
+    syncCardRewards();
+    const collected=collectedCards.size;
+    const total=COOP_CARDS.length;
+    const pct=total?Math.round(collected/total*100):0;
+
+    let msg='🌱 미션을 시작해보세요!';
+    if(pct>0&&pct<25)msg='🔥 좋은 시작이에요!';
+    else if(pct>=25&&pct<50)msg='⭐ 잘 모으고 있어요!';
+    else if(pct>=50&&pct<75)msg='🎯 절반 넘었어요!';
+    else if(pct>=75&&pct<100)msg='🏆 거의 다 모았어요!';
+    else if(pct===100)msg='🎊 모든 카드를 모았어요!';
+
+    const howto={role:'미션 1 완료',comm:'미션 2 완료',care:'미션 3 완료',encourage:'미션 4 완료',join:'미션 5 완료',trust:'협력 기록 제출',responsible:'협력 기록 제출',respect:'미션 5가지 모두 완료'};
+
+    el.innerHTML=`
+    <div class="card" style="text-align:center">
+        <h3>📖 협력 카드 도감</h3>
+        <p style="font-size:14px;color:var(--text-light)">${collected}/${total}장 수집 | ${msg}</p>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="card-grid">
+        ${COOP_CARDS.map(c=>{
+            const has=collectedCards.has(c.id);
+            const isNew=newCards.has(c.id);
+            return `<div class="coop-card ${has?'collected':'locked'}">
+                <div class="card-emoji">${has?c.emoji:'❓'}</div>
+                <div class="card-name">${has?c.name:'???'}</div>
+                ${has?`<div class="card-desc">${c.desc}</div>`:`<div class="card-desc">${howto[c.id]||'미션 완료로 획득하세요!'}</div>`}
+                ${isNew?'<span class="new-badge">NEW</span>':''}
+            </div>`;
+        }).join('')}
+    </div>`;
+}
+
+// ═══ 실시간 우리 반 소식 ═══
+
+let liveUnsubscribe=null;
+
+function startLiveWall() {
+    if(isSoloMode)return;
+    if(liveUnsubscribe){ liveUnsubscribe(); liveUnsubscribe=null; }   // ⭐ 중복 리스너 방지
+    const wallEl=document.getElementById('live-wall');
+    if(wallEl)wallEl.style.display='block';
+
+    liveUnsubscribe=DB.onStudentsChange(currentRoomCode,(students)=>{
+        const content=document.getElementById('live-wall-content');
+        if(!content)return;
+
+        const activities=Object.entries(students||{})
+            .filter(([name,d])=>d&&d.lastActivity&&name!==currentNickname)
+            .sort((a,b)=>new Date(b[1].lastActivityAt||0)-new Date(a[1].lastActivityAt||0))
+            .slice(0,8);
+
+        if(activities.length===0){
+            content.innerHTML='<div class="live-empty">아직 소식이 없어요. 미션을 시작해보세요!</div>';
+            return;
+        }
+
+        content.innerHTML=activities.map(([name,d])=>{
+            const time=d.lastActivityAt?new Date(d.lastActivityAt).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'}):'';
+            return `<div class="live-item"><span class="live-emoji">🎉</span><strong>${esc(name)}</strong>님: ${esc(d.lastActivity)} <span style="color:var(--text-light);font-size:11px">${esc(time)}</span></div>`;
+        }).join('');
+    });
+}
+
+// ═══ 완료 화면 ═══
+
+window.showCompleteScreen = function(){ showComplete(); };
+
+function showComplete() {
+    const el=document.getElementById('complete-content');
+    if(!el)return;
+    clearGameTimers();
+    const totalScore=MISSIONS.reduce((a,_,i)=>a+(Number(missionBest[i])||0),0);
+    const totalTries=Object.values(missionPlays).reduce((a,b)=>a+(Number(b)||0),0);
+
+    el.innerHTML=`
+    <div style="font-size:64px;margin-bottom:8px">🏆</div>
+    <h2>모든 활동을 완료했어요!</h2>
+    <div style="margin:16px 0">
+        <p style="font-size:16px">🎮 미션 ${completedMissions.size}/${MISSIONS.length} 완료 (총 ${totalTries}번 도전)</p>
+        <p style="font-size:16px">📖 카드 ${collectedCards.size}/${COOP_CARDS.length} 수집</p>
+        <p style="font-size:16px">📝 협력 기록 ${recordDone?'완료':'미완료'}</p>
+        <p style="font-size:20px;font-weight:900;color:var(--primary);margin-top:8px">최고 기록 합계: ${totalScore}점</p>
+    </div>
+    <div style="background:rgba(124,58,237,0.06);border-radius:12px;padding:16px;margin:12px 0;text-align:left">
+        <p style="font-size:15px;font-weight:500;line-height:1.8">
+            오늘 우리는 <strong>혼자 할 때</strong>와 <strong>함께 할 때</strong>의 차이를 직접 느꼈어요.<br><br>
+            혼자서는 빠를 수 있지만, 함께하면 <strong>더 멀리, 더 좋은 결과</strong>를 만들 수 있어요.<br><br>
+            진짜 협력은 그냥 되는 게 아니라, <strong>역할을 나누고, 소통하고, 서로를 믿는</strong> 과정이에요. 💛
+        </p>
+    </div>
+    <button class="btn btn-primary" onclick="backToMain()">🔄 미션 다시 도전하기</button>
+    ${isSoloMode?'<button class="btn btn-success" onclick="downloadSoloResult()" style="margin-top:4px">📄 내 결과 저장하기</button>':''}
+    ${isSoloMode?'<button class="btn btn-secondary" onclick="showScreen(\'screen-start\')" style="margin-top:4px">🏠 처음으로</button>':''}`;
+
+    showScreen('screen-complete');
+    launchConfetti();
+}
+
+// 혼자 체험 결과 txt 저장
+window.downloadSoloResult = function() {
+    const failLabels={unfair:'역할이 공평하지 않을 때',nocomm:'소통이 잘 안 될 때',freeride:'누군가 안 할 때',dictator:'한 명이 다 정할 때',norespect:'의견을 무시할 때'};
+    let t='함께하면 왜 더 잘 될까 — 나의 활동 기록\n';
+    t+='작성일: '+new Date().toLocaleString('ko-KR')+'\n';
+    t+='========================================\n\n';
+    t+='[미션 결과]\n';
+    MISSIONS.forEach((m,i)=>{
+        const solo=missionScores[i+'_solo'];
+        const team=missionBest[i]!=null?missionBest[i]:missionScores[i];
+        t+=`${i+1}. ${m.title} — 혼자 ${solo==null?'-':solo+'점'} / 함께 ${team==null?'-':team+'점'}`;
+        t+=(missionPlays[i]?` (${missionPlays[i]}번 도전)`:'')+'\n';
+    });
+    t+='\n[모은 협력 카드]\n';
+    COOP_CARDS.forEach(c=>{ if(collectedCards.has(c.id))t+=`- ${c.name}: ${c.desc}\n`; });
+    t+=`\n(총 ${collectedCards.size}/${COOP_CARDS.length}장)\n`;
+    t+='\n[협력 기록]\n';
+    t+='· 협력이 잘 안 되는 까닭: '+(failLabels[recordData.failReason]||'-')+'\n';
+    t+='· 우리 반 협력 약속: '+(recordData.coopPromise||'-')+'\n';
+    t+='· 오늘 활동 소감: '+(recordData.reflection||'-')+'\n';
+    const picked=Object.keys(coopPoints).filter(k=>coopPoints[k]>0);
+    if(picked.length){ t+='\n[가장 크게 느낀 협력의 힘]\n'; picked.forEach(k=>{ t+=`- ${COOP_POINT_LABELS[k]||k} (${coopPoints[k]}회)\n`; }); }
+    try{
+        const blob=new Blob([t],{type:'text/plain;charset=utf-8'});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url;a.download='함께하면_왜_더_잘_될까_결과.txt';
+        document.body.appendChild(a);a.click();
+        setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},500);
+        showToast('📄 결과가 저장되었습니다!','success');
+    }catch(e){ showToast('저장이 어려운 환경이에요. 화면을 캡처해 보관해주세요.'); }
+};
+
+window.confirmGoHome = function() {
+    const c=collectedCards.size;
+    const msg=c>0
+        ?`처음 화면으로 돌아갈까요?<br><br>📖 수집 카드 ${c}개, 미션 ${completedMissions.size}개 완료<br>`+
+         (isSoloMode?'⚠️ 혼자 체험 모드는 나가면 기록이 사라져요!':'✅ 같은 닉네임으로 다시 들어오면 이어할 수 있어요!')
+        :'처음 화면으로 돌아갈까요?';
+    showConfirmModal(msg,()=>{
+        if(unsubscribe){unsubscribe();unsubscribe=null;}
+        if(liveUnsubscribe){liveUnsubscribe();liveUnsubscribe=null;}
+        clearGameTimers();
+        gameHandlers={};
+        showScreen('screen-start');
+    });
+};
+
+// ═══ 교사 대시보드 ═══
+
+const FAIL_LABELS={unfair:'역할 불공평',nocomm:'소통 부재',freeride:'무임승차',dictator:'독단적 결정',norespect:'의견 무시'};
+
+function startDashboardListener() {
+    if(unsubscribe){unsubscribe();unsubscribe=null;}
+    unsubscribe=DB.onStudentsChange(currentRoomCode,(data)=>{
+        dashboardData=data||{};
+        renderDashboard();
+    });
+    DB.getAllStudents(currentRoomCode).then(d=>{dashboardData=d||{};renderDashboard();});
+}
+
+window.refreshDashboard = function() {
+    DB.getAllStudents(currentRoomCode).then(d=>{dashboardData=d||{};renderDashboard();});
+};
+
+window.switchDashTab = function(tab) {
+    const order=['overview','detail','export','tts'];
+    document.querySelectorAll('.dash-tab-btn').forEach((b,i)=>b.classList.toggle('active',(b.dataset.dtab||order[i])===tab));
+    document.querySelectorAll('.dash-tab-content').forEach(c=>c.classList.remove('active'));
+    const el=document.getElementById('dash-'+tab);
+    if(el)el.classList.add('active');
+    if(tab==='overview')renderDashboard();
+};
+
+function drawBarChart(canvasId, labels, values){
+    const canvas=document.getElementById(canvasId);
+    if(!canvas)return;
+    const parent=canvas.parentElement;
+    const cw=(parent&&parent.clientWidth)||0;
+    canvas.width=Math.max(260,cw-24);              // ⭐ 숨은 탭에서 clientWidth 0 → 음수 폭 방지
+    canvas.height=Math.max(180, 60+labels.length*0);
+    canvas.height=200;
+    const ctx=canvas.getContext&&canvas.getContext('2d');
+    if(!ctx)return;
+    const maxVal=Math.max(1,...values);
+    const n=Math.max(1,labels.length);
+    const slot=canvas.width/n;
+    const barW=Math.max(14,Math.min(46,slot*0.55));
+    const colors=['#7C3AED','#A78BFA','#C4B5FD','#8B5CF6','#DDD6FE','#6D28D9','#EDE9FE'];
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    labels.forEach((k,i)=>{
+        const cx=slot*i+slot/2;
+        const h=(values[i]/maxVal)*(canvas.height-56);
+        ctx.fillStyle=colors[i%colors.length];
+        ctx.fillRect(cx-barW/2,canvas.height-30-h,barW,h);
+        ctx.fillStyle='#1F2937';ctx.font='bold 11px Noto Sans KR';ctx.textAlign='center';
+        ctx.fillText(String(k).substring(0,6),cx,canvas.height-12);
+        ctx.fillText(String(values[i]),cx,canvas.height-36-h);
+    });
+}
+
+function renderDashboard() {
+    const entries=Object.entries(dashboardData||{});
+    const total=entries.length;
+    const missionDoneCount=entries.filter(([,d])=>(d.completedMissions||[]).length>=MISSIONS.length).length;
+    const recordDoneCount=entries.filter(([,d])=>d.recordCompletedAt).length;
+
+    const overview=document.getElementById('dash-overview');
+    if(!overview)return;
+
+    const failCounts={};
+    entries.forEach(([,d])=>{ if(d.failReason)failCounts[d.failReason]=(failCounts[d.failReason]||0)+1; });
+
+    const pointCounts={};
+    entries.forEach(([,d])=>{ Object.entries(d.coopPoints||{}).forEach(([k,v])=>{ pointCounts[k]=(pointCounts[k]||0)+(Number(v)||0); }); });
+
+    const promises=entries.filter(([,d])=>d.coopPromise).map(([n,d])=>({name:n,text:d.coopPromise}));
+
+    // 미션별 평균/최고
+    const missionStats=MISSIONS.map((m,i)=>{
+        const vals=entries.map(([,d])=>{
+            const mb=(d.missionBest||{})[i];
+            const ms=(d.missionScores||{})[i];
+            return typeof mb==='number'?mb:(typeof ms==='number'?ms:null);
+        }).filter(v=>typeof v==='number');
+        const avg=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):null;
+        return {title:m.title,emoji:m.emoji,n:vals.length,avg:avg,max:vals.length?Math.max(...vals):null};
+    });
+
+    overview.innerHTML=`
+    <div class="card">
+        <h3>📊 참여 현황</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0;text-align:center">
+            <div style="background:rgba(124,58,237,0.06);border-radius:12px;padding:12px">
+                <div style="font-size:28px;font-weight:900;color:var(--primary)">${total}</div>
+                <div style="font-size:12px;color:var(--text-light)">참여</div>
+            </div>
+            <div style="background:rgba(16,185,129,0.06);border-radius:12px;padding:12px">
+                <div style="font-size:28px;font-weight:900;color:var(--success)">${missionDoneCount}</div>
+                <div style="font-size:12px;color:var(--text-light)">미션완료</div>
+            </div>
+            <div style="background:rgba(59,130,246,0.06);border-radius:12px;padding:12px">
+                <div style="font-size:28px;font-weight:900;color:#3B82F6">${recordDoneCount}</div>
+                <div style="font-size:12px;color:var(--text-light)">기록완료</div>
+            </div>
+        </div>
+    </div>
+    ${total?`
+    <div class="card">
+        <h3>🎮 미션별 성취</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <tr style="background:rgba(124,58,237,0.06)"><th style="padding:6px;text-align:left">미션</th><th style="padding:6px">참여</th><th style="padding:6px">평균</th><th style="padding:6px">최고</th></tr>
+            ${missionStats.map(st=>`<tr><td style="padding:6px">${st.emoji} ${esc(st.title)}</td><td style="padding:6px;text-align:center">${st.n}명</td><td style="padding:6px;text-align:center">${st.avg==null?'-':st.avg+'점'}</td><td style="padding:6px;text-align:center">${st.max==null?'-':st.max+'점'}</td></tr>`).join('')}
+        </table>
+    </div>`:''}
+    ${Object.keys(failCounts).length>0?`
+    <div class="card">
+        <h3>🤔 협력 실패 원인 분포</h3>
+        <canvas id="failChart" style="width:100%;height:auto"></canvas>
+    </div>`:''}
+    ${Object.keys(pointCounts).length>0?`
+    <div class="card">
+        <h3>💛 가장 크게 느낀 협력의 힘</h3>
+        <canvas id="pointChart" style="width:100%;height:auto"></canvas>
+    </div>`:''}
+    ${promises.length>0?`
+    <div class="card">
+        <h3>🤝 우리 반 협력 약속</h3>
+        <p style="font-size:12px;color:var(--text-light);margin-bottom:6px">학생들이 제출한 약속이 실시간으로 올라옵니다. 함께 읽어 보세요.</p>
+        ${promises.map(p=>`<div style="background:rgba(124,58,237,0.04);border-radius:10px;padding:10px;margin:6px 0;font-size:14px"><strong>${esc(p.name)}:</strong> ${esc(p.text)}</div>`).join('')}
+    </div>`:''}`;
+
+    if(Object.keys(failCounts).length>0){
+        const keys=Object.keys(failCounts);
+        setTimeout(()=>drawBarChart('failChart',keys.map(k=>FAIL_LABELS[k]||k),keys.map(k=>failCounts[k])),80);
+    }
+    if(Object.keys(pointCounts).length>0){
+        const keys=Object.keys(pointCounts);
+        setTimeout(()=>drawBarChart('pointChart',keys.map(k=>COOP_POINT_LABELS[k]||k),keys.map(k=>pointCounts[k])),80);
+    }
+
+    const detail=document.getElementById('dash-detail');
+    if(detail){
+        detail.innerHTML=entries.length?entries.map(([name,d])=>{
+            const scores=Object.entries(d.missionBest&&Object.keys(d.missionBest).length?d.missionBest:(d.missionScores||{}))
+                .filter(([k])=>String(k).indexOf('_solo')<0)
+                .map(([k,v])=>`${(MISSIONS[k]&&MISSIONS[k].emoji)||''} ${v}점`).join(', ');
+            return `
+    <div class="student-row" onclick="this.classList.toggle('expanded')">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong>${esc(name)}</strong>
+            <span style="font-size:13px;color:var(--text-light)">카드 ${(d.collectedList||[]).length}/${COOP_CARDS.length} | 미션 ${(d.completedMissions||[]).length}/${MISSIONS.length}</span>
+        </div>
+        <div class="student-detail">
+            <div style="font-size:13px;line-height:1.8">
+                <p>📅 참여: ${d.joinedAt?esc(new Date(d.joinedAt).toLocaleString('ko-KR')):'-'}</p>
+                <p>🔁 재방문: ${d.lastVisit?esc(new Date(d.lastVisit).toLocaleString('ko-KR')):'-'}</p>
+                <p>🎮 완료 미션: ${(d.completedMissions||[]).map(i=>(MISSIONS[i]&&MISSIONS[i].emoji)||'').join(' ')||'없음'}</p>
+                <p>📊 최고 점수: ${scores||'-'}</p>
+                <p>🔄 도전 횟수: ${Number(d.totalPlays)||0}회</p>
+                <p>🤔 실패원인: ${esc(FAIL_LABELS[d.failReason]||d.failReason||'-')}</p>
+                <p>🤝 약속: ${esc(d.coopPromise||'-')}</p>
+                <p>💬 소감: ${esc(d.reflection||'-')}</p>
+            </div>
+        </div>
+    </div>`;}).join(''):'<div class="card" style="text-align:center"><p>아직 참여한 학생이 없어요.</p></div>';
+    }
+}
+
+// ═══ 내보내기 ═══
+
+window.downloadExcel = function() {
+    const entries=Object.entries(dashboardData||{});
+    if(!entries.length){showToast('내보낼 데이터가 없습니다.','error');return;}
+    if(typeof XLSX==='undefined'){showToast('엑셀 기능을 불러오지 못했습니다. PDF 저장을 이용해주세요.','error');return;}
+    const wsData=[['닉네임','참여시간','미션완료수','카드수','최고점수합계','도전횟수','실패원인','협력약속','소감']];
+    entries.forEach(([name,d])=>{
+        wsData.push([
+            name,
+            d.joinedAt?new Date(d.joinedAt).toLocaleString('ko-KR'):'',
+            (d.completedMissions||[]).length,
+            (d.collectedList||[]).length,
+            Number(d.bestScore)||0,
+            Number(d.totalPlays)||0,
+            FAIL_LABELS[d.failReason]||'',
+            d.coopPromise||'',
+            d.reflection||''
+        ]);
+    });
+    const ws=XLSX.utils.aoa_to_sheet(wsData);
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'참여결과');
+    XLSX.writeFile(wb,`SEL_${APP_ID}_결과_${currentRoomCode}.xlsx`);
+    showToast('📊 엑셀 다운로드 완료!','success');
+};
+
+window.downloadPDF = function() {
+    const entries=Object.entries(dashboardData||{});
+    if(!entries.length){showToast('내보낼 데이터가 없습니다.','error');return;}
+
+    let pdfBody=`<div class="card"><h3>📊 참여 현황</h3><p>참여 ${entries.length}명 / 미션완료 ${entries.filter(([,d])=>(d.completedMissions||[]).length>=MISSIONS.length).length}명 / 기록완료 ${entries.filter(([,d])=>d.recordCompletedAt).length}명</p></div>`;
+
+    const failCounts={};
+    entries.forEach(([,d])=>{ if(d.failReason)failCounts[d.failReason]=(failCounts[d.failReason]||0)+1; });
+    if(Object.keys(failCounts).length){
+        pdfBody+=`<div class="card"><h3>🤔 협력 실패 원인 분포</h3><table><tr><th>원인</th><th>인원</th></tr>`;
+        Object.entries(failCounts).forEach(([k,v])=>{ pdfBody+=`<tr><td>${esc(FAIL_LABELS[k]||k)}</td><td>${v}명</td></tr>`; });
+        pdfBody+=`</table></div>`;
+    }
+
+    const missionRows=MISSIONS.map((m,i)=>{
+        const vals=entries.map(([,d])=>{
+            const mb=(d.missionBest||{})[i], ms=(d.missionScores||{})[i];
+            return typeof mb==='number'?mb:(typeof ms==='number'?ms:null);
+        }).filter(v=>typeof v==='number');
+        const avg=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):'-';
+        return `<tr><td>${m.emoji} ${esc(m.title)}</td><td>${vals.length}명</td><td>${avg===''?'-':avg}</td></tr>`;
+    }).join('');
+    pdfBody+=`<div class="card"><h3>🎮 미션별 성취</h3><table><tr><th>미션</th><th>참여</th><th>평균점수</th></tr>${missionRows}</table></div>`;
+
+    const promises=entries.filter(([,d])=>d.coopPromise);
+    if(promises.length){
+        pdfBody+=`<div class="card"><h3>🤝 우리 반 협력 약속</h3>`;
+        promises.forEach(([n,d])=>{pdfBody+=`<p><strong>${esc(n)}:</strong> ${esc(d.coopPromise)}</p>`;});
+        pdfBody+=`</div>`;
+    }
+
+    pdfBody+=`<div class="card"><h3>📋 학생별 상세</h3><table><tr><th>닉네임</th><th>미션</th><th>카드</th><th>실패원인</th><th>약속</th><th>소감</th></tr>`;
+    entries.forEach(([n,d])=>{
+        pdfBody+=`<tr><td>${esc(n)}</td><td>${(d.completedMissions||[]).length}/${MISSIONS.length}</td><td>${(d.collectedList||[]).length}/${COOP_CARDS.length}</td><td>${esc(FAIL_LABELS[d.failReason]||'-')}</td><td>${esc(d.coopPromise||'-')}</td><td>${esc(d.reflection||'-')}</td></tr>`;
+    });
+    pdfBody+=`</table></div>`;
+
+    try{
+        const pw=window.open('','_blank');
+        if(pw){
+            pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>SEL 대시보드</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet"><style>*{font-family:'Noto Sans KR',sans-serif;margin:0;padding:0;box-sizing:border-box}body{padding:24px;font-size:14px;color:#1F2937;line-height:1.6}.print-header{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #7C3AED}.print-header h2{color:#7C3AED;font-size:20px}.card{border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin:12px 0;page-break-inside:avoid}table{width:100%;border-collapse:collapse;margin:8px 0}th,td{border:1px solid #E5E7EB;padding:8px 10px;text-align:left;font-size:13px}th{background:#F3F4F6;font-weight:700}h3{color:#7C3AED;font-size:16px;margin:12px 0 8px}.print-guide{background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;text-align:center}@media print{.print-guide{display:none}}</style></head><body><div class="print-guide">💡 PDF로 저장하려면: 인쇄 대화상자에서 "대상"을 <strong>"PDF로 저장"</strong>으로 선택하세요.</div><div class="print-header"><h2>📊 함께하면 왜 더 잘 될까 - 대시보드</h2><p>방 코드: ${esc(currentRoomCode)} | ${esc(new Date().toLocaleString('ko-KR'))}</p></div>${pdfBody}<scr`+`ipt>setTimeout(function(){window.print();},1000);</scr`+`ipt></body></html>`);
+            pw.document.close();
+            showToast('📄 새 창에서 PDF 저장 가능!','success');
+            return;
+        }
+    }catch(e){}
+    try{showToast('📄 Ctrl+P로 PDF 저장해주세요.','info');setTimeout(()=>window.print(),500);return;}catch(e){}
+    showToast('📄 Ctrl+P (Mac: ⌘+P)를 눌러주세요.','info');
+};
+
+// ═══ TTS (영역별 재생 + 스크립트 미리보기) ═══
+let isSpeaking=false;
+
+function buildScript(section){
+    const entries=Object.entries(dashboardData||{});
+    if(!entries.length)return '아직 참여한 학생이 없습니다.';
+    if(section==='promise'){
+        const list=entries.filter(([,d])=>d.coopPromise);
+        if(!list.length)return '아직 제출된 협력 약속이 없습니다.';
+        let t='우리 반 협력 약속입니다. ';
+        list.forEach(([n,d])=>{ t+=`${n} 학생. ${d.coopPromise}. `; });
+        return t;
+    }
+    if(section==='reflection'){
+        const list=entries.filter(([,d])=>d.reflection);
+        if(!list.length)return '아직 제출된 소감이 없습니다.';
+        let t='오늘 활동 소감입니다. ';
+        list.forEach(([n,d])=>{ t+=`${n} 학생. ${d.reflection}. `; });
+        return t;
+    }
+    const done=entries.filter(([,d])=>(d.completedMissions||[]).length>=MISSIONS.length).length;
+    const rec=entries.filter(([,d])=>d.recordCompletedAt).length;
+    let t=`참여 학생 ${entries.length}명. 미션을 모두 완료한 학생 ${done}명. 기록을 제출한 학생 ${rec}명. `;
+    const failCounts={};
+    entries.forEach(([,d])=>{ if(d.failReason)failCounts[d.failReason]=(failCounts[d.failReason]||0)+1; });
+    const keys=Object.keys(failCounts);
+    if(keys.length){
+        t+='협력이 잘 안 되는 까닭으로 고른 것은, ';
+        keys.forEach(k=>{ t+=`${FAIL_LABELS[k]||k} ${failCounts[k]}명, `; });
+        t+='입니다.';
+    }
+    return t;
+}
+
+window.speakSection = function(section) {
+    const text=buildScript(section);
+    if(!('speechSynthesis' in window)){ showToast('이 브라우저는 읽어주기를 지원하지 않아요.','error'); return; }
+    if(isSpeaking){ window.speechSynthesis.cancel(); isSpeaking=false; }
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='ko-KR';u.rate=0.9;
+    u.onend=()=>{isSpeaking=false;};
+    window.speechSynthesis.speak(u);
+    isSpeaking=true;
+};
+window.previewScript = function(section) {
+    const text=buildScript(section);
+    showConfirmModal(`<div style="text-align:left;max-height:280px;overflow:auto;font-size:14px;font-weight:500">${esc(text)}</div>`,null);
+    const ok=document.getElementById('confirmOkBtn');
+    if(ok){ ok.textContent='닫기'; ok.style.background='var(--primary)'; }
+};
+window.speakDashboard = function() { speakSection('overview'); };
+window.stopSpeaking=function(){ if('speechSynthesis' in window)window.speechSynthesis.cancel(); isSpeaking=false; };
+
+// ═══ 데이터 초기화 ═══
+// ⭐ 방 문서(비밀번호·만료일)는 보존하고 학생 데이터만 지운다
+window.resetAllData = function() {
+    showConfirmModal('⚠️ 학생들의 활동 데이터를 모두 삭제합니다.<br><br>방 코드와 비밀번호는 그대로 유지되어<br>같은 방을 계속 쓸 수 있어요.<br><br>이 작업은 되돌릴 수 없습니다!',async()=>{
+        await DB.deleteStudents(currentRoomCode);
+        dashboardData={};
+        renderDashboard();
+        showToast('🗑️ 학생 데이터가 초기화되었습니다. (방은 그대로 유지)','success');
+    });
+};
+
+</script>
+</body>
+</html>

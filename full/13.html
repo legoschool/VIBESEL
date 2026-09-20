@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>나의 행동이 우리에게 미치는 영향</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+    --primary:#7C3AED;--primary-light:#A78BFA;--primary-dark:#5B21B6;
+    --gradient:linear-gradient(135deg,#7C3AED 0%,#A78BFA 50%,#C4B5FD 100%);
+    --gradient-bg:linear-gradient(135deg,#EDE9FE 0%,#F5F3FF 50%,#FFFFFF 100%);
+    --success:#10B981;--error:#EF4444;--warning:#F59E0B;
+    --text:#1F2937;--text-light:#6B7280;--bg-card:rgba(255,255,255,0.95);
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Noto Sans KR',sans-serif}
+body{background:var(--gradient-bg);min-height:100vh;font-weight:700;font-size:18px;line-height:1.7;color:var(--text)}
+h1,h2,h3{font-weight:900}
+.container{max-width:500px;margin:0 auto;padding:16px}
+.screen{display:none}.screen.active{display:block;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.nav-buttons{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.nav-btn{background:rgba(124,58,237,.08);color:var(--primary);border:1.5px solid var(--primary-light);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .2s}
+.nav-btn:hover{background:rgba(124,58,237,.15)}
+.card{background:var(--bg-card);border-radius:20px;padding:24px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.btn{padding:16px 24px;border-radius:16px;font-size:17px;font-weight:900;font-family:'Noto Sans KR',sans-serif;border:none;cursor:pointer;min-height:52px;transition:all .2s;width:100%;max-width:400px;display:block;margin:8px auto;text-align:center}
+.btn-primary{background:var(--gradient);color:#fff;box-shadow:0 4px 15px rgba(124,58,237,.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,.4)}
+.btn-secondary{background:rgba(124,58,237,.1);color:var(--primary);border:2px solid var(--primary-light)}
+.btn-secondary:hover{background:rgba(124,58,237,.18)}
+.btn-success{background:linear-gradient(135deg,#10B981,#34D399);color:#fff;box-shadow:0 4px 15px rgba(16,185,129,.3)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+.btn-sm{padding:10px 16px;font-size:14px;min-height:40px;border-radius:12px}
+input,textarea{min-height:48px;font-size:16px;font-family:'Noto Sans KR',sans-serif;font-weight:700;border:2px solid #E5E7EB;border-radius:12px;padding:12px 16px;width:100%;box-sizing:border-box}
+input:focus,textarea:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(124,58,237,.1)}
+textarea{min-height:80px;resize:vertical;line-height:1.6}
+.choice-btn{padding:16px;border:2px solid #E5E7EB;border-radius:14px;background:#fff;cursor:pointer;transition:all .2s;text-align:left;width:100%;display:block;margin:8px 0;font-size:16px;font-weight:700;font-family:'Noto Sans KR',sans-serif;line-height:1.5}
+.choice-btn:hover{border-color:var(--primary-light);background:rgba(124,58,237,.03)}
+.choice-btn.selected{border-color:var(--primary);background:rgba(124,58,237,.08);box-shadow:0 0 0 3px rgba(124,58,237,.15);transform:scale(1.02)}
+.choice-btn.selected::after{content:' ✓';color:var(--primary);font-weight:900}
+.privacy-notice{background:rgba(124,58,237,.05);border:1px solid rgba(124,58,237,.15);border-radius:12px;padding:14px;font-size:13px;font-weight:400;color:var(--text-light);line-height:1.6;margin-top:16px}
+.badge{display:inline-block;background:rgba(124,58,237,.1);color:var(--primary);padding:6px 14px;border-radius:20px;font-size:14px;font-weight:700}
+
+/* ═══ 28명 시뮬레이션 그리드 ═══ */
+.people-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;padding:16px;background:linear-gradient(180deg,#F0F4FF,#E0E7FF);border-radius:16px;margin:12px 0;position:relative}
+.person{width:100%;aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.08);transition:all .4s ease}
+.person.me{background:linear-gradient(135deg,#7C3AED,#A78BFA);box-shadow:0 2px 8px rgba(124,58,237,.4)}
+.person.affected-neg{background:#FEE2E2;box-shadow:0 2px 8px rgba(239,68,68,.3);animation:shake .3s ease}
+.person.affected-pos{background:#D1FAE5;box-shadow:0 2px 8px rgba(16,185,129,.3);animation:glow .5s ease}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
+@keyframes glow{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+.sim-counter{text-align:center;margin:12px 0;font-size:20px;font-weight:900}
+.sim-counter .count{color:var(--primary);font-size:32px}
+.sim-timer{text-align:center;font-size:15px;color:var(--text-light);margin:4px 0}
+
+/* ═══ 시나리오 허브 ═══ */
+.scenario-card{border:2px solid #E5E7EB;border-radius:16px;padding:16px;margin:10px 0;cursor:pointer;transition:all .2s;background:#fff}
+.scenario-card:hover{border-color:var(--primary-light);transform:translateY(-2px)}
+.scenario-card.completed{border-color:var(--success);background:rgba(16,185,129,.04)}
+.scenario-card.locked{opacity:.6;cursor:not-allowed}
+.scenario-header{display:flex;align-items:center;gap:12px}
+.scenario-emoji{font-size:36px}
+.scenario-info{flex:1}
+.scenario-title{font-size:17px;font-weight:900}
+.scenario-desc{font-size:13px;color:var(--text-light);font-weight:400}
+.scenario-badge-icon{font-size:28px;opacity:.3}.scenario-card.completed .scenario-badge-icon{opacity:1}
+
+/* ═══ 인사이트 배지 ═══ */
+.badge-collection{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.insight-badge{padding:10px 14px;border-radius:14px;font-size:13px;font-weight:700;border:2px dashed #E5E7EB;color:#ccc;text-align:center;min-width:100px}
+.insight-badge.earned{border:2px solid var(--primary);background:rgba(124,58,237,.06);color:var(--primary);animation:badgeEarn .5s ease}
+@keyframes badgeEarn{0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+
+/* ═══ 탐험 비교 모드 ═══ */
+.compare-card{border:2px solid #E5E7EB;border-radius:14px;padding:14px;margin:8px 0;cursor:pointer;transition:all .2s;background:#fff}
+.compare-card:hover{border-color:var(--primary-light)}
+.compare-card.active{border-color:var(--primary);background:rgba(124,58,237,.04)}
+.compare-result{border-left:4px solid var(--primary);padding:12px 16px;margin:8px 0;background:rgba(124,58,237,.03);border-radius:0 12px 12px 0;font-size:15px;line-height:1.6}
+
+/* ═══ 우리 반 결과 ═══ */
+.class-bar{display:flex;align-items:center;gap:8px;margin:6px 0}
+.class-bar-label{min-width:100px;font-size:14px}
+.class-bar-track{flex:1;height:24px;background:#F3F4F6;border-radius:12px;overflow:hidden;position:relative}
+.class-bar-fill{height:100%;border-radius:12px;transition:width .8s ease;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:12px;color:#fff;font-weight:900}
+.class-bar-count{min-width:40px;text-align:right;font-size:14px;font-weight:900}
+
+/* ═══ 다짐 카드 ═══ */
+.pledge-card{background:linear-gradient(135deg,#7C3AED 0%,#A78BFA 50%,#C4B5FD 100%);color:#fff;border-radius:20px;padding:28px;text-align:center;box-shadow:0 8px 30px rgba(124,58,237,.3)}
+.pledge-card h3{font-size:20px;margin-bottom:12px}
+.pledge-text{background:rgba(255,255,255,.2);border-radius:12px;padding:16px;font-size:17px;min-height:50px;margin:12px 0}
+
+/* ═══ 영향 통계 ═══ */
+.impact-stat{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(124,58,237,.04);border-radius:12px;margin:6px 0}
+.impact-stat .icon{font-size:24px}.impact-stat .text{flex:1;font-size:15px}.impact-stat .number{font-weight:900;color:var(--primary);font-size:16px}
+
+/* ═══ 탭/테이블/대시보드 ═══ */
+.tab-buttons{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{padding:8px 14px;border:1.5px solid #E5E7EB;border-radius:10px;background:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .2s}
+.tab-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.tab-content{display:none}.tab-content.active{display:block}
+.data-table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+.data-table th,.data-table td{border:1px solid #E5E7EB;padding:6px 8px;text-align:left}
+.data-table th{background:#F3F4F6;font-weight:700}
+.progress-bar{width:100%;height:20px;background:#E5E7EB;border-radius:10px;overflow:hidden;margin:8px 0}
+.progress-fill{height:100%;background:var(--gradient);border-radius:10px;transition:width .5s}
+
+/* ═══ 토스트/모달 ═══ */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(31,41,55,.95);color:#fff;padding:14px 28px;border-radius:14px;font-size:15px;font-weight:700;z-index:10000;opacity:0;transition:all .3s;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9000;justify-content:center;align-items:center;padding:20px}
+.modal-content{background:#fff;border-radius:20px;padding:28px;max-width:400px;width:100%;text-align:center}
+.modal-icon{font-size:40px;margin-bottom:12px}
+.modal-message{font-size:16px;line-height:1.6;margin-bottom:20px}
+.modal-buttons{display:flex;gap:8px}.modal-buttons .btn{flex:1}
+
+.step-indicator{font-size:13px;color:var(--text-light);text-align:center;margin-bottom:8px}
+.story-text{font-size:17px;line-height:1.8;color:var(--text);font-weight:700}
+.story-text .hl{color:var(--primary);font-weight:900}
+.story-emoji{font-size:48px;text-align:center;margin:16px 0}
+
+@media(max-width:768px){body{font-size:16px;padding:8px}.container{max-width:100%;padding:12px}.btn{min-height:48px;font-size:16px}input,textarea{min-height:44px;font-size:16px}.person{font-size:18px}}
+@media(min-width:769px){.container{max-width:600px}}
+@media print{body *{visibility:hidden}#dashboard-content,#dashboard-content *{visibility:visible}#dashboard-content{position:absolute;left:0;top:0;width:100%}.btn,.nav-buttons,.tab-buttons,#toast,.modal-overlay{display:none!important}.card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ═══ 시작 ═══ -->
+<div class="screen active" id="screen-start">
+<div class="card" style="text-align:center">
+<div style="font-size:56px;margin-bottom:8px">🌊</div>
+<h1 style="font-size:24px;color:var(--primary);margin-bottom:4px">나의 행동이 우리에게 미치는 영향</h1>
+<p style="font-size:15px;color:var(--text-light);font-weight:400">내 작은 행동 하나가 만드는 물결, 따라가 볼까요?</p>
+<div style="margin:12px 0"><span class="badge">⏱️ 약 15~25분</span> <span class="badge">🌊 상황 7가지</span></div>
+<p style="font-size:13px;color:var(--text-light);font-weight:400;margin-top:4px">기본 상황 3가지를 마치면 <strong>좋은 물결 라운드</strong>가 열려요!</p>
+<button class="btn btn-primary" onclick="showScreen('screen-login')" style="margin-top:16px">👩‍🏫 방 만들기 / 입장하기</button>
+<button class="btn btn-secondary" onclick="startSoloMode()">🌟 혼자 체험하기</button>
+</div>
+<div class="privacy-notice">🔐 <strong>안심하세요!</strong><br>방 코드는 숫자일 뿐, 여러분이 누구인지 알 수 없어요. 닉네임에 개인정보를 넣지 마세요.</div>
+</div>
+
+<!-- ═══ 로그인 ═══ -->
+<div class="screen" id="screen-login">
+<div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-start')">← 처음으로</button></div>
+<div class="card">
+<h2 style="text-align:center;margin-bottom:16px">🌊 입장하기</h2>
+<button class="btn btn-primary" onclick="showScreen('screen-create-room')">👩‍🏫 방 만들기 (교사용)</button>
+<button class="btn btn-secondary" onclick="showScreen('screen-teacher-login')">🔑 교사로 접속하기</button>
+<button class="btn btn-secondary" onclick="showScreen('screen-student-login')">🧒 학생으로 참여하기</button>
+</div>
+</div>
+
+<!-- ═══ 방 만들기 ═══ -->
+<div class="screen" id="screen-create-room">
+<div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+<div class="card">
+<h2 style="text-align:center;margin-bottom:16px">👩‍🏫 방 만들기</h2>
+<div style="margin-bottom:12px"><label style="font-size:15px">선생님 닉네임</label><input type="text" id="teacher-name" placeholder="예: 김선생님" maxlength="10"></div>
+<div style="margin-bottom:12px"><label style="font-size:15px">관리자 비밀번호 (숫자 4자리)</label><input type="password" id="room-password" placeholder="숫자 4자리" maxlength="4" inputmode="numeric"></div>
+<button class="btn btn-primary" onclick="createRoom()">방 만들기</button>
+</div>
+</div>
+
+<!-- ═══ 방 생성 완료 ═══ -->
+<div class="screen" id="screen-room-created">
+<div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+<div class="card" style="text-align:center">
+<h2 style="color:var(--success)">✅ 방이 만들어졌어요!</h2>
+<p style="font-size:15px;color:var(--text-light);margin:8px 0">학생들에게 코드를 알려주세요</p>
+<div id="room-code-display" style="font-size:48px;font-weight:900;color:var(--primary);letter-spacing:8px;margin:16px 0;padding:16px;background:rgba(124,58,237,.06);border-radius:16px"></div>
+<button class="btn btn-secondary" onclick="copyRoomCode()">📋 코드 복사하기</button>
+<button class="btn btn-primary" onclick="goToDashboard()" style="margin-top:8px">📊 대시보드 열기</button>
+</div>
+</div>
+
+<!-- ═══ 교사 로그인 ═══ -->
+<div class="screen" id="screen-teacher-login">
+<div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+<div class="card">
+<h2 style="text-align:center;margin-bottom:16px">🔑 교사로 접속</h2>
+<div style="margin-bottom:12px"><label style="font-size:15px">방 코드</label><input type="text" id="teacher-room-code" placeholder="숫자 6자리" maxlength="6" inputmode="numeric"></div>
+<div style="margin-bottom:12px"><label style="font-size:15px">비밀번호</label><input type="password" id="teacher-password" placeholder="숫자 4자리" maxlength="4" inputmode="numeric"></div>
+<button class="btn btn-primary" onclick="joinAsTeacher()">접속하기</button>
+</div>
+</div>
+
+<!-- ═══ 학생 로그인 ═══ -->
+<div class="screen" id="screen-student-login">
+<div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+<div class="card">
+<h2 style="text-align:center;margin-bottom:16px">🧒 학생으로 참여</h2>
+<div style="margin-bottom:12px"><label style="font-size:15px">방 코드</label><input type="text" id="student-room-code" placeholder="숫자 6자리" maxlength="6" inputmode="numeric"></div>
+<div style="margin-bottom:12px"><label style="font-size:15px">닉네임</label><input type="text" id="student-nickname" placeholder="예: 즐거운하마" maxlength="10"></div>
+<button class="btn btn-primary" onclick="joinAsStudent()">참여하기</button>
+</div>
+<div class="privacy-notice">🔐 닉네임에 실명이나 개인정보를 넣지 마세요!</div>
+</div>
+
+<!-- ═══ 인트로 스토리 ═══ -->
+<div class="screen" id="screen-intro">
+<div class="nav-buttons"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div class="card" style="text-align:center">
+<div style="font-size:56px;margin-bottom:12px">🌊</div>
+<h2 style="color:var(--primary);margin-bottom:12px">물결은 어디까지 갈까?</h2>
+<div class="story-text" style="font-size:16px;text-align:left">
+<p>연못에 돌멩이를 던지면 어떻게 될까?</p>
+<p style="margin-top:8px"><span class="hl">작은 돌멩이 하나</span>가 만든 물결이<br>점점 커지면서 연못 전체로 퍼져나가지.</p>
+<p style="margin-top:8px">우리의 행동도 똑같아.<br>나에게는 <span class="hl">작은 행동</span>이지만,<br>그 물결은 <span class="hl">우리 반 전체</span>로 퍼져나가.</p>
+<p style="margin-top:12px">오늘은 <strong>3가지 상황</strong>에서<br>내 행동이 만드는 물결을 따라가 볼 거야! 🌊</p>
+</div>
+</div>
+<button class="btn btn-primary" onclick="renderHub();showScreen('screen-hub')">시작하기 →</button>
+</div>
+
+<!-- ═══ 시나리오 허브 (메인) ═══ -->
+<div class="screen" id="screen-hub">
+<div class="nav-buttons"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button><button class="nav-btn" id="btn-class-results" onclick="showClassResults()" style="display:none">📊 우리 반 결과</button></div>
+<div class="card" style="text-align:center;padding:16px">
+<h2 style="font-size:19px">🌊 물결 탐험 허브</h2>
+<p style="font-size:14px;color:var(--text-light)" id="hub-progress">3개의 상황을 탐험해보자!</p>
+</div>
+<div id="scenario-list"></div>
+<div class="card">
+<h3 style="font-size:16px;margin-bottom:8px">🏆 발견한 인사이트</h3>
+<div class="badge-collection" id="badge-display"></div>
+</div>
+<div id="hub-pledge-area"></div>
+</div>
+
+<!-- ═══ 시나리오 진행 (동적) ═══ -->
+<div class="screen" id="screen-scenario"><div class="nav-buttons"><button class="nav-btn" onclick="renderHub();showScreen('screen-hub')">← 허브로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div><div id="scenario-content"></div></div>
+
+<!-- ═══ 28명 시뮬레이션 ═══ -->
+<div class="screen" id="screen-sim"><div class="nav-buttons"><button class="nav-btn" onclick="goBackFromSim()">← 뒤로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div><div id="sim-content"></div></div>
+
+<!-- ═══ 영향 결과 ═══ -->
+<div class="screen" id="screen-impact"><div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-sim')">← 뒤로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div><div id="impact-content"></div></div>
+
+<!-- ═══ 역지사지 ═══ -->
+<div class="screen" id="screen-empathy"><div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-impact')">← 뒤로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div><div id="empathy-content"></div></div>
+
+<!-- ═══ 배지 획득 ═══ -->
+<div class="screen" id="screen-badge-earn"><div class="nav-buttons"><button class="nav-btn" onclick="renderHub();showScreen('screen-hub')">← 허브로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div><div id="badge-earn-content"></div></div>
+
+<!-- ═══ 다른 선택 탐험 ═══ -->
+<div class="screen" id="screen-explore"><div class="nav-buttons"><button class="nav-btn" onclick="renderHub();showScreen('screen-hub')">← 허브로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div><div id="explore-content"></div></div>
+
+<!-- ═══ 우리 반 결과 ═══ -->
+<div class="screen" id="screen-class-results"><div class="nav-buttons"><button class="nav-btn" onclick="renderHub();showScreen('screen-hub')">← 허브로</button></div><div id="class-results-content"></div></div>
+
+<!-- ═══ 다짐 카드 ═══ -->
+<div class="screen" id="screen-pledge">
+<div class="nav-buttons"><button class="nav-btn" onclick="renderHub();showScreen('screen-hub')">← 허브로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div class="card">
+<h2 style="text-align:center;font-size:19px;margin-bottom:12px">💜 나의 긍정 물결 다짐 카드</h2>
+<p style="font-size:15px;color:var(--text-light);text-align:center;margin-bottom:12px">우리 반에 좋은 물결을 만들 내 행동을 적어보자!</p>
+<div style="margin-bottom:12px"><label style="font-size:15px">✨ 내가 만들고 싶은 긍정 물결은?</label>
+<div id="positive-choices">
+<button class="choice-btn" data-key="encourage" onclick="selectPositive(this,'encourage')">💪 힘들어하는 친구에게 "괜찮아!" 말해주기</button>
+<button class="choice-btn" data-key="help" onclick="selectPositive(this,'help')">🤝 어려운 일이 있는 친구 도와주기</button>
+<button class="choice-btn" data-key="smile" onclick="selectPositive(this,'smile')">😊 먼저 인사하고 미소 짓기</button>
+<button class="choice-btn" data-key="listen" onclick="selectPositive(this,'listen')">👂 친구 이야기 끝까지 들어주기</button>
+<button class="choice-btn" data-key="clap" onclick="selectPositive(this,'clap')">👏 잘한 친구에게 가장 먼저 박수 쳐주기</button>
+<button class="choice-btn" data-key="sit" onclick="selectPositive(this,'sit')">🌱 혼자 있는 친구 옆에 앉기</button>
+<button class="choice-btn" data-key="stopit" onclick="selectPositive(this,'stopit')">✋ 험담이 시작되면 "그만하자" 말하기</button>
+<button class="choice-btn" data-key="thanks" onclick="selectPositive(this,'thanks')">💛 도와준 친구에게 "고마워" 말하기</button>
+<button class="choice-btn" data-key="custom" onclick="selectPositive(this,'custom')">✏️ 직접 적기</button>
+</div></div>
+<div id="custom-positive-area" style="display:none;margin-bottom:12px"><label style="font-size:15px">✏️ 직접 적어봐!</label><textarea id="custom-positive" placeholder="예: 쉬는 시간에 혼자 있는 친구에게 말 걸어주기" rows="2" oninput="checkPledgeReady()"></textarea></div>
+<div style="margin-bottom:12px"><label style="font-size:15px">🌊 이 행동이 퍼지면 어떤 변화가 생길까?</label><textarea id="pledge-effect" placeholder="예: 우리 반이 더 따뜻해질 것 같아요" rows="2" oninput="checkPledgeReady()"></textarea></div>
+<div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:10px;font-size:13px;font-weight:400;color:var(--text-light)">💡 <strong>이렇게 적어도 좋아요</strong><br>· "한 명이 웃으면 옆 사람도 웃게 될 것 같아요"<br>· "우리 반에서 혼자 있는 시간이 줄어들 것 같아요"<br>· "나도 힘들 때 누군가 도와줄 것 같아요"</div>
+</div>
+<button class="btn btn-success" id="btn-submit-pledge" onclick="submitPledge()" disabled>다짐 카드 완성하기 💜</button>
+</div>
+
+<!-- ═══ 완료 ═══ -->
+<div class="screen" id="screen-complete">
+<div class="nav-buttons"><button class="nav-btn" onclick="renderHub();showScreen('screen-hub')">← 더 탐험하기</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div class="card" style="text-align:center"><div style="font-size:56px;margin-bottom:8px">🎉</div><h2 style="color:var(--primary)">멋지게 해냈어요!</h2><div id="complete-summary" style="margin:16px 0"></div></div>
+<div id="pledge-card-display" style="margin:12px 0"></div>
+<div class="card"><h3 style="font-size:16px;margin-bottom:8px">🏆 획득한 인사이트</h3><div id="complete-badges"></div></div>
+<div id="complete-extra-area"></div>
+<button class="btn btn-secondary" onclick="renderHub();showScreen('screen-hub')">🔄 더 탐험하기</button>
+<button class="btn btn-secondary" id="btn-solo-save" style="display:none" onclick="downloadMyResult()">📄 내 결과 저장하기</button>
+</div>
+
+<!-- ═══ 교사 대시보드 ═══ -->
+<div class="screen" id="screen-dashboard">
+<div class="nav-buttons"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button><button class="nav-btn" onclick="refreshDashboard()">🔄 새로고침</button></div>
+<div class="card" style="text-align:center;padding:16px"><h2 style="font-size:18px">📊 교사 대시보드</h2><p style="font-size:14px;color:var(--text-light)">방 코드: <strong id="dash-room-code"></strong></p></div>
+<div class="tab-buttons">
+<button class="tab-btn active" onclick="switchTab('tab-overview',this)">📊 현황</button>
+<button class="tab-btn" onclick="switchTab('tab-detail',this)">📋 상세기록</button>
+<button class="tab-btn" onclick="switchTab('tab-export',this)">📥 내보내기</button>
+<button class="tab-btn" onclick="switchTab('tab-tts',this)">🔊 TTS</button>
+</div>
+<div id="dashboard-content">
+<div class="tab-content active" id="tab-overview"><div class="card"><p style="text-align:center;color:var(--text-light)">아직 참여한 학생이 없습니다.</p></div></div>
+<div class="tab-content" id="tab-detail"><div class="card"><p style="text-align:center;color:var(--text-light)">아직 데이터가 없습니다.</p></div></div>
+<div class="tab-content" id="tab-export"><div class="card" style="text-align:center"><h3 style="font-size:17px;margin-bottom:12px">📥 내보내기</h3><button class="btn btn-secondary" onclick="downloadExcel()" style="margin-bottom:8px">📥 엑셀 다운로드</button><button class="btn btn-secondary" onclick="downloadPDF()">📄 PDF 다운로드</button></div></div>
+<div class="tab-content" id="tab-tts"><div class="card"><h3 style="font-size:17px;margin-bottom:12px">🔊 결과 읽어주기</h3>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><button class="btn btn-secondary btn-sm" style="width:auto;margin:0" onclick="speakSection('tts-overview')">▶️ 참여 현황</button><button class="btn btn-secondary btn-sm" style="width:auto;margin:0" onclick="previewScript('tts-overview')">📝 스크립트</button></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><button class="btn btn-secondary btn-sm" style="width:auto;margin:0" onclick="speakSection('tts-choices')">▶️ 선택 분포</button><button class="btn btn-secondary btn-sm" style="width:auto;margin:0" onclick="previewScript('tts-choices')">📝 스크립트</button></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><button class="btn btn-secondary btn-sm" style="width:auto;margin:0" onclick="speakSection('tts-pledge')">▶️ 긍정 다짐</button><button class="btn btn-secondary btn-sm" style="width:auto;margin:0" onclick="previewScript('tts-pledge')">📝 스크립트</button></div>
+<button class="btn btn-secondary btn-sm" onclick="stopSpeaking()">⏹️ 중지</button>
+<div id="tts-overview" style="display:none"></div><div id="tts-choices" style="display:none"></div><div id="tts-pledge" style="display:none"></div><div id="tts-text" style="display:none"></div></div></div>
+</div>
+<div class="card" style="margin-top:12px;text-align:center"><p style="font-size:13px;color:var(--warning)">⚠️ 수업이 끝나면 데이터 초기화를 눌러주세요. 30일 후 자동 삭제됩니다.</p><button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:var(--error);border:1.5px solid rgba(239,68,68,.3);margin-top:8px" onclick="resetData()">🗑️ 데이터 초기화</button></div>
+</div>
+
+</div>
+<div id="toast" class="toast"></div>
+<div id="confirmModal" class="modal-overlay"><div class="modal-content"><div class="modal-icon">⚠️</div><div class="modal-message" id="confirmMessage"></div><div class="modal-buttons"><button class="btn btn-secondary btn-sm" onclick="closeConfirmModal()">취소</button><button class="btn btn-primary btn-sm" id="confirmOkBtn" style="background:var(--error)">확인</button></div></div></div>
+<div id="scriptModal" class="modal-overlay"><div class="modal-content"><div class="modal-icon">📝</div><div class="modal-message" id="scriptText" style="text-align:left;max-height:50vh;overflow:auto;font-size:14px;font-weight:400;white-space:pre-line"></div><div class="modal-buttons"><button class="btn btn-secondary btn-sm" onclick="closeScriptModal()">닫기</button></div></div></div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import{getAuth,signInAnonymously,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import{getFirestore,doc,setDoc,getDoc,deleteDoc,onSnapshot,collection,getDocs}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s",authDomain:"emo-dex.firebaseapp.com",projectId:"emo-dex",storageBucket:"emo-dex.firebasestorage.app",messagingSenderId:"994736049700",appId:"1:994736049700:web:8233fa7b68cd6e0cccd2b1",measurementId:"G-6YLB5C6VNR"};
+const APP_ID='sel-lesson-24';
+let app,auth,db,currentUser=null,useFirebase=false;
+try{app=initializeApp(firebaseConfig);auth=getAuth(app);db=getFirestore(app)}catch(e){}
+const authReady=new Promise(r=>{if(!auth){r(null);return}const t=setTimeout(()=>r(null),5000);onAuthStateChanged(auth,u=>{if(u){currentUser=u;useFirebase=true;clearTimeout(t);r(u)}});signInAnonymously(auth).catch(()=>{clearTimeout(t);r(null)})});
+
+function getRoomRef(c){return doc(db,'artifacts',APP_ID,'public','data','rooms',c)}
+function getStudentRef(c,n){return doc(db,'artifacts',APP_ID,'public','data','rooms',c,'students',n)}
+function getStudentsCol(c){return collection(db,'artifacts',APP_ID,'public','data','rooms',c,'students')}
+const localDB={};
+const DB={
+    async saveRoom(c,d){if(useFirebase){try{await setDoc(getRoomRef(c),d);return}catch(e){}}localDB['r_'+c]={...(localDB['r_'+c]||{}),...d}},
+    async getRoom(c){if(useFirebase){try{const s=await getDoc(getRoomRef(c));return s.exists()?s.data():null}catch(e){}}return localDB['r_'+c]||null},
+    async saveStudent(c,n,d){if(useFirebase){try{await setDoc(getStudentRef(c,n),d,{merge:true});return}catch(e){}}if(!localDB['s_'+c])localDB['s_'+c]={};localDB['s_'+c][n]={...(localDB['s_'+c]?.[n]||{}),...d}},
+    async getStudent(c,n){if(useFirebase){try{const s=await getDoc(getStudentRef(c,n));return s.exists()?s.data():null}catch(e){}}return localDB['s_'+c]?.[n]||null},
+    async getAllStudents(c){if(useFirebase){try{const s=await getDocs(getStudentsCol(c));const r={};s.forEach(d=>r[d.id]=d.data());return r}catch(e){}}return localDB['s_'+c]||{}},
+    async deleteRoom(c){if(useFirebase){try{const s=await getDocs(getStudentsCol(c));const d=[];s.forEach(x=>d.push(deleteDoc(x.ref)));await Promise.all(d);await deleteDoc(getRoomRef(c))}catch(e){}}delete localDB['r_'+c];delete localDB['s_'+c]},
+    async clearStudents(c){if(useFirebase){try{const s=await getDocs(getStudentsCol(c));const d=[];s.forEach(x=>d.push(deleteDoc(x.ref)));await Promise.all(d);return}catch(e){}}localDB['s_'+c]={}},
+    onStudentsChange(c,cb){if(useFirebase){try{return onSnapshot(getStudentsCol(c),s=>{const r={};s.forEach(d=>r[d.id]=d.data());cb(r)})}catch(e){}}cb(localDB['s_'+c]||{});return null}
+};
+
+// ═══════════════════════════════════════
+// 상태
+// ═══════════════════════════════════════
+let currentRoomCode='',currentNickname='',isTeacher=false,isSoloMode=false;
+let soloData={},dashboardData={},unsubscribe=null,confirmCallback=null;
+let completedScenarios=new Set(),earnedBadges=new Set(),scenarioChoices={};
+let currentScenarioId='',currentChoiceKey='',selectedPositiveKey='',pledgeDone=false;
+let scenarioDrafts={},pledgeCustomText='',pledgeEffectText='',draftTimer=null;
+
+// ═══════════════════════════════════════
+// 3개 시나리오 데이터
+// ═══════════════════════════════════════
+const SCENARIOS={
+    photo:{
+        id:'photo',emoji:'📸',title:'단체사진 찍는 날',
+        desc:'28명이 줄 선 운동장, 기다림은 끝이 없고...',
+        story:'오늘은 학급 단체사진 찍는 날!\n운동장에 우리 반 28명이 줄을 섰어.\n앞줄, 뒷줄 맞추고 "하나, 둘, 셋!" 하면 끝인데...\n기다리는 게 너무 지루해. 😴\n앞에 선 친구 등이 보여.',
+        question:'이 순간, 나는 어떻게 했을까?',
+        badge:{id:'time',emoji:'⏱️',title:'1초가 5분이 된다',desc:'작은 행동이 큰 시간을 만든다는 걸 알게 됐어!'},
+        choices:{
+            push:{label:'앞 친구를 살짝 밀었다',emoji:'😏',negative:true,
+                sim:{sequence:[13,14,12,6,7,19,20,5,8,18,21,4,9,11,15,17,22,3,10,16,23,0,1,2,24,25,26,27],speed:120,myIdx:13},
+                r1:'밀린 민지가 휘청거리며 준서와 부딪혔어.',r2:'뒷줄까지 흔들리고 "왜 밀어!" 소리가 퍼졌어.\n사진사 아저씨가 "다시요!" 하셨어.',
+                stats:[{i:'😖',t:'기분 나빠진 친구',n:'약 10명 이상'},{i:'⏰',t:'늘어난 시간',n:'약 5분'},{i:'😤',t:'짜증난 사람',n:'선생님, 사진사, 다음 반'},{i:'🏃',t:'다시 움직인 사람',n:'28명 전원'}],
+                msg:'나는 1초 장난쳤는데, 28명이 5분을 다시 써야 했어.',msgColor:'var(--error)',
+                empV:'민지',empQ:'갑자기 뒤에서 밀려서 나는...',empC:['무서웠다 😨','속상했다 😢','창피했다 😳','화가 났다 😠']},
+            talk:{label:'"빨리 안 찍나?" 짜증냈다',emoji:'😤',negative:true,
+                sim:{sequence:[12,13,14,11,6,7,15,5,8,20,19,4,18,21,3,9,10,16,17,22,23,0,1,2,24,25,26,27],speed:150,myIdx:14},
+                r1:'앞 친구가 "뭐야, 왜 짜증이야?" 돌아봤어.\n갑자기 분위기가 싸해졌어.',r2:'주변도 한마디씩 시작하고, "조용!" 선생님이 화냈어.\n밝았던 분위기가 무거워졌어.',
+                stats:[{i:'😒',t:'기분 나빠진 친구',n:'약 5명'},{i:'⏰',t:'늘어난 시간',n:'약 3분'},{i:'😤',t:'짜증난 사람',n:'선생님, 주변 친구들'},{i:'😶',t:'분위기 변화',n:'밝음 → 무거움'}],
+                msg:'내 짜증 한마디가 반 전체 분위기를 무겁게 만들었어.',msgColor:'var(--error)',
+                empV:'앞에 선 친구',empQ:'뒤에서 갑자기 짜증 섞인 말을 들으니...',empC:['억울했다 😢','기분 나빴다 😞','나도 짜증났다 😤','무시당한 느낌이었다 😶']},
+            chat:{label:'옆 친구랑 장난치며 떠들었다',emoji:'🗣️',negative:true,
+                sim:{sequence:[14,15,13,12,6,7,20,21,5,8,19,11,4,18,22,3,9,10,16,17,23,0,1,2,24,25,26,27],speed:140,myIdx:14},
+                r1:'옆 친구도 같이 웃으며 장난쳤어.\n뒷줄이 흔들리기 시작했어.',r2:'줄이 삐뚤어져서 "줄 맞춰!" 소리가 나고\n사진사 아저씨가 기다렸어.',
+                stats:[{i:'😒',t:'기분 나빠진 친구',n:'약 6명'},{i:'⏰',t:'늘어난 시간',n:'약 3분'},{i:'😤',t:'짜증난 사람',n:'앞줄, 선생님'},{i:'🔄',t:'다시 해야 한 일',n:'줄 맞추기'}],
+                msg:'내 장난에 줄이 무너지고, 모두가 다시 서야 했어.',msgColor:'var(--error)',
+                empV:'앞줄 친구',empQ:'뒤에서 계속 시끄러운 소리가 들리니...',empC:['집중이 안 됐다 😣','빨리 끝내고 싶었다 😩','답답했다 😤','짜증이 밀려왔다 😠']},
+            wait:{label:'참고 기다렸다',emoji:'😊',negative:false,
+                sim:{sequence:[13,15,12,6,7,11,5,8,20,19,4,14,18,21,3,9,10,16,17,22,23,0,1,2,24,25,26,27],speed:100,myIdx:14},
+                r1:'옆 친구도 같이 차분하게 기다렸어.\n"금방이다!" 속삭이니 주변이 조용해졌어.',r2:'차분한 분위기가 퍼져서 모두가 기다렸어.\n사진사 아저씨가 "좋아요, 찍습니다!" 📸',
+                stats:[{i:'😊',t:'기분 좋은 친구',n:'28명 전원'},{i:'⏰',t:'아낀 시간',n:'약 5분'},{i:'😃',t:'분위기',n:'밝고 따뜻'},{i:'📸',t:'사진 결과',n:'모두 웃는 사진!'}],
+                msg:'내 작은 참기가 28명 모두에게 좋은 영향을 줬어!',msgColor:'var(--success)',
+                empV:'옆 친구',empQ:'옆에서 조용히 기다려주니까 나도...',empC:['나도 참게 됐다 😌','안심이 됐다 🤗','고마웠다 💛','우리 반이 좋다 느꼈다 ✨']}
+        }
+    },
+    clean:{
+        id:'clean',emoji:'🧹',title:'청소 시간에 도망간 친구',
+        desc:'모두 청소하는데, 한 친구가 슬쩍 빠져나갔어...',
+        story:'5교시 끝, 청소 시간이야.\n모두 자기 구역을 정리하고 있는데...\n짝꿍 "수진"이가 슬쩍 뒷문으로 나가려 해.\n"나 화장실 다녀올게~" 하면서.\n근데 어제도 그러더라...',
+        question:'이 상황에서 나는 어떻게 할까?',
+        badge:{id:'weight',emoji:'⚖️',title:'보이지 않는 무게',desc:'한 사람이 빠지면 다른 사람의 짐이 무거워진다는 걸 알게 됐어!'},
+        choices:{
+            follow:{label:'나도 몰래 빠진다',emoji:'🏃',negative:true,
+                sim:{sequence:[14,13,15,12,6,7,20,11,5,8,21,19,4,18,22,3,9,10,16,17,23,0,1,2,24,25,26,27],speed:150,myIdx:14},
+                r1:'수진이 나간 걸 보고 나도 슬쩍 나갔어.\n남은 친구들이 눈치챘어. "또 빠졌어?"',r2:'"얘들은 맨날 빠져!" 불만이 터졌어.\n결국 선생님이 알게 되고, 반 전체 주의를 받았어.',
+                stats:[{i:'😤',t:'억울한 친구',n:'청소한 24명'},{i:'⏰',t:'늘어난 청소시간',n:'약 10분'},{i:'😞',t:'받은 주의',n:'반 전체'},{i:'💔',t:'깨진 신뢰',n:'짝꿍, 조원들'}],
+                msg:'나 하나 빠져도 괜찮겠지? 그런데 24명이 내 몫까지 해야 했어.',msgColor:'var(--error)',
+                empV:'남아서 청소한 친구',empQ:'같이 해야 할 사람이 빠져나가니...',empC:['억울했다 😤','내가 바보 같았다 😞','화가 났다 😠','다음엔 나도 안 하고 싶었다 😒']},
+            shout:{label:'"야, 어디 가!" 소리쳤다',emoji:'📢',negative:true,
+                sim:{sequence:[14,13,15,6,7,12,11,20,5,8,21,19,4,18],speed:180,myIdx:14},
+                r1:'수진이가 멈칫했지만 얼굴이 빨개졌어.\n"왜 네가 그래!" 하고 쏘아붙였어.',r2:'둘 사이가 어색해지고, 주변도 불편해졌어.\n수진이는 억지로 돌아왔지만 아무것도 안 했어.',
+                stats:[{i:'😢',t:'상처받은 사람',n:'수진, 나'},{i:'😬',t:'불편해진 친구들',n:'약 6명'},{i:'💔',t:'관계 변화',n:'수진이와 어색'},{i:'😶',t:'분위기',n:'무거움'}],
+                msg:'문제를 지적했지만, 방식이 모두를 불편하게 만들었어.',msgColor:'var(--warning)',
+                empV:'수진이',empQ:'모두 앞에서 큰 소리로 지적당하니...',empC:['창피했다 😳','억울했다 😢','화가 났다 😠','다시는 말 안 하고 싶었다 😶']},
+            cover:{label:'혼자 수진이 몫까지 했다',emoji:'💪',negative:false,
+                sim:{sequence:[13,15,12,6,7,11,5,8,20,19,4,18,21,3,9,10,16,17,22,23,0,1,2,24,25,26,27],speed:100,myIdx:14},
+                r1:'말없이 수진이 구역까지 청소했어.\n옆에서 보던 친구가 "같이 하자!" 도와줬어.',r2:'점점 더 많은 친구들이 도우며\n청소가 빨리 끝났어. 선생님이 "수고했어!" 하셨어.',
+                stats:[{i:'😊',t:'기분 좋은 친구',n:'함께 도운 5명'},{i:'⏰',t:'청소 시간',n:'오히려 빨리 끝남'},{i:'🤝',t:'새로 생긴 것',n:'도움의 연쇄'},{i:'😌',t:'분위기',n:'따뜻함'}],
+                msg:'내 행동이 친구들의 도움을 불러왔어. 좋은 물결이 퍼졌지!',msgColor:'var(--success)',
+                empV:'도와준 옆 친구',empQ:'누군가 묵묵히 더 열심히 하는 걸 보니...',empC:['나도 도와야겠다 느꼈다 💪','고마웠다 🤗','멋있다 생각했다 ✨','우리 반이 좋다 느꼈다 💛']},
+            tell:{label:'선생님께 조용히 말씀드렸다',emoji:'🤫',negative:false,
+                sim:{sequence:[13,15,12,6,7,11,5,8,20,19,4,18,21],speed:160,myIdx:14},
+                r1:'선생님이 조용히 수진이를 불렀어.\n"힘든 일 있어?" 물어보셨어.',r2:'수진이가 사실 집안일 때문에 피곤했다는 걸 알게 됐어.\n선생님이 역할을 조정해주셨어.',
+                stats:[{i:'😌',t:'이해받은 사람',n:'수진이'},{i:'🤝',t:'해결 방법',n:'역할 조정'},{i:'😊',t:'분위기',n:'공평해짐'},{i:'💡',t:'배운 것',n:'사정을 알면 달라진다'}],
+                msg:'조용히 도움을 요청한 것이 모두에게 좋은 결과를 만들었어.',msgColor:'var(--success)',
+                empV:'수진이',empQ:'선생님이 혼내지 않고 "힘든 일 있어?" 물어보시니...',empC:['눈물이 날 뻔했다 😢','고마웠다 🤗','말할 수 있어서 다행이었다 😌','미안했다 💧']}
+        }
+    },
+    rumor:{
+        id:'rumor',emoji:'💬',title:'쉬는 시간, 퍼지는 험담',
+        desc:'친구들이 다른 친구 뒷담화를 하고 있어...',
+        story:'쉬는 시간, 친구 3명이 모여서 이야기하고 있어.\n"야, 민호 진짜 이상하지 않아?"\n"맞아, 어제도 혼자 밥 먹더라ㅋㅋ"\n\n그때 나를 보더니 물어봤어.\n"너도 그렇게 생각하지?"',
+        question:'이 순간, 나는 어떻게 할까?',
+        badge:{id:'words',emoji:'💬',title:'말의 물결은 멈추지 않는다',desc:'한번 퍼진 말은 주워 담을 수 없다는 걸 알게 됐어!'},
+        choices:{
+            join:{label:'같이 험담에 참여했다',emoji:'😏',negative:true,
+                sim:{sequence:[14,13,15,12,6,7,20,21,11,5,8,19,4,18,22,3,9,10,16,17,23,0,1,2,24,25,26,27],speed:100,myIdx:14},
+                r1:'"맞아 좀 이상해ㅋㅋ" 웃으며 동조했어.\n이야기가 점점 커졌어.',r2:'그 말이 다른 친구한테 퍼졌고,\n결국 민호 귀에 들어갔어.\n민호는 일주일 동안 학교에 오기 싫었어.',
+                stats:[{i:'😢',t:'상처받은 사람',n:'민호'},{i:'💬',t:'퍼진 사람 수',n:'반 전체'},{i:'😰',t:'민호의 변화',n:'등교 거부 1주'},{i:'💔',t:'깨진 것',n:'민호의 자존감'}],
+                msg:'내가 웃으며 한 말 한마디가, 한 친구의 일주일을 무너뜨렸어.',msgColor:'var(--error)',
+                empV:'민호',empQ:'내 뒷담화를 반 전체가 알고 있다는 걸 알게 됐을 때...',empC:['세상이 무너지는 것 같았다 😭','아무도 믿을 수 없었다 😰','학교 가기 싫었다 😞','내가 뭘 잘못했나 자책했다 😢']},
+            listen_only:{label:'그냥 웃으면서 듣기만 했다',emoji:'😅',negative:true,
+                sim:{sequence:[14,13,15,12,6,7,20,11,5,8,21,19,4,18,22],speed:160,myIdx:14},
+                r1:'아무 말 안 했지만, 같이 있었어.\n친구들은 "쟤도 동의한 거지?" 생각했어.',r2:'민호가 나중에 알게 됐을 때,\n"너도 거기 있었잖아..." 하고 말했어.\n웃기만 한 것도 참여한 거였어.',
+                stats:[{i:'😢',t:'상처받은 사람',n:'민호'},{i:'😬',t:'어색해진 관계',n:'나와 민호'},{i:'🤐',t:'내 역할',n:'침묵으로 동조'},{i:'💭',t:'깨달은 것',n:'가만히 있는 것도 선택'}],
+                msg:'웃기만 했을 뿐인데, 민호에게는 내가 "같은 편"이었어.',msgColor:'var(--warning)',
+                empV:'민호',empQ:'험담 자리에 내 친구도 있었다는 걸 알았을 때...',empC:['배신당한 느낌이었다 💔','슬펐다 😢','혼자라는 느낌이었다 😞','화가 났지만 말도 못했다 😶']},
+            stop:{label:'"그만하자" 하고 말했다',emoji:'✋',negative:false,
+                sim:{sequence:[13,15,12,6,7,11,5,8,20,19],speed:180,myIdx:14},
+                r1:'"야, 그만하자. 민호가 들으면 어떡해."\n잠깐 침묵이 흘렀어.',r2:'친구들이 "...맞다, 좀 심했나" 하며 멈췄어.\n분위기가 조용해지고, 다른 이야기로 넘어갔어.',
+                stats:[{i:'✋',t:'멈춘 험담',n:'즉시'},{i:'😊',t:'보호받은 사람',n:'민호'},{i:'💪',t:'용기',n:'반대 의견 말하기'},{i:'🤝',t:'변화',n:'친구들이 반성함'}],
+                msg:'한마디 용기가 한 친구를 지켰어. 작은 목소리도 힘이 있어.',msgColor:'var(--success)',
+                empV:'험담하던 친구',empQ:'"그만하자"는 말을 듣고...',empC:['찔렸다 😬','맞는 말이라 멈췄다 😌','좀 부끄러웠다 😅','고마웠다 (나중에) 🤗']},
+            befriend:{label:'민호에게 가서 같이 놀자고 했다',emoji:'🤗',negative:false,
+                sim:{sequence:[13,12,15,6,7,11,5,8,20,19,4,18,21,3,9,10,16,17,22,23,0,1,2,24,25,26,27],speed:90,myIdx:14},
+                r1:'험담 자리를 떠나 민호에게 갔어.\n"야 민호야, 같이 축구할래?"\n민호가 환하게 웃었어.',r2:'다른 친구들도 하나둘 합류했어.\n험담하던 친구들은 멀뚱멀뚱 보다가\n"...나도 낄래" 하고 왔어.',
+                stats:[{i:'😊',t:'웃게 된 사람',n:'민호+합류한 친구들'},{i:'🏃',t:'함께 논 사람',n:'8명 이상'},{i:'💪',t:'깨진 것',n:'외로움의 벽'},{i:'🌊',t:'퍼진 것',n:'따뜻한 물결'}],
+                msg:'행동으로 보여준 따뜻함이, 말보다 더 큰 물결을 만들었어.',msgColor:'var(--success)',
+                empV:'민호',empQ:'"같이 놀래?" 라는 말을 듣는 순간...',empC:['너무 기뻤다 😊','눈물이 날 뻔했다 🥹','세상에 나를 아는 사람이 있다 느꼈다 💛','학교 오길 잘했다 생각했다 ✨']}
+        }
+    }
+};
+const SCENARIO_ORDER=['photo','clean','rumor'];
+const BASE_ORDER=SCENARIO_ORDER;
+const PEOPLE_COUNT=28;
+// ═══ 확장 라운드: 좋은 물결도 똑같이 퍼진다 ═══
+const EXTRA_SCENARIOS={
+    newbie:{
+        id:'newbie',emoji:'🌱',title:'전학 온 친구의 첫날',
+        desc:'하율이가 쉬는 시간에 혼자 앉아 있어...',
+        story:'오늘 우리 반에 전학생이 왔어.\n이름은 "하율". 선생님이 소개하는 동안\n하율이는 계속 바닥만 봤어.\n\n쉬는 시간이 됐어.\n다들 원래 친구들끼리 모여 노는데\n하율이는 자기 자리에 혼자 앉아 있어.',
+        question:'이 순간, 나는 어떻게 할까?',
+        badge:{id:'first',emoji:'🌱',title:'첫 물결은 내가',desc:'누군가 먼저 움직이면 다음 사람이 따라온다는 걸 알게 됐어!'},
+        choices:{
+            ignore:{label:'나도 원래 놀던 친구들과 놀았다',emoji:'😐',negative:true,
+                sim:{sequence:[13,15,21,7],speed:220,myIdx:14},
+                r1:'하율이는 계속 혼자 앉아 있었어.\n쉬는 시간이 그냥 지나갔어.',r2:'다음 쉬는 시간에도, 그 다음에도\n하율이 자리 주변은 조용했어.\n집에 가서 "우리 반 어때?"라는 물음에\n하율이는 대답을 못 했어.',
+                stats:[{i:'🪑',t:'혼자 보낸 쉬는 시간',n:'하루 4번'},{i:'🤐',t:'하율이가 한 말',n:'거의 없음'},{i:'⏳',t:'친해지는 데 걸릴 시간',n:'더 길어짐'},{i:'😐',t:'우리 반 분위기',n:'어제와 똑같음'}],
+                msg:'아무 일도 없던 것 같지만, 하율이에게는 아주 긴 하루였어.',msgColor:'var(--warning)',
+                empV:'하율',empQ:'아무도 말을 걸지 않은 첫날, 나는...',empC:['어색했다 😶','괜히 눈치가 보였다 👀','집에 가고 싶었다 🏠','내일이 걱정됐다 😟']},
+            watch:{label:'궁금했지만 말은 못 걸었다',emoji:'👀',negative:true,
+                sim:{sequence:[13,15,7,21,8],speed:200,myIdx:14},
+                r1:'하율이와 눈이 마주쳤어.\n나는 어색하게 웃고 고개를 돌렸어.',r2:'하율이도 살짝 웃었어.\n하지만 거기서 멈췄어.\n말을 걸고 싶었던 마음은 나만 알고 있었지.',
+                stats:[{i:'👀',t:'주고받은 것',n:'눈인사 1번'},{i:'💬',t:'나눈 대화',n:'0마디'},{i:'💭',t:'서로의 속마음',n:'"말 걸까?" 둘 다'},{i:'🌱',t:'남은 가능성',n:'아직 충분함'}],
+                msg:'마음은 있었는데 아직 물결이 되지 못했어. 내일은 한 걸음 더 갈 수 있어.',msgColor:'var(--warning)',
+                empV:'하율',empQ:'누군가 웃어줬지만 말은 없었을 때, 나는...',empC:['조금 안심됐다 🙂','그래도 외로웠다 😔','먼저 말 걸어볼까 고민했다 🤔','내일은 다를까 궁금했다 🌱']},
+            hello:{label:'"안녕! 나는 ○○야" 먼저 인사했다',emoji:'👋',negative:false,
+                sim:{sequence:[13,15,7,21,8,6,20,12,22,16,5,11,19,4,18],speed:130,myIdx:14},
+                r1:'"안녕! 나는 ○○야."\n하율이 눈이 커졌어.\n"어... 안녕." 작지만 대답이 돌아왔어.',r2:'옆에 있던 친구도 "나는 △△야!" 하고 따라왔어.\n어느새 하율이 자리 주변에 세 명이 모였어.',
+                stats:[{i:'💬',t:'시작된 대화',n:'3명'},{i:'😊',t:'하율이의 표정',n:'굳음 → 미소'},{i:'🔁',t:'따라온 친구',n:'2명'},{i:'⏱️',t:'걸린 시간',n:'단 5초'}],
+                msg:'5초짜리 인사 하나가 세 사람의 하루를 바꿨어.',msgColor:'var(--success)',
+                empV:'하율',empQ:'누군가 먼저 이름을 알려줬을 때, 나는...',empC:['긴장이 풀렸다 😌','고마웠다 💛','나도 이름을 말하고 싶어졌다 🗣️','학교 올 만하다 생각했다 ✨']},
+            invite:{label:'"우리랑 같이 놀래?" 손을 내밀었다',emoji:'🤝',negative:false,
+                sim:{sequence:[13,15,12,6,7,11,5,8,20,19,4,18,21,3,9,10,16,17,22,23,0,1,2,24,25,26,27],speed:95,myIdx:14},
+                r1:'"우리랑 같이 놀래?" 손을 내밀었어.\n하율이가 잠깐 망설이더니 따라왔어.',r2:'점심시간에는 하율이가 먼저 다가와 말을 걸었어.\n일주일 뒤, 하율이는 또 다른 전학생에게\n똑같이 손을 내밀고 있었어.',
+                stats:[{i:'🤝',t:'함께 논 친구',n:'8명'},{i:'🔁',t:'이어진 물결',n:'하율 → 다음 친구'},{i:'😊',t:'교실 분위기',n:'더 넓어짐'},{i:'🌊',t:'물결이 간 거리',n:'우리 반 밖까지'}],
+                msg:'내가 내민 손이, 다른 사람의 손이 되어 다시 퍼졌어.',msgColor:'var(--success)',
+                empV:'하율',empQ:'"같이 놀래?"라는 말을 들었을 때, 나는...',empC:['너무 반가웠다 😊','이 반이 좋아졌다 💛','나도 누군가에게 해주고 싶어졌다 🤝','긴장이 사르르 풀렸다 😌']}
+        }
+    },
+    spill:{
+        id:'spill',emoji:'🥣',title:'급식실에서 쏟아진 국',
+        desc:'지호가 국그릇을 쏟았고, 급식실이 술렁였어...',
+        story:'급식실에서 줄을 서 있는데\n앞에서 걷던 지호가 발이 걸렸어.\n\n쨍그랑! 국그릇이 쏟아졌어.\n국물이 바닥에 쫙 퍼지고 지호 옷에도 튀었어.\n\n순간 조용해졌다가 "우와~" 소리가 여기저기서 났어.\n지호 얼굴이 새빨개졌어.',
+        question:'이 상황에서 나는 어떻게 할까?',
+        badge:{id:'small',emoji:'🧽',title:'실수는 함께 닦으면 작아진다',desc:'누구나 실수하고, 함께 치우면 작아진다는 걸 알게 됐어!'},
+        choices:{
+            laugh:{label:'나도 같이 웃었다',emoji:'😆',negative:true,
+                sim:{sequence:[13,15,12,6,7,20,21,11,5,8,19,4,18,22],speed:130,myIdx:14},
+                r1:'"우와~" 나도 같이 웃었어.\n지호가 고개를 푹 숙였어.',r2:'지호는 그날 급식을 거의 못 먹었어.\n다음 날부터 급식실에서 맨 뒤에 섰어.',
+                stats:[{i:'😢',t:'창피했던 사람',n:'지호'},{i:'🍚',t:'남긴 급식',n:'거의 전부'},{i:'🚶',t:'달라진 행동',n:'맨 뒤에 서기'},{i:'💬',t:'퍼진 웃음소리',n:'약 12명'}],
+                msg:'웃음은 3초였지만, 지호에게는 훨씬 오래 남았어.',msgColor:'var(--error)',
+                empV:'지호',empQ:'실수했을 때 웃음소리가 들리니...',empC:['숨고 싶었다 🙈','얼굴이 뜨거웠다 😳','아무 말도 못 했다 😶','급식실이 무서워졌다 😞']},
+            pass:{label:'못 본 척 지나갔다',emoji:'🙈',negative:true,
+                sim:{sequence:[13,15,7,21,8,20],speed:190,myIdx:14},
+                r1:'나는 아무 일 없다는 듯 지나갔어.\n지호는 혼자 쭈그려 앉아 바닥을 닦았어.',r2:'조리사 선생님이 오실 때까지\n지호는 계속 혼자였어.',
+                stats:[{i:'🧍',t:'혼자 치운 사람',n:'지호 1명'},{i:'⏰',t:'걸린 시간',n:'약 6분'},{i:'🤐',t:'건넨 말',n:'0마디'},{i:'💭',t:'남은 마음',n:'"아무도 안 오는구나"'}],
+                msg:'가만히 있는 것도 하나의 선택이었어. 다음엔 다르게 해볼 수 있어.',msgColor:'var(--warning)',
+                empV:'지호',empQ:'아무도 오지 않는 동안 혼자 닦으면서...',empC:['서러웠다 😢','부끄러웠다 😳','빨리 끝내고 싶었다 😣','도와달라 말하기 어려웠다 😶']},
+            wipe:{label:'휴지를 가져와 같이 닦았다',emoji:'🧻',negative:false,
+                sim:{sequence:[13,15,7,21,8,6,20,12,22,16,5,11,19],speed:120,myIdx:14},
+                r1:'휴지를 가져와 같이 닦기 시작했어.\n지호가 놀란 눈으로 나를 봤어.',r2:'옆 테이블 친구들도 휴지를 들고 왔어.\n1분도 안 돼서 바닥이 깨끗해졌어.',
+                stats:[{i:'🤝',t:'함께 닦은 사람',n:'5명'},{i:'⏰',t:'걸린 시간',n:'약 1분'},{i:'😌',t:'지호의 표정',n:'빨개짐 → 편안함'},{i:'🌊',t:'퍼진 것',n:'"같이 하자"는 분위기'}],
+                msg:'휴지 한 장이 다섯 사람을 움직였어.',msgColor:'var(--success)',
+                empV:'지호',empQ:'누군가 말없이 같이 닦아줄 때...',empC:['눈물이 핑 돌았다 🥹','고마웠다 💛','덜 창피했다 😌','나도 다음엔 도와야지 생각했다 🤝']},
+            say:{label:'"괜찮아, 나도 저번에 그랬어" 말해줬다',emoji:'💬',negative:false,
+                sim:{sequence:[13,15,12,6,7,11,5,8,20,19,4,18,21,3,9,10,16,17,22],speed:110,myIdx:14},
+                r1:'"괜찮아, 나도 저번에 그랬어."\n웃던 소리가 조금씩 잦아들었어.',r2:'다른 친구도 "나도 그런 적 있어!" 하고 거들었어.\n지호가 처음으로 웃었어.',
+                stats:[{i:'😊',t:'웃게 된 사람',n:'지호'},{i:'🔇',t:'멈춘 웃음소리',n:'거의 전부'},{i:'💬',t:'이어진 고백',n:'"나도 그랬어" 3명'},{i:'🛟',t:'만들어진 것',n:'실수해도 되는 교실'}],
+                msg:'내 실수 이야기 하나가, 친구의 부끄러움을 덜어줬어.',msgColor:'var(--success)',
+                empV:'지호',empQ:'"나도 그랬어"라는 말을 들었을 때...',empC:['마음이 놓였다 😌','혼자가 아니구나 느꼈다 💛','웃을 수 있었다 😊','고마웠다 🤗']}
+        }
+    },
+    team:{
+        id:'team',emoji:'🎨',title:'모둠 과제, 의견이 갈릴 때',
+        desc:'바다 vs 우주. 시간은 흐르는데 아직 백지야...',
+        story:'모둠 과제로 포스터를 만드는 시간이야.\n\n나는 바다를 그리자고 했고\n서윤이는 우주를 그리자고 했어.\n\n둘 다 좋다는 친구, 아무 말 안 하는 친구...\n시간은 자꾸 흐르는데 도화지는 아직 하얘.',
+        question:'이 순간, 나는 어떻게 할까?',
+        badge:{id:'voice',emoji:'🗳️',title:'작은 목소리도 물결이 된다',desc:'아직 말하지 않은 사람의 목소리가 물결을 바꾼다는 걸 알게 됐어!'},
+        choices:{
+            insist:{label:'내 의견대로 하자고 계속 밀어붙였다',emoji:'💢',negative:true,
+                sim:{sequence:[13,15,7,21,8,20,6,12],speed:170,myIdx:14},
+                r1:'"바다가 훨씬 낫다니까!" 계속 밀어붙였어.\n서윤이가 입을 닫았어.',r2:'결국 내 말대로 그렸지만\n서윤이와 두 친구는 색칠만 했어.\n포스터는 어딘가 허전했어.',
+                stats:[{i:'🤐',t:'말을 멈춘 친구',n:'3명'},{i:'🎨',t:'쓰인 아이디어',n:'1개'},{i:'⏰',t:'남은 시간',n:'빠듯함'},{i:'😐',t:'모둠 분위기',n:'조용해짐'}],
+                msg:'내 의견은 통과됐지만, 세 사람의 아이디어는 사라졌어.',msgColor:'var(--warning)',
+                empV:'서윤',empQ:'내 의견이 계속 밀릴 때, 나는...',empC:['말하기 싫어졌다 😑','서운했다 😔','어차피 안 될 것 같았다 😞','빨리 끝내고 싶었다 😣']},
+            quit:{label:'"아무거나 해" 하고 마음을 닫았다',emoji:'😑',negative:true,
+                sim:{sequence:[13,15,7,21,8],speed:200,myIdx:14},
+                r1:'"아무거나 해." 나는 마음을 닫았어.\n모둠이 조용해졌어.',r2:'아무도 결정하지 못한 채 시간이 흘렀고\n종이 칠 때까지 밑그림도 못 그렸어.',
+                stats:[{i:'⏰',t:'흘러간 시간',n:'20분'},{i:'✏️',t:'그린 것',n:'거의 없음'},{i:'😶',t:'의견 낸 사람',n:'0명'},{i:'💭',t:'모두의 속마음',n:'"누가 좀 말해줬으면"'}],
+                msg:'내가 물러선 자리에는 아무 물결도 생기지 않았어.',msgColor:'var(--warning)',
+                empV:'같은 모둠 친구',empQ:'아무도 말하지 않는 시간이 길어질 때...',empC:['답답했다 😣','눈치가 보였다 👀','내가 말할까 고민했다 🤔','시간이 아까웠다 ⏰']},
+            ask:{label:'아직 말 안 한 친구에게 의견을 물었다',emoji:'🙋',negative:false,
+                sim:{sequence:[13,15,7,21,8,6,20,12,22,16,5,11,19,4],speed:125,myIdx:14},
+                r1:'"○○이는 어떻게 생각해?"\n조용하던 친구가 눈을 동그랗게 떴어.\n"어... 나는 바닷속 우주 같은 거..."',r2:'그 한마디에서 아이디어가 터져 나왔어.\n모두가 한 줄씩 보태며 그림이 완성됐어.',
+                stats:[{i:'🗣️',t:'입을 연 친구',n:'모둠 4명 전원'},{i:'💡',t:'모인 아이디어',n:'5개'},{i:'⏰',t:'완성 시간',n:'10분 남기고 끝'},{i:'😊',t:'모둠 분위기',n:'신남'}],
+                msg:'질문 하나가 잠겨 있던 목소리를 꺼냈어.',msgColor:'var(--success)',
+                empV:'조용하던 친구',empQ:'아무도 안 물어보던 내게 의견을 물었을 때...',empC:['깜짝 놀랐다 😯','기분이 좋았다 😊','말해도 되는구나 싶었다 💛','더 생각하고 싶어졌다 💡']},
+            mix:{label:'두 아이디어를 합쳐보자고 했다',emoji:'🌌',negative:false,
+                sim:{sequence:[13,15,12,6,7,11,5,8,20,19,4,18,21,3,9,10,16,17,22,23],speed:105,myIdx:14},
+                r1:'"바다랑 우주를 합치면 어때?"\n서윤이 눈이 반짝였어.',r2:'"심해 우주"라는 아이디어에 모두가 신났어.\n다른 모둠 친구들도 구경하러 왔어.',
+                stats:[{i:'💡',t:'살아난 아이디어',n:'2개 모두'},{i:'😊',t:'다시 말한 친구',n:'4명'},{i:'👀',t:'구경 온 친구',n:'6명'},{i:'🌊',t:'퍼진 것',n:'"합쳐볼까?"라는 방식'}],
+                msg:'이기고 지는 대신 합치니까, 아이디어가 더 커졌어.',msgColor:'var(--success)',
+                empV:'서윤',empQ:'내 의견이 버려지지 않고 합쳐졌을 때...',empC:['신났다 ✨','존중받는 느낌이었다 💛','더 좋은 생각이 떠올랐다 💡','같이 하고 싶어졌다 🤝']}
+        }
+    },
+    cheer:{
+        id:'cheer',emoji:'📣',title:'운동회 계주, 넘어진 친구',
+        desc:'1등으로 달리던 우리 반, 도윤이가 넘어졌어...',
+        story:'운동회 반 대항 계주.\n우리 반이 1등으로 달리고 있었어!\n\n그런데 마지막 주자 도윤이가\n코너에서 미끄러져 넘어졌어.\n\n결국 우리 반은 꼴찌로 들어왔어.\n도윤이는 일어나서 고개를 푹 숙이고 있어.',
+        question:'이 순간, 나는 어떻게 할까?',
+        badge:{id:'wave',emoji:'📣',title:'응원은 되돌아온다',desc:'가장 먼저 보낸 응원이 반 전체로 퍼진다는 걸 알게 됐어!'},
+        choices:{
+            blame:{label:'"너 때문에 졌잖아" 말했다',emoji:'😠',negative:true,
+                sim:{sequence:[13,15,12,6,7,20,21,11,5,8,19,4,18,22,3,9],speed:120,myIdx:14},
+                r1:'"너 때문에 졌잖아."\n나도 모르게 말이 튀어나왔어.\n도윤이가 더 깊이 고개를 숙였어.',r2:'몇 명이 따라서 한마디씩 보탰어.\n도윤이는 다음 운동회 때\n계주에 나가지 않겠다고 했어.',
+                stats:[{i:'💔',t:'상처받은 사람',n:'도윤'},{i:'🗣️',t:'따라 한 친구',n:'4명'},{i:'🏃',t:'포기하게 된 것',n:'다음 도전'},{i:'😶',t:'반 분위기',n:'가라앉음'}],
+                msg:'한 문장이 한 사람의 다음 도전을 멈추게 했어.',msgColor:'var(--error)',
+                empV:'도윤',empQ:'넘어진 나에게 "너 때문에"라는 말이 들렸을 때...',empC:['숨고 싶었다 😞','미안하면서도 아팠다 💧','다시는 뛰기 싫었다 🏃','아무 말도 못 했다 😶']},
+            sigh:{label:'아무 말 없이 한숨을 쉬었다',emoji:'😔',negative:true,
+                sim:{sequence:[13,15,7,21,8,20,6],speed:185,myIdx:14},
+                r1:'아무 말도 안 했지만 한숨은 크게 나왔어.\n도윤이가 그 소리를 들었어.',r2:'말보다 한숨이 더 오래 남았어.\n도윤이는 그날 아무하고도 말하지 않았어.',
+                stats:[{i:'😶',t:'건넨 말',n:'0마디'},{i:'😔',t:'전해진 것',n:'실망감'},{i:'🤐',t:'도윤이의 하루',n:'말 없이 끝남'},{i:'💭',t:'알게 된 것',n:'표정도 말이 된다'}],
+                msg:'말하지 않아도 마음은 전해져. 다음엔 다른 신호를 보낼 수 있어.',msgColor:'var(--warning)',
+                empV:'도윤',empQ:'아무 말 없는 한숨 소리를 들었을 때, 나는...',empC:['혼나는 것보다 아팠다 💧','미안했다 😔','말이라도 걸어줬으면 했다 🥺','혼자인 것 같았다 😞']},
+            clap:{label:'가장 먼저 박수를 쳐줬다',emoji:'👏',negative:false,
+                sim:{sequence:[13,15,12,6,7,11,5,8,20,19,4,18,21,3,9,10,16,17,22,23,0,1,2,24,25,26,27],speed:90,myIdx:14},
+                r1:'가장 먼저 박수를 쳤어.\n어색한 정적 속에 박수 소리가 울렸어.',r2:'한 명, 두 명 따라 치더니\n결국 반 전체가 박수를 쳤어.\n도윤이가 천천히 고개를 들었어.',
+                stats:[{i:'👏',t:'박수 친 사람',n:'28명 전원'},{i:'⏱️',t:'퍼지는 데 걸린 시간',n:'약 4초'},{i:'😊',t:'도윤이의 변화',n:'고개 숙임 → 고개 듦'},{i:'🏆',t:'오래 남은 것',n:'등수보다 박수'}],
+                msg:'첫 박수 한 번이 28명의 박수가 됐어.',msgColor:'var(--success)',
+                empV:'도윤',empQ:'넘어진 나에게 박수 소리가 들렸을 때...',empC:['눈물이 났다 🥹','고마웠다 💛','다시 뛰고 싶어졌다 🏃','우리 반이 좋았다 ✨']},
+            run:{label:'달려가서 손 잡고 일으켜줬다',emoji:'🤗',negative:false,
+                sim:{sequence:[13,15,12,6,7,11,5,8,20,19,4,18,21,3,9,10,16,17,22,23,0,1],speed:100,myIdx:14},
+                r1:'달려가서 손을 잡고 일으켰어.\n"괜찮아? 아까 진짜 빨랐어!"',r2:'친구들이 우르르 몰려와 도윤이를 둘러쌌어.\n꼴찌였지만 우리 반이 제일 시끄러웠어.',
+                stats:[{i:'🤝',t:'모여든 친구',n:'12명'},{i:'😊',t:'도윤이의 표정',n:'울음 → 웃음'},{i:'📣',t:'우리 반 소리',n:'운동장에서 제일 큼'},{i:'🌊',t:'퍼진 것',n:'"괜찮아"라는 말'}],
+                msg:'등수는 꼴찌였지만, 물결은 1등이었어.',msgColor:'var(--success)',
+                empV:'도윤',empQ:'누군가 달려와 손을 잡아줬을 때...',empC:['안심됐다 😌','고마웠다 💛','미안한 마음이 녹았다 🥹','다음엔 더 잘하고 싶어졌다 🔥']}
+        }
+    }
+};
+Object.assign(SCENARIOS,EXTRA_SCENARIOS);
+const EXTRA_ORDER=Object.keys(EXTRA_SCENARIOS);
+const ALL_ORDER=BASE_ORDER.concat(EXTRA_ORDER);
+const BASE_BADGES={
+    time:{emoji:'⏱️',title:'1초가 5분이 된다'},
+    weight:{emoji:'⚖️',title:'보이지 않는 무게'},
+    words:{emoji:'💬',title:'말의 물결은 멈추지 않는다'},
+    explorer:{emoji:'🔍',title:'모든 관점을 봤어요'},
+    pledger:{emoji:'💜',title:'긍정 물결 전문가'}
+};
+const EXTRA_BADGES={
+    first:{emoji:'🌱',title:'첫 물결은 내가'},
+    small:{emoji:'🧽',title:'실수는 함께 닦으면 작아진다'},
+    voice:{emoji:'🗳️',title:'작은 목소리도 물결이 된다'},
+    wave:{emoji:'📣',title:'응원은 되돌아온다'},
+    ripple:{emoji:'🌊',title:'좋은 물결 마스터'}
+};
+const BADGES_DATA=Object.assign({},BASE_BADGES,EXTRA_BADGES);
+const POSITIVE_LABELS={encourage:'💪 "괜찮아!" 말해주기',help:'🤝 친구 도와주기',smile:'😊 먼저 인사하기',listen:'👂 끝까지 들어주기',clap:'👏 가장 먼저 박수 쳐주기',sit:'🌱 혼자 있는 친구 옆에 앉기',stopit:'✋ "그만하자" 말하기',thanks:'💛 "고마워" 말하기',custom:'✏️ 직접 적기'};
+// ═══ 되돌리기 안내(부정 선택) / 키우기 안내(긍정 선택) — 죄책감 대신 회복과 확장에 초점 ═══
+const RECOVER={
+    photo:{push:'"아까 밀어서 미안해" 한마디면 흔들린 줄도, 마음도 다시 설 수 있어.',talk:'짜증이 났을 땐 "조금만 더 기다려보자"로 바꿔 말해볼 수 있어.',chat:'"우리 조용히 하자" 한마디면 줄은 금방 다시 맞춰져.'},
+    clean:{follow:'"내 몫은 내가 할게" 하고 돌아오면 물결은 바로 방향을 바꿔.',shout:'같은 말도 조용히 옆에서 하면 상대가 들을 수 있어.'},
+    rumor:{join:'"아까 내가 한 말은 아니었어" 하고 멈추는 것도 용기야.',listen_only:'다음엔 "나는 잘 모르겠어" 한마디만 해도 물결이 달라져.'},
+    newbie:{ignore:'내일 아침 "안녕" 한마디면 오늘 못 한 물결을 시작할 수 있어.',watch:'눈이 마주쳤을 때 이름만 말해도 대화는 시작돼.'},
+    spill:{laugh:'"괜찮아?" 한마디면 웃음보다 더 크게 남을 수 있어.',pass:'돌아가서 휴지 한 장만 건네도 지호는 혼자가 아니게 돼.'},
+    team:{insist:'"네 생각도 들어볼게" 한마디면 멈춘 아이디어가 다시 움직여.',quit:'"나는 이게 좋아"라고 한 번만 말해도 모둠이 움직이기 시작해.'},
+    cheer:{blame:'"아까는 미안해, 너 진짜 빨랐어" 하면 다음 도전이 다시 열려.',sigh:'한숨 대신 어깨를 한 번 툭 쳐주는 것도 응원이야.'}
+};
+const GROW={
+    photo:{wait:'다음엔 옆 친구에게 "금방 끝나!" 한마디를 더해보자. 물결이 더 넓어져.'},
+    clean:{cover:'"같이 할래?" 하고 불러주면 도움의 물결이 더 빨리 퍼져.',tell:'도움을 요청하는 것도 우리 반을 지키는 방법이야.'},
+    rumor:{stop:'그다음에 그 친구에게 말을 걸어주면 물결이 완성돼.',befriend:'다음엔 다른 친구도 한 명 데려가 보자. 물결은 더 커져.'},
+    newbie:{hello:'이름을 물어보는 것까지 하면 대화가 더 길게 이어져.',invite:'네가 만든 물결이 또 다른 사람의 손이 됐다는 걸 기억해.'},
+    spill:{wipe:'"괜찮아?"라고 말까지 건네면 마음까지 닦아줄 수 있어.',say:'네 실수 이야기가 누군가에게는 안심이 돼.'},
+    team:{ask:'다음에도 가장 조용한 사람에게 먼저 물어보자.',mix:'"합쳐볼까?"는 어디서든 통하는 말이야.'},
+    cheer:{clap:'박수에 이름을 붙여보자. "도윤이 잘했어!" 하면 더 오래 남아.',run:'손을 내미는 사람이 한 명만 있어도 반 전체가 따라와.'}
+};
+
+// ═══ 공통 UI ═══
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
+function showToast(m,t='info'){const e=document.getElementById('toast');e.textContent=m;e.style.background=t==='error'?'rgba(239,68,68,.95)':t==='success'?'rgba(16,185,129,.95)':'rgba(31,41,55,.95)';e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000)}
+window.showScreen=function(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const t=document.getElementById(id);if(t){t.classList.add('active');window.scrollTo(0,0)}};
+window.showConfirmModal=function(msg,onC){document.getElementById('confirmMessage').innerHTML=msg;document.getElementById('confirmModal').style.display='flex';confirmCallback=onC;document.getElementById('confirmOkBtn').onclick=()=>{const cb=confirmCallback;closeConfirmModal();if(cb)cb()}};
+window.closeConfirmModal=function(){document.getElementById('confirmModal').style.display='none';confirmCallback=null;document.getElementById('confirmOkBtn').textContent='확인';document.getElementById('confirmOkBtn').style.background='var(--error)'};
+window.confirmGoHome=function(){const n=completedScenarios.size;const msg=n>0?`처음으로 돌아갈까요?<br><br>📊 ${n}개 시나리오 완료, ${earnedBadges.size}개 배지 획득<br>`+(isSoloMode?'⚠️ 혼자 체험은 기록이 사라져요!':'✅ 같은 닉네임으로 이어할 수 있어요!'):'처음으로 돌아갈까요?';showConfirmModal(msg,()=>{if(unsubscribe){unsubscribe();unsubscribe=null}showScreen('screen-start')})};
+async function hashPw(p){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(p));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){return'h_'+p}}
+async function copyClip(t){try{await navigator.clipboard.writeText(t);showToast('✅ 복사됨!','success')}catch(e){const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0;left:-9999px';document.body.appendChild(a);a.focus();a.select();try{document.execCommand('copy');showToast('✅ 복사됨!','success')}catch(e2){showToast('📋 코드: '+t)}document.body.removeChild(a)}}
+window.copyRoomCode=function(){copyClip(currentRoomCode)};
+
+// ═══ 방/인증 ═══
+window.createRoom=async function(){await authReady;const n=document.getElementById('teacher-name').value.trim();const p=document.getElementById('room-password').value.trim();if(!n){showToast('닉네임을 입력해주세요.','error');return}if(!/^\d{4}$/.test(p)){showToast('비밀번호는 숫자 4자리입니다.','error');return}const c=String(Math.floor(Math.random()*900000+100000));const exp=new Date();exp.setDate(exp.getDate()+30);await DB.saveRoom(c,{teacherName:n,password:await hashPw(p),createdAt:new Date().toISOString(),expiresAt:exp.toISOString()});currentRoomCode=c;isTeacher=true;isSoloMode=false;document.getElementById('room-code-display').textContent=c;showScreen('screen-room-created')};
+window.goToDashboard=function(){document.getElementById('dash-room-code').textContent=currentRoomCode;showScreen('screen-dashboard');startDashboardListener()};
+window.joinAsTeacher=async function(){await authReady;const c=document.getElementById('teacher-room-code').value.trim();const p=document.getElementById('teacher-password').value.trim();if(!c||!p){showToast('입력을 확인해주세요.','error');return}const r=await DB.getRoom(c);if(!r){showToast('존재하지 않는 방입니다.','error');return}if(r.expiresAt&&new Date(r.expiresAt)<new Date()){await DB.deleteRoom(c);showToast('만료된 방입니다.','error');return}if(r.password!==await hashPw(p)){showToast('비밀번호가 틀렸습니다.','error');return}currentRoomCode=c;isTeacher=true;isSoloMode=false;goToDashboard()};
+
+window.joinAsStudent=async function(){await authReady;const c=document.getElementById('student-room-code').value.trim();const n=document.getElementById('student-nickname').value.trim();if(!c||!n){showToast('방 코드와 닉네임을 입력해주세요.','error');return}const r=await DB.getRoom(c);if(!r){showToast('존재하지 않는 방입니다.','error');return}if(r.expiresAt&&new Date(r.expiresAt)<new Date()){await DB.deleteRoom(c);showToast('만료된 방입니다.','error');return}
+    const ex=await DB.getStudent(c,n);
+    if(ex){
+        showConfirmModal(`<strong>${esc(n)}</strong>님, 이전 기록이 있어요!<br><br>📊 완료 시나리오: ${ex.completedScenarios?.length||0}개<br>🏆 배지: ${ex.earnedBadges?.length||0}개<br><br>이어서 할까요?`,async()=>{
+            currentRoomCode=c;currentNickname=n;isTeacher=false;isSoloMode=false;restoreData(ex);await DB.saveStudent(c,n,{lastVisit:new Date().toISOString()});showToast(`🎉 ${n}님, 다시 오셨군요!`,'success');renderHub();showScreen('screen-hub')});
+        document.getElementById('confirmOkBtn').textContent='이어하기';document.getElementById('confirmOkBtn').style.background='var(--primary)';return;
+    }
+    currentRoomCode=c;currentNickname=n;isTeacher=false;isSoloMode=false;resetProgress();await DB.saveStudent(c,n,{joinedAt:new Date().toISOString()});showScreen('screen-intro')};
+
+window.startSoloMode=function(){isSoloMode=true;isTeacher=false;currentNickname='탐험가';soloData={};resetProgress();showScreen('screen-intro')};
+
+function resetProgress(){completedScenarios=new Set();earnedBadges=new Set();scenarioChoices={};scenarioDrafts={};pledgeDone=false;selectedPositiveKey='';pledgeCustomText='';pledgeEffectText=''}
+function restoreData(d){completedScenarios=new Set(d.completedScenarios||[]);earnedBadges=new Set(d.earnedBadges||[]);scenarioChoices=d.scenarioChoices||{};scenarioDrafts=d.scenarioDrafts||{};pledgeDone=!!d.pledgeDone;selectedPositiveKey=d.pledgePositiveKey||'';pledgeCustomText=d.pledgeCustomText||(d.pledgePositiveKey==='custom'?(d.pledgePositive||''):'');pledgeEffectText=d.pledgeEffect||''}
+async function saveProgress(){
+    // ⭐ pledgeEffect 저장 누락 수정: restoreData()는 d.pledgeEffect를 읽는데
+    //    saveProgress()가 이 값을 한 번도 저장하지 않아, 다짐 카드를 제출하기 전에
+    //    나갔다가 '이어하기'로 들어오면 "이 행동이 퍼지면?" 칸만 비어 있었다.
+    const d={completedScenarios:Array.from(completedScenarios),earnedBadges:Array.from(earnedBadges),scenarioChoices,scenarioDrafts,pledgeDone,pledgePositiveKey:selectedPositiveKey,pledgeCustomText,pledgeEffect:pledgeEffectText,updatedAt:new Date().toISOString()};
+    if(isSoloMode){Object.assign(soloData,d)}else if(currentRoomCode&&currentNickname){await DB.saveStudent(currentRoomCode,currentNickname,d)}
+}
+// 입력 즉시 저장(디바운스) — 중간 이탈해도 유실되지 않게
+function scheduleDraftSave(){if(draftTimer)clearTimeout(draftTimer);draftTimer=setTimeout(()=>{draftTimer=null;saveProgress()},1000)}
+function isExtraUnlocked(){return BASE_ORDER.every(s=>completedScenarios.has(s))}
+
+// ═══ 허브 렌더링 ═══
+window.renderHub=function renderHub(){
+    const list=document.getElementById('scenario-list');
+    const extraOn=isExtraUnlocked();
+    let html='';
+    BASE_ORDER.forEach((sid,i)=>{
+        const s=SCENARIOS[sid];const done=completedScenarios.has(sid);
+        html+=`<div class="scenario-card ${done?'completed':''}" onclick="startScenario('${sid}')">
+            <div class="scenario-header"><div class="scenario-emoji">${s.emoji}</div><div class="scenario-info"><div class="scenario-title">${s.title}</div><div class="scenario-desc">${s.desc}</div></div><div class="scenario-badge-icon">${done?s.badge.emoji:'🔒'}</div></div></div>`;
+    });
+    // ── 확장 라운드: 기본 3상황을 모두 마쳐야 열린다(기본 화면 배치 불변) ──
+    if(extraOn){
+        html+=`<div class="card" style="text-align:center;padding:14px;background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(124,58,237,.06))">
+            <h3 style="font-size:17px;color:var(--success)">🌱 좋은 물결 라운드</h3>
+            <p style="font-size:13px;color:var(--text-light);font-weight:400">작은 행동은 좋은 쪽으로도 퍼져. 4가지 상황을 더 따라가 보자!</p></div>`;
+        EXTRA_ORDER.forEach(sid=>{
+            const s=SCENARIOS[sid];const done=completedScenarios.has(sid);
+            html+=`<div class="scenario-card ${done?'completed':''}" onclick="startScenario('${sid}')">
+            <div class="scenario-header"><div class="scenario-emoji">${s.emoji}</div><div class="scenario-info"><div class="scenario-title">${s.title}</div><div class="scenario-desc">${s.desc}</div></div><div class="scenario-badge-icon">${done?s.badge.emoji:'🔒'}</div></div></div>`;
+        });
+    }
+    list.innerHTML=html;
+    // 배지
+    const bd=document.getElementById('badge-display');
+    const badgeSet=extraOn?BADGES_DATA:BASE_BADGES;
+    let bh='';
+    Object.entries(badgeSet).forEach(([k,v])=>{
+        bh+=`<div class="insight-badge ${earnedBadges.has(k)?'earned':''}">${v.emoji} ${v.title}</div>`;
+    });
+    bd.innerHTML=bh;
+    // 진행률
+    const scTotal=extraOn?ALL_ORDER.length:BASE_ORDER.length;
+    const bgTotal=Object.keys(badgeSet).length;
+    document.getElementById('hub-progress').textContent=`${completedScenarios.size}/${scTotal} 시나리오 완료 · ${earnedBadges.size}/${bgTotal} 인사이트 발견`;
+    // 다짐 버튼
+    const pa=document.getElementById('hub-pledge-area');
+    if(completedScenarios.size>=1){
+        pa.innerHTML=pledgeDone
+            ?`<button class="btn btn-secondary" onclick="openPledge()">📝 다짐 카드 수정하기</button><div style="text-align:center;font-size:13px;color:var(--success);font-weight:700;margin-top:4px">✅ 다짐 카드 완성!</div>`
+            :`<button class="btn btn-success" onclick="openPledge()">💜 나의 긍정 물결 다짐 카드 만들기 →</button>`;
+    } else { pa.innerHTML=''; }
+    // 반 결과 버튼
+    document.getElementById('btn-class-results').style.display=isSoloMode?'none':'block';
+}
+
+// ═══ 시나리오 시작 ═══
+window.startScenario=function(sid){
+    currentScenarioId=sid;currentChoiceKey='';
+    const s=SCENARIOS[sid];
+    let html=`<div class="step-indicator">마음 열기</div><div class="card"><div class="story-emoji">${s.emoji}</div>
+        <div class="story-text" style="white-space:pre-line;font-size:16px">${s.story}</div></div>
+        <div class="card"><h3 style="font-size:18px;text-align:center;margin-bottom:12px">🤔 ${s.question}</h3>
+        <p style="font-size:14px;color:var(--text-light);text-align:center;margin-bottom:8px">솔직하게 골라봐!</p>
+        <div id="sc-choices">`;
+    Object.entries(s.choices).forEach(([k,c])=>{
+        html+=`<button class="choice-btn" data-key="${k}" onclick="selectScenarioChoice('${k}',this)">${c.emoji} ${c.label}</button>`;
+    });
+    html+=`</div><div style="margin-top:12px"><label style="font-size:15px">💬 왜 그렇게 했어?</label><textarea id="sc-reason" placeholder="솔직하게 적어봐!" rows="2" oninput="checkScReady()"></textarea></div></div>
+        <button class="btn btn-primary" id="btn-sc-next" onclick="goToSimulation()" disabled>물결 따라가기 →</button>`;
+    // 이미 완료한 시나리오면 탐험 버튼 추가
+    if(completedScenarios.has(sid)){
+        html+=`<button class="btn btn-secondary" onclick="openExplore('${sid}')" style="margin-top:4px">🔀 다른 선택 결과 비교하기</button>`;
+    }
+    document.getElementById('scenario-content').innerHTML=html;
+    // ── 재입장/재방문 복원: 이전 선택과 이유를 DOM까지 되살린다 ──
+    const prev=scenarioChoices[sid]||scenarioDrafts[sid];
+    if(prev){
+        if(prev.choice&&s.choices[prev.choice]){
+            currentChoiceKey=prev.choice;
+            const b=document.querySelector('#sc-choices .choice-btn[data-key="'+prev.choice+'"]');
+            if(b)b.classList.add('selected');
+        }
+        const ta=document.getElementById('sc-reason');
+        if(ta&&prev.reason)ta.value=prev.reason;
+    }
+    checkScReady();
+    showScreen('screen-scenario');
+};
+
+window.selectScenarioChoice=function(k,btn){
+    const el=btn||(typeof event!=='undefined'&&event&&event.target?event.target.closest('.choice-btn'):null);
+    document.querySelectorAll('#sc-choices .choice-btn').forEach(b=>b.classList.remove('selected'));
+    if(el)el.classList.add('selected');
+    currentChoiceKey=k;checkScReady();
+};
+window.checkScReady=function(){
+    const r=document.getElementById('sc-reason')?.value.trim()||'';
+    const btn=document.getElementById('btn-sc-next');
+    if(btn)btn.disabled=!(currentChoiceKey&&r.length>=1);
+    if(currentScenarioId&&(currentChoiceKey||r)){
+        scenarioDrafts[currentScenarioId]={choice:currentChoiceKey,reason:r};
+        scheduleDraftSave();
+    }
+};
+
+// ═══ 28명 시뮬레이션 ═══
+window.goToSimulation=async function(){
+    const s=SCENARIOS[currentScenarioId];const ch=s.choices[currentChoiceKey];const reason=document.getElementById('sc-reason')?.value.trim()||'';
+    scenarioChoices[currentScenarioId]={choice:currentChoiceKey,label:ch.label,reason,emoji:ch.emoji,positive:!ch.negative};
+    scenarioDrafts[currentScenarioId]={choice:currentChoiceKey,reason};
+    await saveProgress();
+    // 28명 그리드 생성
+    const myIdx=ch.sim.myIdx;
+    let html=`<div class="step-indicator">마음 코딩 · 물결 시뮬레이션</div>
+        <div class="card"><h2 style="text-align:center;font-size:18px;margin-bottom:4px">${ch.emoji} "${ch.label}"</h2>
+        <p style="text-align:center;font-size:14px;color:var(--text-light)">내 행동이 만드는 물결을 지켜봐!</p>
+        <div class="people-grid" id="people-grid">`;
+    for(let i=0;i<PEOPLE_COUNT;i++){
+        html+=`<div class="person${i===myIdx?' me':''}" id="p-${i}">${i===myIdx?ch.emoji:'😊'}</div>`;
+    }
+    html+=`</div><div class="sim-counter">영향받은 사람: <span class="count" id="sim-count">0</span>명 / ${PEOPLE_COUNT}명</div>
+        <div class="sim-timer" id="sim-timer">⏱️ 시뮬레이션 시작 중...</div></div>
+        <button class="btn btn-primary" id="btn-sim-next" onclick="showScreen('screen-impact')" disabled style="opacity:.5">결과 확인하기 →</button>`;
+    document.getElementById('sim-content').innerHTML=html;
+    showScreen('screen-sim');
+    // 렌더 impact 미리 준비
+    renderImpact(s,ch);
+    renderEmpathy(s,ch);
+    // 애니메이션 시작
+    clearSimTimers();                                     // ⭐ 이전 시뮬레이션 타이머 정리
+    simTimers.push(setTimeout(()=>runSimulation(ch),600));
+};
+
+// ⭐ 시뮬레이션 타이머 정리 추가
+//    '뒤로' 가서 다른 선택을 고르면 앞선 시뮬레이션의 setTimeout이 살아 있어,
+//    새로 그린 28명 격자에 이전 얼굴/인원수를 덮어쓰고 '결과 확인하기' 버튼도
+//    미리 켜지는 문제가 있었다. → 새 시뮬레이션 시작 전에 반드시 취소한다.
+let simTimers=[];
+function clearSimTimers(){simTimers.forEach(t=>clearTimeout(t));simTimers=[];}
+
+function runSimulation(ch){
+    clearSimTimers();                                     // ⭐
+    const seq=ch.sim.sequence;const speed=ch.sim.speed;const isNeg=ch.negative;
+    const negFaces=['😖','😤','😒','😣','😞','😠'];
+    const posFaces=['😊','😌','🤗','😄','✨','💛'];
+    let count=0;
+    const timer=document.getElementById('sim-timer');
+    seq.forEach((idx,i)=>{
+        simTimers.push(setTimeout(()=>{                   // ⭐ 취소할 수 있게 타이머 보관
+            const el=document.getElementById('p-'+idx);
+            if(!el||idx===ch.sim.myIdx)return;
+            const face=isNeg?negFaces[i%negFaces.length]:posFaces[i%posFaces.length];
+            el.textContent=face;
+            el.classList.add(isNeg?'affected-neg':'affected-pos');
+            count++;
+            document.getElementById('sim-count').textContent=count;
+            const secs=((i+1)*speed/1000).toFixed(1);
+            timer.textContent=`⏱️ ${secs}초 경과...`;
+            if(i===seq.length-1){
+                timer.textContent=isNeg?`⏱️ 총 ${secs}초 만에 반 전체가 영향받았어...`:`⏱️ ${secs}초 만에 좋은 물결이 퍼졌어! 🌊`;
+                const btn=document.getElementById('btn-sim-next');if(btn){btn.disabled=false;btn.style.opacity='1';}
+            }
+        },i*speed));
+    });
+}
+
+window.goBackFromSim=function(){clearSimTimers();showScreen('screen-scenario')};
+
+function renderImpact(s,ch){
+    const isNeg=ch.negative;
+    let html=`<div class="step-indicator">마음 코딩 · 영향 분석</div><div class="card">
+        <h2 style="text-align:center;font-size:18px;margin-bottom:12px">🌊 내 행동이 만든 결과</h2>
+        <div style="background:${isNeg?'rgba(239,68,68,.06)':'rgba(16,185,129,.06)'};padding:12px;border-radius:12px;margin-bottom:12px">
+        <p style="font-size:15px;font-weight:700;margin-bottom:4px">⏱️ 직후...</p>
+        <p style="font-size:15px;white-space:pre-line">${ch.r1}</p></div>
+        <div style="background:${isNeg?'rgba(239,68,68,.06)':'rgba(16,185,129,.06)'};padding:12px;border-radius:12px;margin-bottom:12px">
+        <p style="font-size:15px;font-weight:700;margin-bottom:4px">⏱️ 그 다음...</p>
+        <p style="font-size:15px;white-space:pre-line">${ch.r2}</p></div>
+        <h3 style="font-size:16px;margin:12px 0 8px;color:${isNeg?'var(--error)':'var(--success)'}">📊 영향 정리</h3>`;
+    ch.stats.forEach(st=>{html+=`<div class="impact-stat"><span class="icon">${st.i}</span><span class="text">${st.t}</span><span class="number" style="color:${isNeg?'var(--error)':'var(--success)'}">${st.n}</span></div>`});
+    html+=`<div style="margin-top:16px;padding:16px;background:rgba(124,58,237,.06);border-radius:12px;text-align:center">
+        <p style="font-size:17px;font-weight:900;color:${ch.msgColor}">💭 ${ch.msg}</p></div></div>
+        <button class="btn btn-primary" onclick="showScreen('screen-empathy')">입장 바꿔 생각하기 →</button>`;
+    document.getElementById('impact-content').innerHTML=html;
+}
+
+function renderEmpathy(s,ch){
+    let html=`<div class="step-indicator">마음 코딩 · 역지사지</div><div class="card">
+        <h2 style="text-align:center;font-size:18px;margin-bottom:12px">${ch.negative?'🔄 입장을 바꿔 생각해 보자':'😊 다른 친구의 마음'}</h2>
+        <p style="font-size:15px;color:var(--text-light);text-align:center;margin-bottom:12px"><strong>${ch.empV}</strong>은(는) 그때 어떤 기분이었을까?</p>
+        <div id="emp-choices">`;
+    ch.empC.forEach((c,i)=>{html+=`<button class="choice-btn" onclick="selectEmp(this)">${ch.negative?'💔':'💚'} ${c}</button>`});
+    html+=`</div><div style="margin-top:12px"><label style="font-size:15px">✏️ ${ch.empV} 입장에서 한 문장 적어봐</label>
+        <textarea id="emp-text" placeholder="${ch.empQ}" rows="2" oninput="checkEmpReady()"></textarea></div></div>
+        <button class="btn btn-success" id="btn-emp-next" onclick="completeScenario()" disabled>인사이트 발견하기 →</button>`;
+    document.getElementById('empathy-content').innerHTML=html;
+    // 이전 기록 복원
+    const prev=scenarioChoices[currentScenarioId];
+    if(prev&&prev.empathyText){
+        const ta=document.getElementById('emp-text');if(ta)ta.value=prev.empathyText;
+    }
+    if(prev&&prev.empathy){
+        document.querySelectorAll('#emp-choices .choice-btn').forEach(b=>{if(b.textContent.trim()===prev.empathy)b.classList.add('selected')});
+    }
+    checkEmpReady();
+}
+
+window.selectEmp=function(btn){document.querySelectorAll('#emp-choices .choice-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');checkEmpReady()};
+window.checkEmpReady=function(){const s=document.querySelector('#emp-choices .choice-btn.selected');const t=document.getElementById('emp-text')?.value.trim()||'';const btn=document.getElementById('btn-emp-next');if(btn)btn.disabled=!(s&&t.length>=1);
+    if(currentScenarioId&&scenarioChoices[currentScenarioId]&&(s||t)){scenarioChoices[currentScenarioId].empathy=s?s.textContent.trim():(scenarioChoices[currentScenarioId].empathy||'');scenarioChoices[currentScenarioId].empathyText=t;scheduleDraftSave()}};
+
+// ═══ 시나리오 완료 → 배지 획득 ═══
+window.completeScenario=async function(){
+    const s=SCENARIOS[currentScenarioId];const ch=s.choices[currentChoiceKey];
+    const empChoice=document.querySelector('#emp-choices .choice-btn.selected')?.textContent?.trim()||'';
+    const empText=document.getElementById('emp-text')?.value.trim()||'';
+    if(!scenarioChoices[currentScenarioId])scenarioChoices[currentScenarioId]={choice:currentChoiceKey,label:ch.label,reason:'',emoji:ch.emoji,positive:!ch.negative};
+    scenarioChoices[currentScenarioId].empathy=empChoice;scenarioChoices[currentScenarioId].empathyText=empText;
+    const wasExtraOn=isExtraUnlocked();
+    completedScenarios.add(currentScenarioId);
+    earnedBadges.add(s.badge.id);
+    // 기본 3상황 완주 → 탐험가 배지 + 확장 라운드 개방
+    if(BASE_ORDER.every(x=>completedScenarios.has(x)))earnedBadges.add('explorer');
+    if(EXTRA_ORDER.length&&EXTRA_ORDER.every(x=>completedScenarios.has(x)))earnedBadges.add('ripple');
+    await saveProgress();
+    // 배지 화면
+    const badge=s.badge;
+    const note=ch.negative?(RECOVER[currentScenarioId]||{})[currentChoiceKey]:(GROW[currentScenarioId]||{})[currentChoiceKey];
+    let html=`<div class="card" style="text-align:center">
+        <div style="font-size:64px;margin:16px 0">${badge.emoji}</div>
+        <h2 style="color:var(--primary);margin-bottom:8px">인사이트 발견!</h2>
+        <div class="insight-badge earned" style="font-size:17px;display:inline-block;margin:12px 0">${badge.emoji} ${badge.title}</div>
+        <p style="font-size:15px;color:var(--text-light);margin-top:8px">${badge.desc}</p>
+    </div>`;
+    if(note){
+        html+=`<div class="card" style="background:${ch.negative?'rgba(16,185,129,.06)':'rgba(124,58,237,.05)'};border:1px solid ${ch.negative?'rgba(16,185,129,.25)':'rgba(124,58,237,.2)'}">
+        <h3 style="font-size:16px;color:${ch.negative?'var(--success)':'var(--primary)'};margin-bottom:6px">${ch.negative?'🌱 물결은 되돌릴 수 있어':'🌊 이 물결을 더 크게 만들려면'}</h3>
+        <p style="font-size:15px;line-height:1.7">${note}</p>
+        ${ch.negative?'<p style="font-size:13px;color:var(--text-light);font-weight:400;margin-top:8px">누구나 이런 선택을 할 때가 있어. 중요한 건 다음에 무엇을 하느냐야.</p>':''}</div>`;
+    }
+    if(!wasExtraOn&&isExtraUnlocked()&&EXTRA_ORDER.length){
+        html+=`<div class="card" style="text-align:center;background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(124,58,237,.08))">
+        <div style="font-size:40px">🌱</div><h3 style="font-size:17px;color:var(--success)">좋은 물결 라운드가 열렸어요!</h3>
+        <p style="font-size:14px;color:var(--text-light);font-weight:400">작은 행동이 좋은 쪽으로 퍼지는 상황 ${EXTRA_ORDER.length}가지가 허브에 추가됐어요.</p></div>`;
+    }
+    html+=`<button class="btn btn-primary" onclick="openExplore('${currentScenarioId}')">🔀 다른 선택이었다면? →</button>
+    <button class="btn btn-secondary" onclick="renderHub();showScreen('screen-hub')">← 허브로 돌아가기</button>`;
+    document.getElementById('badge-earn-content').innerHTML=html;
+    showScreen('screen-badge-earn');
+    showToast(`🏆 "${badge.title}" 인사이트 발견!`,'success');
+};
+
+// ═══ 다른 선택 비교 탐험 ═══
+window.openExplore=function(sid){
+    const s=SCENARIOS[sid];const myChoice=scenarioChoices[sid]?.choice;
+    let html=`<div class="step-indicator">🔀 다른 선택 탐험</div>
+        <div class="card"><h2 style="text-align:center;font-size:18px;margin-bottom:4px">${s.emoji} ${s.title}</h2>
+        <p style="text-align:center;font-size:14px;color:var(--text-light)">다른 선택이었다면 어떤 물결이 퍼졌을까?</p></div>`;
+    Object.entries(s.choices).forEach(([k,ch])=>{
+        const isMine=k===myChoice;
+        const note=ch.negative?(RECOVER[sid]||{})[k]:(GROW[sid]||{})[k];
+        html+=`<div class="compare-card ${isMine?'active':''}" onclick="toggleExploreDetail('${sid}','${k}',this)">
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:24px">${ch.emoji}</span><span style="flex:1">${ch.label}</span>
+            ${isMine?'<span class="badge" style="font-size:11px">내 선택</span>':''}
+            <span style="font-size:18px">▸</span></div>
+            <div class="explore-detail" id="exp-${sid}-${k}" style="display:none;margin-top:12px">
+                <div class="compare-result">${ch.r1}</div>
+                <div class="compare-result">${ch.r2}</div>
+                <div style="margin-top:8px">`;
+        ch.stats.forEach(st=>{html+=`<div class="impact-stat" style="padding:8px"><span class="icon">${st.i}</span><span class="text" style="font-size:13px">${st.t}</span><span class="number" style="font-size:13px;color:${ch.negative?'var(--error)':'var(--success)'}">${st.n}</span></div>`});
+        html+=`</div><div style="padding:12px;background:rgba(124,58,237,.04);border-radius:10px;margin-top:8px;text-align:center">
+                <p style="font-size:15px;font-weight:900;color:${ch.msgColor}">${ch.msg}</p></div>`;
+        if(note){html+=`<div style="padding:10px 12px;background:${ch.negative?'rgba(16,185,129,.06)':'rgba(124,58,237,.05)'};border-radius:10px;margin-top:6px;font-size:14px;font-weight:400;line-height:1.6">${ch.negative?'🌱 ':'🌊 '}${note}</div>`}
+        html+=`</div></div>`;
+    });
+    html+=`<button class="btn btn-secondary" onclick="renderHub();showScreen('screen-hub')">← 허브로 돌아가기</button>`;
+    document.getElementById('explore-content').innerHTML=html;
+    showScreen('screen-explore');
+};
+
+window.toggleExploreDetail=function(sid,k,card){
+    const el=document.getElementById('exp-'+sid+'-'+k);
+    if(!el)return;
+    const isOpen=el.style.display!=='none';
+    document.querySelectorAll('.explore-detail').forEach(d=>d.style.display='none');
+    if(!isOpen)el.style.display='block';
+};
+
+// ═══ 우리 반 결과 (학생용) ═══
+window.showClassResults=async function(){
+    const students=await DB.getAllStudents(currentRoomCode);
+    const entries=Object.entries(students);const total=entries.length;
+    if(total===0){showToast('아직 참여한 친구가 없어요.','error');return}
+    let html=`<div class="card" style="text-align:center;padding:16px"><h2 style="font-size:18px">📊 우리 반 결과</h2><p style="font-size:14px;color:var(--text-light)">참여 ${total}명</p></div>`;
+    // 긍정 물결 지수
+    let posCnt=0,allCnt=0;
+    entries.forEach(([,d])=>{const sc=d.scenarioChoices||{};Object.keys(sc).forEach(sid=>{const c=SCENARIOS[sid]?.choices?.[sc[sid].choice];if(c){allCnt++;if(!c.negative)posCnt++}})});
+    if(allCnt>0){
+        const pct=Math.round(posCnt/allCnt*100);
+        html+=`<div class="card"><h3 style="font-size:16px;margin-bottom:8px">🌊 우리 반 긍정 물결 지수</h3>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:linear-gradient(90deg,#10B981,#34D399)"></div></div>
+        <p style="font-size:14px;text-align:center">전체 선택 ${allCnt}개 중 <strong style="color:var(--success)">${posCnt}개</strong>가 좋은 물결을 만드는 선택이었어요 (${pct}%)</p></div>`;
+    }
+    ALL_ORDER.forEach(sid=>{
+        const s=SCENARIOS[sid];
+        const counts={};let scTotal=0;
+        Object.keys(s.choices).forEach(k=>counts[k]=0);
+        entries.forEach(([,d])=>{const sc=d.scenarioChoices;if(sc&&sc[sid]&&counts[sc[sid].choice]!==undefined){counts[sc[sid].choice]++;scTotal++}});
+        if(scTotal===0)return;
+        html+=`<div class="card"><h3 style="font-size:16px;margin-bottom:8px">${s.emoji} ${s.title}</h3>`;
+        const max=Math.max(...Object.values(counts),1);
+        Object.entries(s.choices).forEach(([k,ch])=>{
+            const cnt=counts[k]||0;const pct=Math.round(cnt/max*100);
+            const color=ch.negative?'#7C3AED':'#10B981';
+            html+=`<div class="class-bar"><div class="class-bar-label">${ch.emoji} ${ch.label.substring(0,8)}</div>
+                <div class="class-bar-track"><div class="class-bar-fill" style="width:${pct}%;background:${color}">${cnt}</div></div>
+                <div class="class-bar-count">${cnt}명</div></div>`;
+        });
+        html+=`</div>`;
+    });
+    // 다짐들
+    const pledges=entries.filter(([,d])=>d.pledgePositive).map(([n,d])=>d.pledgePositive);
+    if(pledges.length>0){
+        html+=`<div class="card"><h3 style="font-size:16px;margin-bottom:8px">💜 우리 반 긍정 물결 다짐들</h3><div style="display:flex;flex-wrap:wrap;gap:6px">`;
+        pledges.forEach(p=>{html+=`<span class="badge" style="font-size:12px">${esc(p)}</span>`});
+        html+=`</div></div>`;
+    }
+    html+=`<button class="btn btn-secondary" onclick="renderHub();showScreen('screen-hub')">← 허브로</button>`;
+    document.getElementById('class-results-content').innerHTML=html;
+    showScreen('screen-class-results');
+};
+
+// ═══ 다짐 카드 ═══
+window.openPledge=function(){
+    document.querySelectorAll('#positive-choices .choice-btn').forEach(b=>{b.classList.toggle('selected',b.dataset.key===selectedPositiveKey&&!!selectedPositiveKey)});
+    const ca=document.getElementById('custom-positive-area');
+    if(ca)ca.style.display=selectedPositiveKey==='custom'?'block':'none';
+    const cp=document.getElementById('custom-positive');if(cp)cp.value=pledgeCustomText||'';
+    const pe=document.getElementById('pledge-effect');if(pe)pe.value=pledgeEffectText||'';
+    checkPledgeReady();
+    showScreen('screen-pledge');
+};
+window.selectPositive=function(btn,val){
+    document.querySelectorAll('#positive-choices .choice-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');selectedPositiveKey=val;
+    document.getElementById('custom-positive-area').style.display=val==='custom'?'block':'none';checkPledgeReady()};
+window.checkPledgeReady=function(){
+    pledgeCustomText=document.getElementById('custom-positive')?.value.trim()||'';
+    pledgeEffectText=document.getElementById('pledge-effect')?.value.trim()||'';
+    let h=!!selectedPositiveKey;if(selectedPositiveKey==='custom')h=pledgeCustomText.length>=1;
+    document.getElementById('btn-submit-pledge').disabled=!(h&&pledgeEffectText.length>=1);
+    if(selectedPositiveKey||pledgeCustomText||pledgeEffectText)scheduleDraftSave();
+};
+
+window.submitPledge=async function(){
+    const label=selectedPositiveKey==='custom'?pledgeCustomText:(POSITIVE_LABELS[selectedPositiveKey]||selectedPositiveKey);
+    const effect=pledgeEffectText;
+    pledgeDone=true;earnedBadges.add('pledger');
+    const saveData={pledgePositive:label,pledgeEffect:effect,pledgeDone:true,completedAt:new Date().toISOString()};
+    if(isSoloMode){Object.assign(soloData,saveData)}else{await DB.saveStudent(currentRoomCode,currentNickname,saveData)}
+    await saveProgress();
+    renderComplete(label,effect);
+    showToast('💜 긍정 물결 다짐 카드 완성!','success');
+};
+
+function renderComplete(label,effect){
+    const extraOn=isExtraUnlocked();
+    const bgTotal=extraOn?Object.keys(BADGES_DATA).length:Object.keys(BASE_BADGES).length;
+    document.getElementById('complete-summary').innerHTML=`<p style="font-size:16px">${completedScenarios.size}개 시나리오를 탐험하고<br>${earnedBadges.size}개 인사이트를 발견했어요! 🌊</p>`;
+    document.getElementById('pledge-card-display').innerHTML=`<div class="pledge-card"><h3>🌊 나의 긍정 물결 다짐</h3><div class="pledge-text">${esc(label)}</div><p style="font-size:14px;opacity:.8">이 행동이 퍼지면...</p><div class="pledge-text">${esc(effect)}</div><p style="font-size:13px;opacity:.6;margin-top:8px">${esc(currentNickname||'탐험가')}</p></div>`;
+    const badgeSet=extraOn?BADGES_DATA:BASE_BADGES;
+    let bh='';Object.entries(badgeSet).forEach(([k,v])=>{bh+=`<div class="insight-badge ${earnedBadges.has(k)?'earned':''}">${v.emoji} ${v.title}</div>`});
+    document.getElementById('complete-badges').innerHTML=bh;
+    // 계속 활동 안내
+    const remain=(extraOn?ALL_ORDER:BASE_ORDER).filter(s=>!completedScenarios.has(s)).length;
+    const ea=document.getElementById('complete-extra-area');
+    if(ea){
+        ea.innerHTML=remain>0
+            ?`<div class="card" style="text-align:center"><p style="font-size:15px">아직 따라가 보지 않은 물결이 <strong style="color:var(--primary)">${remain}가지</strong> 남아 있어요 🌊</p><p style="font-size:13px;color:var(--text-light);font-weight:400">허브에서 이어서 탐험할 수 있어요.</p></div>`
+            :`<div class="card" style="text-align:center"><p style="font-size:15px">${completedScenarios.size}가지 상황을 모두 탐험했어요! 🎊</p><p style="font-size:13px;color:var(--text-light);font-weight:400">다른 선택 비교하기로 한 번 더 볼 수 있어요.</p></div>`;
+    }
+    const sb=document.getElementById('btn-solo-save');if(sb)sb.style.display=isSoloMode?'block':'none';
+    showScreen('screen-complete');
+}
+
+// ═══ 혼자 체험 결과 저장 ═══
+window.downloadMyResult=function(){
+    let t='🌊 나의 행동이 우리에게 미치는 영향 — 나의 기록\n';
+    t+='이름: '+(currentNickname||'탐험가')+'\n날짜: '+new Date().toLocaleString('ko-KR')+'\n';
+    t+='='.repeat(34)+'\n\n';
+    ALL_ORDER.forEach(sid=>{
+        const sc=scenarioChoices[sid];if(!sc)return;
+        const s=SCENARIOS[sid];
+        t+=`[${s.title}]\n · 내 선택: ${sc.label}\n · 이유: ${sc.reason||'-'}\n · 입장 바꿔 생각하기: ${sc.empathy||'-'}\n   ${sc.empathyText||''}\n\n`;
+    });
+    const badgeSet=isExtraUnlocked()?BADGES_DATA:BASE_BADGES;
+    t+='[발견한 인사이트]\n';
+    Object.entries(badgeSet).forEach(([k,v])=>{if(earnedBadges.has(k))t+=' · '+v.emoji+' '+v.title+'\n'});
+    const pl=isSoloMode?soloData:{};
+    if(pl.pledgePositive)t+=`\n[나의 긍정 물결 다짐]\n · ${pl.pledgePositive}\n · 이 행동이 퍼지면: ${pl.pledgeEffect||''}\n`;
+    try{
+        const b=new Blob([t],{type:'text/plain;charset=utf-8'});
+        const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='나의_긍정물결_기록.txt';
+        document.body.appendChild(a);a.click();document.body.removeChild(a);
+        setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+        showToast('📄 결과가 저장되었어요!','success');return;
+    }catch(e){}
+    document.getElementById('scriptText').textContent=t;
+    document.getElementById('scriptModal').style.display='flex';
+};
+
+// ═══ 교사 대시보드 ═══
+function startDashboardListener(){if(unsubscribe){unsubscribe();unsubscribe=null}unsubscribe=DB.onStudentsChange(currentRoomCode,s=>{dashboardData=s;renderDashboard(s)})}
+window.refreshDashboard=async function(){const s=await DB.getAllStudents(currentRoomCode);dashboardData=s;renderDashboard(s)};
+window.toggleStudent=function(i){const el=document.getElementById('st-'+i);if(!el)return;el.style.display=el.style.display==='none'?'block':'none'};
+
+function renderDashboard(students){
+    const entries=Object.entries(students);const total=entries.length;const completed=entries.filter(([,d])=>d.completedAt).length;
+    const setTTS=(id,txt)=>{const e=document.getElementById(id);if(e)e.textContent=txt};
+    if(total===0){
+        document.getElementById('tab-overview').innerHTML='<div class="card"><p style="text-align:center;color:var(--text-light)">아직 참여한 학생이 없습니다.</p></div>';
+        document.getElementById('tab-detail').innerHTML='<div class="card"><p style="text-align:center;color:var(--text-light)">데이터 없음</p></div>';
+        setTTS('tts-overview','아직 참여한 학생이 없습니다.');setTTS('tts-choices','');setTTS('tts-pledge','');setTTS('tts-text','아직 참여한 학생이 없습니다.');
+        return;
+    }
+    // ── 현황 ──
+    let posCnt=0,allCnt=0;
+    entries.forEach(([,d])=>{const sc=d.scenarioChoices||{};Object.keys(sc).forEach(sid=>{const c=SCENARIOS[sid]?.choices?.[sc[sid].choice];if(c){allCnt++;if(!c.negative)posCnt++}})});
+    const posPct=allCnt?Math.round(posCnt/allCnt*100):0;
+    let oh=`<div class="card"><h3 style="font-size:16px;margin-bottom:8px">📊 참여 현황</h3><div class="progress-bar"><div class="progress-fill" style="width:${Math.round(completed/total*100)}%"></div></div><p style="font-size:14px;text-align:center">참여 <strong>${total}</strong>명 / 다짐 완료 <strong>${completed}</strong>명</p></div>`;
+    oh+=`<div class="card"><h3 style="font-size:16px;margin-bottom:8px">🌊 긍정 물결 지수</h3><div class="progress-bar"><div class="progress-fill" style="width:${posPct}%;background:linear-gradient(90deg,#10B981,#34D399)"></div></div><p style="font-size:14px;text-align:center">전체 선택 ${allCnt}개 중 <strong style="color:var(--success)">${posCnt}개</strong>가 좋은 물결 선택 (${posPct}%)</p></div>`;
+    // 시나리오별 분포
+    let ttsChoices='';
+    ALL_ORDER.forEach(sid=>{
+        const s=SCENARIOS[sid];const counts={};let scT=0;
+        Object.keys(s.choices).forEach(k=>counts[k]=0);
+        entries.forEach(([,d])=>{const sc=d.scenarioChoices;if(sc&&sc[sid]&&counts[sc[sid].choice]!==undefined){counts[sc[sid].choice]++;scT++}});
+        if(scT===0)return;
+        const isExtra=EXTRA_ORDER.indexOf(sid)>=0;
+        oh+=`<div class="card"><h3 style="font-size:16px;margin-bottom:8px">${s.emoji} ${s.title} (${scT}명)${isExtra?' <span class="badge" style="font-size:11px">좋은 물결 라운드</span>':''}</h3>`;
+        const max=Math.max(...Object.values(counts),1);
+        ttsChoices+=`${s.title}. `;
+        Object.entries(s.choices).forEach(([k,ch])=>{
+            const cnt=counts[k]||0;const pct=Math.round(cnt/max*100);const color=ch.negative?'#7C3AED':'#10B981';
+            oh+=`<div style="margin:4px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>${ch.emoji} ${ch.label}</span><span>${cnt}명</span></div><div style="height:14px;background:#F3F4F6;border-radius:7px;overflow:hidden;margin-top:2px"><div style="height:100%;width:${pct}%;background:${color};border-radius:7px"></div></div></div>`;
+            ttsChoices+=`${ch.label} ${cnt}명. `;
+        });
+        oh+=`</div>`;
+    });
+    // 다짐 모음
+    const pledges=entries.filter(([,d])=>d.pledgePositive).map(([n,d])=>({n,p:d.pledgePositive,e:d.pledgeEffect}));
+    let ttsPledge='';
+    if(pledges.length>0){
+        oh+=`<div class="card"><h3 style="font-size:16px;margin-bottom:8px">💜 긍정 물결 다짐 (${pledges.length}명)</h3><div style="display:flex;flex-wrap:wrap;gap:6px">`;
+        pledges.forEach(x=>{oh+=`<span class="badge" style="font-size:12px">${esc(x.p)}</span>`;ttsPledge+=`${x.p}. `});
+        oh+=`</div></div>`;
+    }
+    document.getElementById('tab-overview').innerHTML=oh;
+    // ── 상세기록 (학생별 접고 펼치기) ──
+    let dh=`<div class="card"><h3 style="font-size:16px;margin-bottom:8px">📋 학생별 기록 (${total}명)</h3><p style="font-size:13px;color:var(--text-light);font-weight:400">이름을 누르면 이유와 역지사지 기록이 펼쳐집니다.</p></div>`;
+    entries.forEach(([n,d],i)=>{
+        const sc=d.scenarioChoices||{};
+        const doneCnt=Object.keys(sc).length;
+        dh+=`<div class="card" style="padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleStudent(${i})">
+                <span style="font-size:15px">🧒 ${esc(n)}</span>
+                <span style="font-size:13px;color:var(--text-light)">${doneCnt}개 탐험 ${d.completedAt?'· ✅ 다짐완료':''} ▾</span></div>
+            <div id="st-${i}" style="display:none;margin-top:10px">`;
+        ALL_ORDER.forEach(sid=>{
+            const c=sc[sid];if(!c)return;
+            const s=SCENARIOS[sid];
+            dh+=`<div style="border-left:3px solid var(--primary-light);padding:6px 10px;margin:6px 0;font-size:13px;font-weight:400">
+                <strong>${s.emoji} ${s.title}</strong><br>선택: ${esc(c.label||'-')}<br>이유: ${esc(c.reason||'-')}<br>역지사지: ${esc(c.empathy||'-')} ${esc(c.empathyText||'')}</div>`;
+        });
+        dh+=`<div style="border-left:3px solid var(--success);padding:6px 10px;margin:6px 0;font-size:13px;font-weight:400"><strong>💜 다짐</strong><br>${esc(d.pledgePositive||'-')}<br>기대 효과: ${esc(d.pledgeEffect||'-')}</div>`;
+        dh+=`</div></div>`;
+    });
+    document.getElementById('tab-detail').innerHTML=dh;
+    // ── TTS 스크립트 ──
+    setTTS('tts-overview',`참여 ${total}명, 다짐 완료 ${completed}명입니다. 전체 선택 ${allCnt}개 중 ${posCnt}개가 좋은 물결을 만드는 선택이었습니다.`);
+    setTTS('tts-choices',ttsChoices||'아직 선택 기록이 없습니다.');
+    setTTS('tts-pledge',ttsPledge||'아직 작성된 다짐이 없습니다.');
+    setTTS('tts-text',`참여 ${total}명, 다짐 완료 ${completed}명. `+ttsChoices);
+}
+
+window.switchTab=function(id,btn){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id)?.classList.add('active');btn?.classList.add('active')};
+
+// ═══ 엑셀 ═══
+window.downloadExcel=function(){
+    const entries=Object.entries(dashboardData);if(!entries.length){showToast('데이터 없음','error');return}
+    const head=['닉네임','참여시간'];
+    ALL_ORDER.forEach(sid=>{const s=SCENARIOS[sid];head.push(`${s.title} 선택`,`${s.title} 이유`,`${s.title} 역지사지`)});
+    head.push('긍정 다짐','기대 효과','탐험 수','인사이트 수','완료');
+    const ws=[head];
+    entries.forEach(([n,d])=>{
+        const sc=d.scenarioChoices||{};
+        const row=[n,d.joinedAt?new Date(d.joinedAt).toLocaleString('ko-KR'):'-'];
+        ALL_ORDER.forEach(sid=>{const c=sc[sid]||{};row.push(c.label||'-',c.reason||'-',((c.empathy||'')+' '+(c.empathyText||'')).trim()||'-')});
+        row.push(d.pledgePositive||'-',d.pledgeEffect||'-',(d.completedScenarios||Object.keys(sc)).length,(d.earnedBadges||[]).length,d.completedAt?'✅':'-');
+        ws.push(row);
+    });
+    const s=XLSX.utils.aoa_to_sheet(ws);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,s,'결과');XLSX.writeFile(wb,`SEL_영향물결_${currentRoomCode}.xlsx`);showToast('📥 엑셀 다운로드!','success')};
+
+// ═══ PDF ═══
+window.downloadPDF=function(){
+    const entries=Object.entries(dashboardData);if(!entries.length){showToast('데이터 없음','error');return}
+    const total=entries.length;const completed=entries.filter(([,d])=>d.completedAt).length;
+    let posCnt=0,allCnt=0;
+    entries.forEach(([,d])=>{const sc=d.scenarioChoices||{};Object.keys(sc).forEach(sid=>{const c=SCENARIOS[sid]?.choices?.[sc[sid].choice];if(c){allCnt++;if(!c.negative)posCnt++}})});
+    let pb=`<div class="card"><h3>참여 현황</h3><p>참여 ${total}명 / 다짐 완료 ${completed}명</p><p>긍정 물결 선택: ${posCnt} / ${allCnt} (${allCnt?Math.round(posCnt/allCnt*100):0}%)</p></div>`;
+    ALL_ORDER.forEach(sid=>{
+        const s=SCENARIOS[sid];const counts={};let scT=0;
+        Object.keys(s.choices).forEach(k=>counts[k]=0);
+        entries.forEach(([,d])=>{const sc=d.scenarioChoices;if(sc&&sc[sid]&&counts[sc[sid].choice]!==undefined){counts[sc[sid].choice]++;scT++}});
+        if(scT===0)return;
+        pb+=`<div class="card"><h3>${s.emoji} ${s.title} (${scT}명)</h3><table><tr><th>선택</th><th>인원</th></tr>`;
+        Object.entries(s.choices).forEach(([k,ch])=>{pb+=`<tr><td>${esc(ch.label)}</td><td>${counts[k]}명</td></tr>`});
+        pb+=`</table></div>`;
+    });
+    pb+=`<div class="card"><h3>학생별 선택</h3><table><tr><th>닉네임</th>`;
+    ALL_ORDER.forEach(sid=>{pb+=`<th>${SCENARIOS[sid].emoji}</th>`});
+    pb+=`<th>다짐</th></tr>`;
+    entries.forEach(([n,d])=>{const sc=d.scenarioChoices||{};pb+=`<tr><td>${esc(n)}</td>`;ALL_ORDER.forEach(sid=>{pb+=`<td>${esc(sc[sid]?.label||'-')}</td>`});pb+=`<td>${esc(d.pledgePositive||'-')}</td></tr>`});
+    pb+=`</table></div>`;
+    pb+=`<div class="card"><h3>학생별 이유 · 역지사지 기록</h3>`;
+    entries.forEach(([n,d])=>{
+        const sc=d.scenarioChoices||{};
+        pb+=`<p><strong>🧒 ${esc(n)}</strong></p><table><tr><th>상황</th><th>선택</th><th>이유</th><th>역지사지</th></tr>`;
+        ALL_ORDER.forEach(sid=>{const c=sc[sid];if(!c)return;pb+=`<tr><td>${esc(SCENARIOS[sid].title)}</td><td>${esc(c.label||'-')}</td><td>${esc(c.reason||'-')}</td><td>${esc(((c.empathy||'')+' '+(c.empathyText||'')).trim()||'-')}</td></tr>`});
+        pb+=`<tr><td>💜 다짐</td><td colspan="3">${esc(d.pledgePositive||'-')} / ${esc(d.pledgeEffect||'-')}</td></tr></table>`;
+    });
+    pb+=`</div>`;
+    try{const w=window.open('','_blank');if(w){w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>대시보드</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet"><style>*{font-family:'Noto Sans KR',sans-serif;margin:0;padding:0;box-sizing:border-box}body{padding:24px;font-size:14px;color:#1F2937;line-height:1.6}.card{border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin:12px 0;page-break-inside:avoid}table{width:100%;border-collapse:collapse;margin:8px 0}th,td{border:1px solid #E5E7EB;padding:6px 8px;text-align:left;font-size:12px}th{background:#F3F4F6;font-weight:700}h3{color:#7C3AED;font-size:16px;margin:8px 0}.g{background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;text-align:center}@media print{.g{display:none}}</style></head><body><div class="g">💡 "PDF로 저장" 선택하세요</div><div style="text-align:center;border-bottom:2px solid #7C3AED;padding-bottom:12px;margin-bottom:16px"><h2 style="color:#7C3AED">📊 나의 행동이 우리에게 미치는 영향</h2><p style="color:#6B7280;font-size:12px">방: ${currentRoomCode} | ${new Date().toLocaleString('ko-KR')}</p></div>${pb}<scr`+`ipt>setTimeout(()=>window.print(),1000)</scr`+`ipt></body></html>`);w.document.close();showToast('📄 새 창에서 인쇄됩니다.','success');return}}catch(e){}
+    try{showToast('📄 Ctrl+P로 PDF 저장하세요.','info');setTimeout(()=>window.print(),500)}catch(e){showToast('📄 Ctrl+P (Mac: ⌘+P)를 눌러주세요.','info')}};
+
+// ═══ TTS ═══
+let isSpeaking=false;
+window.speakSection=function(id){if(isSpeaking){window.speechSynthesis.cancel();isSpeaking=false}const el=document.getElementById(id);const t=(el?.textContent||el?.innerText||'').trim();if(!t){showToast('읽을 내용이 아직 없습니다.','error');return}const u=new SpeechSynthesisUtterance(t);u.lang='ko-KR';u.rate=0.9;u.onend=()=>{isSpeaking=false};window.speechSynthesis.speak(u);isSpeaking=true};
+window.stopSpeaking=function(){window.speechSynthesis.cancel();isSpeaking=false};
+window.previewScript=function(id){const el=document.getElementById(id);const t=(el?.textContent||el?.innerText||'').trim();document.getElementById('scriptText').textContent=t||'읽을 내용이 아직 없습니다.';document.getElementById('scriptModal').style.display='flex'};
+window.closeScriptModal=function(){document.getElementById('scriptModal').style.display='none'};
+
+// ═══ 초기화 ═══
+window.resetData=function(){showConfirmModal('모든 학생 데이터를 삭제하시겠습니까?<br><br>⚠️ 되돌릴 수 없습니다.<br>✅ 방 코드와 비밀번호는 그대로 유지되어 다시 접속할 수 있어요.',async()=>{await DB.clearStudents(currentRoomCode);dashboardData={};renderDashboard({});showToast('🗑️ 학생 데이터 초기화 완료','success')})};
+
+</script>
+</body>
+</html>

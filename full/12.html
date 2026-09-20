@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>규칙은 왜 필요할까</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Noto Sans KR',sans-serif;}
+:root{
+--primary:#7C3AED;--primary-light:#A78BFA;--primary-dark:#5B21B6;
+--gradient:linear-gradient(135deg,#7C3AED 0%,#A78BFA 50%,#C4B5FD 100%);
+--gradient-bg:linear-gradient(135deg,#EDE9FE 0%,#F5F3FF 50%,#FFFFFF 100%);
+--success:#10B981;--error:#EF4444;--warning:#F59E0B;
+--text:#1F2937;--text-light:#6B7280;--bg-card:rgba(255,255,255,0.95);
+}
+body{background:var(--gradient-bg);min-height:100vh;font-weight:700;font-size:18px;line-height:1.7;color:var(--text);}
+h1,h2,h3{font-weight:900;}
+.container{max-width:500px;margin:0 auto;padding:16px;}
+.screen{display:none;}.screen.active{display:block;animation:fadeIn 0.3s;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{transform:scale(0.5);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes glow{0%,100%{box-shadow:0 0 8px rgba(124,58,237,0.3)}50%{box-shadow:0 0 20px rgba(124,58,237,0.6)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.card{background:var(--bg-card);border-radius:20px;padding:24px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+.btn{padding:16px 24px;border-radius:16px;font-size:17px;font-weight:900;font-family:'Noto Sans KR',sans-serif;border:none;cursor:pointer;min-height:52px;transition:all 0.2s;width:100%;max-width:400px;display:block;margin:8px auto;}
+.btn-primary{background:var(--gradient);color:white;box-shadow:0 4px 15px rgba(124,58,237,0.3);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,0.4);}
+.btn-secondary{background:rgba(124,58,237,0.1);color:var(--primary);border:2px solid var(--primary-light);}
+.btn-danger{background:var(--error);color:white;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none!important;}
+.btn-small{padding:10px 16px;font-size:14px;min-height:40px;width:auto;display:inline-block;margin:4px;}
+input,textarea{min-height:48px;font-size:16px;font-family:'Noto Sans KR',sans-serif;font-weight:700;border:2px solid #E5E7EB;border-radius:12px;padding:12px 16px;width:100%;box-sizing:border-box;}
+input:focus,textarea:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(124,58,237,0.1);}
+textarea{min-height:80px;resize:vertical;}
+.privacy-notice{background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.15);border-radius:12px;padding:14px;font-size:13px;font-weight:400;color:var(--text-light);line-height:1.6;margin-top:16px;}
+.nav-buttons{display:flex;justify-content:space-between;margin-bottom:16px;gap:8px;}
+.nav-btn{background:none;border:none;color:var(--primary);font-weight:700;font-size:14px;cursor:pointer;padding:8px 12px;border-radius:8px;font-family:'Noto Sans KR',sans-serif;}
+.nav-btn:hover{background:rgba(124,58,237,0.08);}
+.badge{display:inline-block;background:rgba(124,58,237,0.1);color:var(--primary);padding:4px 12px;border-radius:20px;font-size:13px;font-weight:700;}
+
+/* Story */
+.story-box{background:linear-gradient(135deg,#F5F3FF,#EDE9FE);border-radius:16px;padding:20px;margin:12px 0;border-left:4px solid var(--primary);font-size:16px;line-height:1.8;font-weight:400;color:#374151;}
+.story-box .speaker{font-weight:900;color:var(--primary);display:block;margin-bottom:2px;font-size:14px;}
+.story-emoji{font-size:48px;text-align:center;margin:16px 0;animation:float 3s ease-in-out infinite;}
+
+/* Choice */
+.choice-btn{padding:16px;border:2px solid #E5E7EB;border-radius:14px;background:white;cursor:pointer;transition:all 0.2s;text-align:left;width:100%;margin:8px 0;font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700;color:var(--text);display:block;}
+.choice-btn:hover{border-color:var(--primary-light);background:rgba(124,58,237,0.03);}
+.choice-btn.selected{border-color:var(--primary);background:rgba(124,58,237,0.08);box-shadow:0 0 0 3px rgba(124,58,237,0.15);transform:scale(1.02);}
+.choice-btn.selected::after{content:' ✓';color:var(--primary);font-weight:900;}
+
+/* Sim result cards */
+.result-good{background:linear-gradient(135deg,#ECFDF5,#D1FAE5);border:2px solid var(--success);border-radius:16px;padding:20px;margin:12px 0;}
+.result-bad{background:linear-gradient(135deg,#FEF2F2,#FEE2E2);border:2px solid var(--error);border-radius:16px;padding:20px;margin:12px 0;}
+.result-mid{background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:2px solid var(--warning);border-radius:16px;padding:20px;margin:12px 0;}
+
+/* Rule Card 도감 */
+.rule-card-container{perspective:800px;margin:12px 0;}
+.rule-card-item{background:white;border:3px solid var(--primary-light);border-radius:20px;padding:20px;position:relative;overflow:hidden;transition:all 0.3s;}
+.rule-card-item.new{animation:popIn 0.5s ease-out;}
+.rule-card-item::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(135deg,transparent 40%,rgba(124,58,237,0.05) 50%,transparent 60%);transform:rotate(45deg);pointer-events:none;}
+.rule-card-item .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.rule-card-item .card-location{font-size:12px;color:var(--primary);font-weight:900;background:rgba(124,58,237,0.1);padding:2px 10px;border-radius:10px;}
+.rule-card-item .card-number{font-size:11px;color:var(--text-light);}
+.rule-card-item .card-rule{font-size:17px;font-weight:900;color:var(--text);margin:8px 0;}
+.rule-card-item .card-reason{font-size:14px;color:var(--text-light);font-weight:400;line-height:1.5;}
+.rule-card-item .card-author{font-size:12px;color:var(--primary-light);text-align:right;margin-top:8px;}
+.rule-card-item .card-votes{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0;}
+.vote-btn{background:none;border:2px solid #E5E7EB;border-radius:20px;padding:6px 14px;cursor:pointer;font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;transition:all 0.2s;}
+.vote-btn:hover{border-color:var(--primary);background:rgba(124,58,237,0.05);}
+.vote-btn.voted{border-color:var(--primary);background:rgba(124,58,237,0.1);color:var(--primary);}
+.vote-count{font-size:14px;font-weight:900;color:var(--primary);}
+
+/* 도감 */
+.dex-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:16px 0;}
+.dex-slot{border:2px dashed #E5E7EB;border-radius:14px;padding:14px;text-align:center;min-height:80px;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:all 0.3s;}
+.dex-slot.filled{border:2px solid var(--primary-light);background:rgba(124,58,237,0.04);border-style:solid;}
+.dex-slot .dex-emoji{font-size:24px;}
+.dex-slot .dex-name{font-size:12px;font-weight:700;margin-top:4px;}
+.dex-slot.empty{color:#ccc;font-size:28px;}
+
+/* Progress */
+.progress-bar{height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden;margin:8px 0;}
+.progress-fill{height:100%;background:var(--gradient);border-radius:4px;transition:width 0.5s;}
+.step-indicator{display:flex;justify-content:center;gap:6px;margin:16px 0;}
+.step-dot{width:10px;height:10px;border-radius:50%;background:#E5E7EB;transition:all 0.3s;}
+.step-dot.active{background:var(--primary);transform:scale(1.3);}
+.step-dot.done{background:var(--success);}
+
+/* Location grid */
+.location-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:16px 0;}
+.location-card{padding:20px 12px;border:2px solid #E5E7EB;border-radius:16px;background:white;cursor:pointer;transition:all 0.3s;text-align:center;}
+.location-card:hover{border-color:var(--primary-light);transform:translateY(-2px);}
+.location-card.selected{border-color:var(--primary);background:rgba(124,58,237,0.08);box-shadow:0 0 0 3px rgba(124,58,237,0.15);}
+.location-card.completed{border-color:var(--success);background:rgba(16,185,129,0.05);}
+.location-card .emoji{font-size:32px;display:block;margin-bottom:8px;}
+.location-card .name{font-size:15px;font-weight:900;}
+
+/* Tabs */
+.tab-buttons{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap;}
+.tab-btn{flex:1;min-width:60px;padding:10px 8px;border:none;background:rgba(124,58,237,0.08);color:var(--primary);border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.tab-btn.active{background:var(--primary);color:white;}
+.tab-content{display:none;}.tab-content.active{display:block;}
+
+/* Chart */
+.chart-row{display:flex;align-items:center;gap:8px;margin:8px 0;}
+.chart-label{width:80px;font-size:13px;font-weight:700;text-align:right;flex-shrink:0;}
+.chart-bar{flex:1;height:24px;background:#E5E7EB;border-radius:12px;overflow:hidden;}
+.chart-fill{height:100%;background:var(--gradient);border-radius:12px;transition:width 0.5s;}
+.chart-count{width:36px;font-size:13px;font-weight:900;color:var(--primary);text-align:right;}
+
+/* Toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(31,41,55,0.95);color:white;padding:14px 28px;border-radius:14px;font-size:15px;font-weight:700;z-index:10000;opacity:0;transition:all 0.3s;max-width:90%;text-align:center;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:5000;justify-content:center;align-items:center;padding:20px;}
+.modal-content{background:white;border-radius:20px;padding:28px;max-width:420px;width:100%;text-align:center;}
+.modal-icon{font-size:48px;margin-bottom:12px;}
+.modal-message{font-size:16px;line-height:1.7;margin-bottom:20px;color:var(--text);}
+.modal-buttons{display:flex;gap:10px;}.modal-buttons .btn{flex:1;}
+
+/* Comparison */
+.comparison{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0;}
+.compare-card{padding:16px;border-radius:14px;text-align:center;}
+.compare-card.before{background:linear-gradient(135deg,#FEE2E2,#FECACA);border:2px solid #EF4444;}
+.compare-card.after{background:linear-gradient(135deg,#D1FAE5,#A7F3D0);border:2px solid var(--success);}
+
+/* Responsive */
+@media(max-width:768px){body{font-size:16px;padding:8px;}.container{max-width:100%;padding:12px;}.btn{min-height:48px;font-size:16px;}}
+@media(min-width:769px){.container{max-width:600px;}}
+@media print{body *{visibility:hidden;}#dashboard-content,#dashboard-content *{visibility:visible;}#dashboard-content{position:absolute;left:0;top:0;width:100%;}.btn,.nav-buttons,.tab-buttons,#toast,.modal-overlay{display:none!important;}.card{break-inside:avoid;box-shadow:none;border:1px solid #ddd;}}
+</style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+<div id="confirmModal" class="modal-overlay">
+<div class="modal-content">
+<div class="modal-icon">⚠️</div>
+<div class="modal-message" id="confirmMessage"></div>
+<div class="modal-buttons">
+<button class="btn btn-secondary" onclick="closeConfirmModal()">취소</button>
+<button class="btn btn-primary" id="confirmOkBtn" style="background:var(--error)">확인</button>
+</div></div></div>
+
+<div class="container">
+
+<!-- ═══ 시작 화면 ═══ -->
+<div class="screen active" id="screen-start">
+<div style="text-align:center;padding:20px 0;">
+<div style="font-size:56px;animation:float 3s ease-in-out infinite;">📜</div>
+<h1 style="font-size:26px;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:12px 0;">규칙은 왜 필요할까</h1>
+<p style="color:var(--text-light);font-size:16px;font-weight:400;">함께 살아가기 위한 약속의 의미를 발견해요</p>
+<span class="badge" style="margin-top:12px;">⏱️ 예상 소요시간: 약 12~18분</span>
+</div>
+<button class="btn btn-primary" onclick="showScreen('screen-login')">👩‍🏫 방 만들기 / 입장하기</button>
+<button class="btn btn-secondary" onclick="startSoloMode()">🌟 혼자 체험하기</button>
+<div class="privacy-notice">🔐 <strong>안심하세요!</strong><br>방 코드는 입장할 때만 필요한 숫자일 뿐, 개인정보를 포함하지 않습니다. 닉네임에 개인정보를 넣지 마세요. 여러분의 익명성은 소중히 보호됩니다.</div>
+</div>
+
+<!-- ═══ 로그인 ═══ -->
+<div class="screen" id="screen-login">
+<div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-start')">← 처음으로</button></div>
+<div class="card">
+<h2 style="text-align:center;font-size:22px;margin-bottom:20px;">📜 규칙은 왜 필요할까</h2>
+<button class="btn btn-primary" onclick="showScreen('screen-create-room')" style="margin-bottom:8px;">👩‍🏫 방 만들기 (교사용)</button>
+<button class="btn btn-secondary" onclick="showScreen('screen-teacher-join')" style="margin-bottom:8px;">🔑 교사로 접속하기</button>
+<button class="btn btn-secondary" onclick="showScreen('screen-student-join')">🧒 학생으로 참여하기</button>
+</div>
+<div class="privacy-notice">🔐 방 코드와 닉네임만으로 참여하며, 개인정보는 수집하지 않습니다.</div>
+</div>
+
+<!-- ═══ 방 만들기 ═══ -->
+<div class="screen" id="screen-create-room">
+<div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+<div class="card">
+<h2 style="text-align:center;margin-bottom:16px;">👩‍🏫 방 만들기</h2>
+<div style="margin-bottom:12px;"><label style="font-size:14px;">교사 닉네임</label><input type="text" id="teacher-name" placeholder="예: 김선생님" maxlength="10"></div>
+<div style="margin-bottom:16px;"><label style="font-size:14px;">관리자 비밀번호 (숫자 4자리)</label><input type="password" id="teacher-pw" placeholder="숫자 4자리" maxlength="4" inputmode="numeric"></div>
+<button class="btn btn-primary" onclick="createRoom()">✨ 방 만들기</button>
+</div></div>
+
+<!-- ═══ 방 코드 안내 ═══ -->
+<div class="screen" id="screen-room-created">
+<div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+<div class="card" style="text-align:center;">
+<h2>🎉 방이 만들어졌어요!</h2>
+<p style="font-size:14px;color:var(--text-light);margin:8px 0;">학생들에게 이 코드를 알려주세요</p>
+<div id="room-code-display" style="font-size:48px;font-weight:900;color:var(--primary);letter-spacing:8px;margin:20px 0;"></div>
+<button class="btn btn-secondary" onclick="copyRoomCode()" style="margin-bottom:12px;">📋 코드 복사하기</button>
+<button class="btn btn-primary" onclick="enterDashboard()">📊 대시보드 바로가기</button>
+</div></div>
+
+<!-- ═══ 교사 접속 ═══ -->
+<div class="screen" id="screen-teacher-join">
+<div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+<div class="card">
+<h2 style="text-align:center;margin-bottom:16px;">🔑 교사로 접속</h2>
+<div style="margin-bottom:12px;"><label style="font-size:14px;">방 코드 (6자리)</label><input type="text" id="tj-code" placeholder="6자리 숫자" maxlength="6" inputmode="numeric"></div>
+<div style="margin-bottom:16px;"><label style="font-size:14px;">관리자 비밀번호</label><input type="password" id="tj-pw" placeholder="4자리 숫자" maxlength="4" inputmode="numeric"></div>
+<button class="btn btn-primary" onclick="joinAsTeacher()">📊 대시보드 입장</button>
+</div></div>
+
+<!-- ═══ 학생 접속 ═══ -->
+<div class="screen" id="screen-student-join">
+<div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+<div class="card">
+<h2 style="text-align:center;margin-bottom:16px;">🧒 학생으로 참여</h2>
+<div style="margin-bottom:12px;"><label style="font-size:14px;">방 코드 (6자리)</label><input type="text" id="student-room-code" placeholder="선생님이 알려준 코드" maxlength="6" inputmode="numeric"></div>
+<div style="margin-bottom:16px;"><label style="font-size:14px;">닉네임</label><input type="text" id="student-nickname" placeholder="나만의 닉네임 (개인정보 X)" maxlength="10"></div>
+<button class="btn btn-primary" onclick="joinAsStudent()">🚀 입장하기</button>
+</div></div>
+
+<!-- ═══ 스토리 ═══ -->
+<div class="screen" id="screen-story">
+<div class="nav-buttons"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div id="story-container"></div>
+</div>
+
+<!-- ═══ 메인 활동 ═══ -->
+<div class="screen" id="screen-main">
+<div class="nav-buttons"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div id="main-content"></div>
+</div>
+
+<!-- ═══ 완료 ═══ -->
+<div class="screen" id="screen-complete">
+<div class="nav-buttons"><button class="nav-btn" onclick="backToMain()">← 다시 탐험하기</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div class="card" style="text-align:center;">
+<div style="font-size:56px;margin-bottom:8px;animation:popIn 0.6s ease-out;">🎉</div>
+<h2 style="font-size:22px;">멋지게 해냈어요!</h2>
+<div id="complete-summary" style="margin:16px 0;"></div>
+<button class="btn btn-primary" onclick="backToMain()">🔄 규칙 카드 더 만들기</button>
+<button class="btn btn-secondary" onclick="startDetective('complete')">🕵️ 규칙 탐정 게임 도전하기</button>
+<button class="btn btn-secondary" id="solo-save-btn" onclick="downloadMyResult()" style="display:none;">📄 내 결과 저장하기</button>
+</div></div>
+
+<!-- ═══ 교사 대시보드 ═══ -->
+<div class="screen" id="screen-dashboard">
+<div class="nav-buttons"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div class="card">
+<h2 style="text-align:center;font-size:20px;">📊 교사 대시보드</h2>
+<p style="text-align:center;font-size:13px;color:var(--text-light);">방 코드: <strong id="dash-room-code"></strong> | <button class="nav-btn" onclick="refreshDashboard()" style="font-size:12px;">🔄 새로고침</button></p>
+</div>
+<div class="tab-buttons">
+<button class="tab-btn active" data-tab="tab-overview" onclick="switchTab('tab-overview',this)">📊 현황</button>
+<button class="tab-btn" data-tab="tab-detail" onclick="switchTab('tab-detail',this)">📋 상세</button>
+<button class="tab-btn" data-tab="tab-export" onclick="switchTab('tab-export',this)">📥 내보내기</button>
+<button class="tab-btn" data-tab="tab-tts" onclick="switchTab('tab-tts',this)">🔊 TTS</button>
+</div>
+<div id="dashboard-content">
+<div class="tab-content active" id="tab-overview"><div class="card"><p style="text-align:center;color:var(--text-light);">아직 참여한 학생이 없습니다.</p></div></div>
+<div class="tab-content" id="tab-detail"><div class="card"><p style="text-align:center;color:var(--text-light);">아직 참여한 학생이 없습니다.</p></div></div>
+<div class="tab-content" id="tab-export"><div class="card">
+<button class="btn btn-primary" onclick="downloadExcel()" style="margin-bottom:8px;">📥 엑셀 다운로드</button>
+<button class="btn btn-secondary" onclick="downloadPDF()">📄 PDF 다운로드</button>
+</div></div>
+<div class="tab-content" id="tab-tts"><div class="card" id="tts-content"><p style="text-align:center;color:var(--text-light);">읽어줄 내용이 없습니다.</p></div></div>
+</div>
+<div class="card" style="background:#FEF3C7;border:1px solid #F59E0B;font-size:13px;text-align:center;">⚠️ 수업이 끝나면 데이터 초기화를 눌러주세요. 30일 후 자동 삭제됩니다.</div>
+<button class="btn btn-danger" onclick="resetData()" style="margin-top:8px;">🗑️ 데이터 초기화</button>
+</div>
+
+</div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import{getAuth,signInAnonymously,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import{getFirestore,doc,setDoc,getDoc,deleteDoc,onSnapshot,collection,getDocs}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s",authDomain:"emo-dex.firebaseapp.com",projectId:"emo-dex",storageBucket:"emo-dex.firebasestorage.app",messagingSenderId:"994736049700",appId:"1:994736049700:web:8233fa7b68cd6e0cccd2b1",measurementId:"G-6YLB5C6VNR"};
+const APP_ID='sel-lesson-23';
+let app,auth,db,useFirebase=false,currentUser=null;
+try{app=initializeApp(firebaseConfig);auth=getAuth(app);db=getFirestore(app);useFirebase=true;}catch(e){}
+
+const localDB={};
+const DB={
+async saveRoom(c,d){if(useFirebase){try{await setDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',c),d,{merge:true});return;}catch(e){}}localDB['r_'+c]={...(localDB['r_'+c]||{}),...d};},
+async getRoom(c){if(useFirebase){try{const s=await getDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',c));return s.exists()?s.data():null;}catch(e){}}return localDB['r_'+c]||null;},
+async saveStudent(c,n,d){if(useFirebase){try{await setDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',c,'students',n),d,{merge:true});return;}catch(e){}}if(!localDB['s_'+c])localDB['s_'+c]={};localDB['s_'+c][n]={...(localDB['s_'+c]?.[n]||{}),...d};},
+async getStudent(c,n){if(useFirebase){try{const s=await getDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',c,'students',n));return s.exists()?s.data():null;}catch(e){}}return localDB['s_'+c]?.[n]||null;},
+async getAllStudents(c){if(useFirebase){try{const sn=await getDocs(collection(db,'artifacts',APP_ID,'public','data','rooms',c,'students'));const r={};sn.forEach(d=>r[d.id]=d.data());return r;}catch(e){}}return localDB['s_'+c]||{};},
+async clearStudents(c){if(useFirebase){try{const sn=await getDocs(collection(db,'artifacts',APP_ID,'public','data','rooms',c,'students'));for(const d of sn.docs)await deleteDoc(d.ref);return;}catch(e){}}if(localDB['s_'+c])localDB['s_'+c]={};},
+async deleteRoom(c){if(useFirebase){try{const sn=await getDocs(collection(db,'artifacts',APP_ID,'public','data','rooms',c,'students'));for(const d of sn.docs)await deleteDoc(d.ref);await deleteDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',c));}catch(e){}}delete localDB['r_'+c];delete localDB['s_'+c];},
+onStudentsChange(c,cb){if(useFirebase){try{return onSnapshot(collection(db,'artifacts',APP_ID,'public','data','rooms',c,'students'),sn=>{const r={};sn.forEach(d=>r[d.id]=d.data());cb(r);});}catch(e){}}cb(localDB['s_'+c]||{});return null;}
+};
+let authReady=new Promise(r=>{if(!auth){r(null);return;}const t=setTimeout(()=>r(null),5000);onAuthStateChanged(auth,u=>{if(u){currentUser=u;clearTimeout(t);r(u);}});signInAnonymously(auth).catch(()=>{clearTimeout(t);r(null);});});
+
+// ═══ State ═══
+let roomCode='',nickname='',isTeacher=false,isSoloMode=false;
+let unsubscribe=null,dashboardData={};
+let confirmCallback=null;
+// Activity state
+let storyPage=0,currentStep=0;
+let simCompleted={},simChoices={};
+let ruleCards=[],myVotes=new Set();
+let reflectionText='',reflectionRule='';
+let simDrafts={},draftRule='',draftReason='';
+let bestScore=0,gamesPlayed=0,detQ=[],detIdx=0,detScore=0,detReturn=0;
+const MAX_CARDS=6;
+const DEX_SLOTS=Array.from({length:MAX_CARDS},(_,i)=>i);
+
+// ═══ Utils ═══
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];});}
+let _saveTimer=null;
+function saveSoon(){clearTimeout(_saveTimer);_saveTimer=setTimeout(function(){saveMyData();},700);}
+function shuffleArr(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function showToast(m,t='info'){const e=document.getElementById('toast');e.textContent=m;e.style.background=t==='error'?'rgba(239,68,68,0.95)':t==='success'?'rgba(16,185,129,0.95)':'rgba(31,41,55,0.95)';e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000);}
+window.showScreen=function(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const t=document.getElementById(id);if(t){t.classList.add('active');window.scrollTo(0,0);}};
+window.showConfirmModal=function(msg,fn){document.getElementById('confirmMessage').innerHTML=msg;document.getElementById('confirmModal').style.display='flex';confirmCallback=fn;document.getElementById('confirmOkBtn').onclick=()=>{const cb=confirmCallback;closeConfirmModal();if(cb)cb();};};
+window.closeConfirmModal=function(){document.getElementById('confirmModal').style.display='none';confirmCallback=null;document.getElementById('confirmOkBtn').textContent='확인';document.getElementById('confirmOkBtn').style.background='var(--error)';};
+async function copyToClipboard(t){try{await navigator.clipboard.writeText(t);showToast('✅ 복사 완료!','success');}catch(e){const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0;left:-9999px';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');showToast('✅ 복사 완료!','success');}catch(e2){showToast('📋 코드: '+t+' (직접 복사해주세요)');}document.body.removeChild(ta);}}
+async function hashPW(p){const e=new TextEncoder().encode(p);const h=await crypto.subtle.digest('SHA-256',e);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('');}
+async function saveMyData(extra={}){if(isSoloMode||!roomCode||!nickname)return;await DB.saveStudent(roomCode,nickname,{simCompleted,simChoices,ruleCards,reflectionText,reflectionRule,cardCount:ruleCards.length,myVotes:Array.from(myVotes),simDrafts,draftRule,draftReason,bestScore,gamesPlayed,lastStep:currentStep,...extra});}
+
+// ═══ Room System ═══
+window.createRoom=async function(){await authReady;const n=document.getElementById('teacher-name').value.trim();const p=document.getElementById('teacher-pw').value.trim();if(!n){showToast('닉네임을 입력해주세요.','error');return;}if(!/^\d{4}$/.test(p)){showToast('비밀번호는 숫자 4자리입니다.','error');return;}const c=String(Math.floor(Math.random()*900000+100000));const exp=new Date();exp.setDate(exp.getDate()+30);await DB.saveRoom(c,{teacherName:n,password:await hashPW(p),createdAt:new Date().toISOString(),expiresAt:exp.toISOString()});roomCode=c;isTeacher=true;isSoloMode=false;document.getElementById('room-code-display').textContent=c;showScreen('screen-room-created');};
+window.copyRoomCode=function(){copyToClipboard(roomCode);};
+window.enterDashboard=function(){document.getElementById('dash-room-code').textContent=roomCode;showScreen('screen-dashboard');startDashboardListener();};
+window.joinAsTeacher=async function(){await authReady;const c=document.getElementById('tj-code').value.trim();const p=document.getElementById('tj-pw').value.trim();if(!c||!p){showToast('방 코드와 비밀번호를 입력해주세요.','error');return;}const room=await DB.getRoom(c);if(!room){showToast('존재하지 않는 방입니다.','error');return;}if(room.expiresAt&&new Date(room.expiresAt)<new Date()){await DB.deleteRoom(c);showToast('만료된 방입니다.','error');return;}if(room.password!==await hashPW(p)){showToast('비밀번호가 틀렸습니다.','error');return;}roomCode=c;isTeacher=true;isSoloMode=false;document.getElementById('dash-room-code').textContent=c;showScreen('screen-dashboard');startDashboardListener();};
+window.joinAsStudent=async function(){await authReady;const c=document.getElementById('student-room-code').value.trim();const n=document.getElementById('student-nickname').value.trim();if(!c||!n){showToast('방 코드와 닉네임을 입력해주세요.','error');return;}const room=await DB.getRoom(c);if(!room){showToast('존재하지 않는 방입니다.','error');return;}if(room.expiresAt&&new Date(room.expiresAt)<new Date()){await DB.deleteRoom(c);showToast('만료된 방입니다.','error');return;}
+const existing=await DB.getStudent(c,n);
+if(existing){showConfirmModal(`<strong>${esc(n)}</strong>님, 기록이 있어요!<br><br>📜 만든 규칙 카드: ${(existing.ruleCards||[]).length}개<br>🌪️ 체험한 시뮬레이션: ${Object.keys(existing.simCompleted||{}).length}곳<br><br>이어서 할까요?`,async()=>{roomCode=c;nickname=n;isTeacher=false;isSoloMode=false;restoreData(existing);await DB.saveStudent(c,n,{lastVisit:new Date().toISOString()});showToast(`🎉 ${n}님, 다시 오셨군요!`,'success');renderMain();showScreen('screen-main');});document.getElementById('confirmOkBtn').textContent='이어하기';document.getElementById('confirmOkBtn').style.background='var(--primary)';return;}
+roomCode=c;nickname=n;isTeacher=false;isSoloMode=false;resetState();await DB.saveStudent(c,n,{joinedAt:new Date().toISOString(),ruleCards:[],simCompleted:{},simChoices:{}});enterStory();};
+function restoreData(d){simCompleted=d.simCompleted||{};simChoices=d.simChoices||{};ruleCards=d.ruleCards||[];reflectionText=d.reflectionText||'';reflectionRule=d.reflectionRule||'';myVotes=new Set(d.myVotes||[]);simDrafts=d.simDrafts||{};draftRule=d.draftRule||'';draftReason=d.draftReason||'';bestScore=d.bestScore||0;gamesPlayed=d.gamesPlayed||0;storyPage=0;pickedLoc='';const ls=(typeof d.lastStep==='number')?Math.min(3,Math.max(0,d.lastStep)):0;currentStep=d.completedAt?2:ls;}
+function resetState(){storyPage=0;currentStep=0;simCompleted={};simChoices={};ruleCards=[];myVotes=new Set();reflectionText='';reflectionRule='';simDrafts={};draftRule='';draftReason='';bestScore=0;gamesPlayed=0;detQ=[];detIdx=0;detScore=0;pickedLoc='';}
+window.startSoloMode=function(){isSoloMode=true;isTeacher=false;nickname='탐험가';resetState();enterStory();};
+
+// ═══════════════════════════════════════════════════════
+// 📖 STORY — 선택형 인터랙티브 스토리
+// ═══════════════════════════════════════════════════════
+const STORY=[
+{emoji:'📚',title:'어느 날, 도서관에서',text:'도서관 이용 시간이에요.\n\n민지는 좋아하는 추리 소설을 골라 맨 앞자리에 앉았어요.\n손에 연필을 쥐고, 범인이 누군지 추리하며 밑줄을 긋고 있었죠.\n\n<em>"이번엔 꼭 범인을 맞춰볼 거야..."</em>'},
+{emoji:'😆',title:'뒤쪽에서 들려오는 소리',text:'그때, 뒤쪽 테이블에서 웃음소리가 커지기 시작했어요.\n\n준호와 서연이가 재미있는 만화책을 함께 보고 있었거든요.\n\n<em>"야, 이거 봐! 완전 웃겨!"</em> 😂\n<em>"ㅋㅋㅋㅋ 진짜?!"</em>\n\n속삭임이 어느새 깔깔 웃음이 되었어요.'},
+{emoji:'😣',title:'민지의 마음',text:'민지는 책에서 고개를 들었어요.\n한숨을 쉬며 뒤를 돌아봤지만... 아이들은 신나게 떠들고 있었어요.\n\n<strong>민지가 이 순간 어떻게 했을까요?</strong>',
+choices:[
+{text:'😤 "시끄러워! 조용히 좀 해!"라고 소리쳤다',key:'angry'},
+{text:'😢 아무 말도 못 하고 책을 덮고 나갔다',key:'leave'},
+{text:'🙋 "나 지금 책 읽고 있어서, 조금만 작게 말해줄 수 있어?"라고 말했다',key:'ask'}
+]},
+{emoji:'',title:'',text:'',dynamic:true,id:'story-result'},
+{emoji:'💭',title:'같은 공간, 다른 마음',text:'잠깐, 생각해봐요.\n\n민지는 <strong>"방해받았다"</strong>고 느꼈어요.\n준호와 서연이는 <strong>"재미있게 놀았을 뿐"</strong>이라고 생각했어요.\n\n아무도 나쁜 뜻은 없었어요.\n그런데 왜 이런 일이 계속 생기는 걸까요?'},
+{emoji:'🪧',title:'벽에 붙어 있던 안내문',text:'그런데 이상해요.\n\n도서관 벽에는 이미 이렇게 붙어 있었어요.\n\n<strong style="color:var(--error);">「도서관에서 떠들지 마시오. 위반 시 이용 금지」</strong>\n\n규칙이 <strong>없었던 게 아니에요.</strong> 분명히 있었어요.\n\n<strong>그런데 왜 아무도 지키지 않았을까요?</strong>',field:'whyChoice',
+choices:[
+{text:'🙈 왜 필요한 규칙인지 몰라서',key:'noreason'},
+{text:'😨 혼내는 말투라서 마음에 남지 않아서',key:'scary'},
+{text:'🙋 우리가 함께 만든 규칙이 아니라서',key:'notmine'}
+]},
+{emoji:'',title:'',text:'',dynamic:true,id:'why-result'},
+{emoji:'🔑',title:'오늘의 모험',text:'<strong>혹시, 규칙이 없어서 이런 일이 생긴 걸까요?</strong>\n\n아니면...\n<strong style="color:var(--primary);">규칙이 "왜" 필요한지 몰라서 생긴 걸까요?</strong>\n\n오늘 우리는 3가지 모험을 떠나요!\n\n🌪️ 규칙 없는 세상 체험\n💡 좋은 규칙의 비밀 발견\n📜 우리만의 규칙 카드 만들기'}
+];
+
+const STORY_RESULTS={
+angry:{emoji:'😠',title:'소리친 결과',text:'민지가 소리치자, 도서관이 조용해졌어요.\n하지만...\n\n준호: <em>"뭐야, 왜 화를 내?"</em>\n서연: <em>"우리가 뭘 잘못했는데..."</em>\n\n분위기가 싸해졌어요. 민지도 마음이 불편했어요.\n<strong>조용해지긴 했지만, 모두의 기분이 나빠졌어요.</strong>',footer:'<div class="result-mid" style="margin-top:12px;font-size:14px;text-align:center;">💡 만약 민지가 <strong>"부탁"</strong>을 했다면 어땠을까요?<br>서로의 마음을 <strong>말로 전하는 것</strong>이 첫 번째 열쇠예요.</div>'},
+leave:{emoji:'😢',title:'그냥 나간 결과',text:'민지는 아무 말도 하지 못하고 도서관을 나왔어요.\n\n복도에 서서 생각했어요.\n<em>"나는 그냥 책 읽고 싶었을 뿐인데..."</em>\n\n준호와 서연이는 민지가 왜 나갔는지 모를 거예요.\n<strong>민지의 마음은 아무도 모르는 채 남아있었어요.</strong>',footer:'<div class="result-mid" style="margin-top:12px;font-size:14px;text-align:center;">💡 만약 민지가 <strong>"부탁"</strong>을 했다면 어땠을까요?<br>서로의 마음을 <strong>말로 전하는 것</strong>이 첫 번째 열쇠예요.</div>'},
+ask:{emoji:'🙋',title:'부탁한 결과',text:'민지가 조심스럽게 말했어요.\n\n<em>"나 지금 책 읽고 있어서, 조금만 작게 말해줄 수 있어?"</em>\n\n준호: <em>"아, 미안! 우리 좀 시끄러웠구나."</em>\n서연: <em>"그래, 작게 이야기하자!"</em>\n\n<strong>서로의 마음을 알게 되니, 함께 지낼 수 있는 방법이 보였어요.</strong>',footer:'<div class="result-good" style="margin-top:12px;font-size:14px;text-align:center;">💡 서로의 마음을 <strong>말로 전했더니</strong> 함께 지낼 수 있는 방법이 보였어요!<br>하지만... 매번 이렇게 말하기 쉬울까요?</div>'}
+};
+
+const WHY_RESULTS={
+noreason:{emoji:'🙈',title:'"왜"를 몰랐던 규칙',text:'민지가 준호에게 물었어요.\n<em>"저기 안내문 봤어?"</em>\n<em>"봤지. 근데 그냥 벽에 붙어 있는 거잖아."</em>\n\n준호는 그 규칙이 <strong>누구를 위한 것인지</strong> 한 번도 생각해본 적이 없었어요.\n민지가 책에 푹 빠져 있다는 것도, 그래서 조용함이 필요했다는 것도요.',footer:'<div class="result-mid" style="margin-top:12px;font-size:14px;text-align:center;">💡 이유를 모르는 규칙은 <strong>그냥 벽에 붙은 종이</strong>가 돼요.</div>'},
+scary:{emoji:'😨',title:'혼내는 말투의 규칙',text:'<em>"위반 시 이용 금지"</em>\n\n서연이가 말했어요.\n<em>"저 말 보면 무섭기만 하고, 기분이 나빠서 더 하기 싫어져."</em>\n\n혼나지 않으려고 잠깐 조용해질 수는 있어요.\n하지만 지켜보는 어른이 사라지면, 금세 원래대로 돌아가죠.',footer:'<div class="result-mid" style="margin-top:12px;font-size:14px;text-align:center;">💡 무서워서 지키는 규칙은 <strong>보는 사람이 없으면</strong> 사라져요.</div>'},
+notmine:{emoji:'🙋',title:'우리가 만들지 않은 규칙',text:'서연이가 고개를 갸웃했어요.\n<em>"저 안내문, 누가 언제 붙였는지도 몰라."</em>\n\n누군가 정해서 붙여둔 규칙이었어요.\n준호와 서연이는 <strong>그 약속에 한 번도 참여한 적이 없었어요.</strong>\n\n민지가 조심스럽게 말했어요.\n<em>"그럼... 우리가 같이 정해보면 어떨까?"</em>',footer:'<div class="result-good" style="margin-top:12px;font-size:14px;text-align:center;">💡 <strong>함께 만든 약속</strong>은 지키고 싶어져요. 내 마음도 담겨 있으니까요.</div>'}
+};
+
+function enterStory(){storyPage=0;renderStory();showScreen('screen-story');}
+function renderStory(){
+const c=document.getElementById('story-container');
+const p=STORY[storyPage];
+if(!p){renderMain();showScreen('screen-main');return;}
+const isLast=storyPage===STORY.length-1;
+const total=STORY.length;
+
+if(p.dynamic){
+const isWhy=p.id==='why-result';
+const choice=isWhy?(simChoices.whyChoice||'notmine'):(simChoices.storyChoice||'ask');
+const r=(isWhy?WHY_RESULTS:STORY_RESULTS)[choice];
+c.innerHTML=`
+<div class="step-indicator">${STORY.map((_,i)=>`<div class="step-dot ${i<storyPage?'done':''} ${i===storyPage?'active':''}"></div>`).join('')}</div>
+<div class="card">
+<div class="story-emoji">${r.emoji}</div>
+<h2 style="text-align:center;font-size:20px;margin-bottom:12px;">${r.title}</h2>
+<div class="story-box">${r.text.replace(/\n/g,'<br>')}</div>
+${r.footer||''}
+<button class="btn btn-primary" onclick="nextStory()" style="margin-top:16px;">다음 →</button>
+</div>`;
+return;
+}
+
+c.innerHTML=`
+<div class="step-indicator">${STORY.map((_,i)=>`<div class="step-dot ${i<storyPage?'done':''} ${i===storyPage?'active':''}"></div>`).join('')}</div>
+<div class="card">
+${p.emoji?`<div class="story-emoji">${p.emoji}</div>`:''}
+${p.title?`<h2 style="text-align:center;font-size:20px;margin-bottom:12px;">${p.title}</h2>`:''}
+<div class="story-box">${p.text.replace(/\n/g,'<br>')}</div>
+${p.choices?`
+<div style="margin-top:16px;">
+${p.choices.map(ch=>`<button class="choice-btn" onclick="makeStoryChoice('${ch.key}')">${ch.text}</button>`).join('')}
+</div>`:`
+<div style="display:flex;gap:8px;margin-top:16px;">
+${storyPage>0?`<button class="btn btn-secondary" onclick="prevStory()" style="flex:1;">← 이전</button>`:''}
+<button class="btn btn-primary" onclick="${isLast?'finishStory()':'nextStory()'}" style="flex:1;">${isLast?'🚀 모험 시작! →':'다음 →'}</button>
+</div>`}
+</div>`;
+}
+window.nextStory=function(){storyPage++;renderStory();};
+window.prevStory=function(){if(storyPage>0){storyPage--;renderStory();}};
+window.makeStoryChoice=async function(key){const _p=STORY[storyPage];simChoices[(_p&&_p.field)||'storyChoice']=key;if(!isSoloMode)await saveMyData();storyPage++;renderStory();};
+window.finishStory=function(){currentStep=0;renderMain();showScreen('screen-main');};
+
+// ═══════════════════════════════════════════════════════
+// 🎮 MAIN ACTIVITY
+// ═══════════════════════════════════════════════════════
+
+const LOCATIONS=[
+{key:'classroom',emoji:'🏫',name:'교실'},
+{key:'playground',emoji:'⚽',name:'운동장'},
+{key:'cafeteria',emoji:'🍽️',name:'급식실'},
+{key:'hallway',emoji:'🚶',name:'복도'}
+];
+
+// 시뮬레이션 시나리오 (선택형 분기)
+const SIM_SCENARIOS={
+classroom:{
+intro:'쉬는 시간이 끝나고 수업이 시작됐어요.\n그런데 규칙이 없어서...\n\n아이들이 자리에 앉지 않고 돌아다니고 있어요.\n누군가는 큰 소리로 노래를 부르고, 옆 친구 필통을 마음대로 가져갔어요.',
+question:'이 교실에서 당신은 누구인가요?',
+choices:[
+{text:'📖 조용히 공부하고 싶은 아이',key:'quiet',result:{type:'bad',emoji:'😞',text:'아무리 집중하려 해도 소리가 너무 커요.\n내 필통도 누가 가져갔는데, 돌려달라고 해도 "잠깐 쓰는 건데 뭐~"라고 해요.\n\n<strong>규칙이 없으면, 조용히 있는 사람만 손해보는 거 아닌가요?</strong>',feeling:'억울하고 답답하다'}},
+{text:'🎉 신나게 놀고 있는 아이',key:'playful',result:{type:'mid',emoji:'🤔',text:'처음에는 자유롭고 재미있었어요!\n\n그런데... 더 힘센 아이가 내 자리를 차지하고, 내 물건도 가져갔어요.\n"규칙 없잖아~" 하면서요.\n\n<strong>규칙이 없으면, 나도 피해를 볼 수 있다는 걸 깨달았어요.</strong>',feeling:'처음엔 좋았는데 나중엔 불안하다'}},
+{text:'👀 지켜보고 있는 아이',key:'observer',result:{type:'mid',emoji:'😰',text:'어떤 아이는 신나고, 어떤 아이는 울고 있어요.\n선생님도 수업을 시작할 수가 없어요.\n\n가장 힘든 건 "도와달라"고 말해도 아무도 안 들어준다는 거예요.\n\n<strong>규칙이 없으면, 도움이 필요한 사람의 목소리가 묻혀요.</strong>',feeling:'혼란스럽고 무섭다'}},
+{text:'🙋 "우리 같이 정해보자"고 말해본 아이',key:'proposer',result:{type:'good',emoji:'💡',text:'용기를 내서 칠판 앞에 섰어요.\n<em>"우리 수업 시간에 어떻게 하면 좋을지, 같이 정해볼래?"</em>\n\n처음엔 아무도 듣지 않았어요.\n그런데 한 명, 두 명... 아이들이 모이기 시작했어요.\n\n<strong>규칙은 누가 시켜서 생기는 게 아니라, 함께 정할 때 시작돼요.</strong>',feeling:'떨렸지만 뿌듯하다'}}
+]},
+playground:{
+intro:'점심시간, 운동장에 나왔어요.\n규칙이 없어서...\n\n축구를 하는데 반칙을 해도 뭐라 할 수 없어요.\n그네를 타고 싶은데, 먼저 온 아이가 계속 안 내려와요.',
+question:'운동장에서 어떤 일을 겪고 있나요?',
+choices:[
+{text:'⚽ 축구하다가 발을 밟혔는데 아무도 사과 안 해',key:'hurt',result:{type:'bad',emoji:'😤',text:'"반칙이잖아!"라고 외쳤지만,\n"규칙 없는데 뭐가 반칙이야?"라는 대답이 돌아왔어요.\n\n발이 아픈데 게임은 계속됐어요.\n\n<strong>규칙이 없으면, 아픈 사람도 보호받지 못해요.</strong>',feeling:'아프고 화가 난다'}},
+{text:'🎠 그네를 30분째 기다리고 있어',key:'wait',result:{type:'bad',emoji:'😢',text:'앞에 타고 있는 아이에게 "교대해줘"라고 했지만,\n"순서 같은 건 없어~"라고 했어요.\n\n<strong>규칙이 없으면, 양보의 기준이 사라져요.</strong>\n기다리는 사람의 마음은 점점 지쳐가요.',feeling:'서운하고 기다리기 지친다'}},
+{text:'💪 내가 가장 잘하니까 맘대로 하고 있어',key:'strong',result:{type:'mid',emoji:'🤔',text:'처음엔 좋았어요. 내 맘대로 팀을 정하고, 규칙을 바꿨어요.\n\n그런데... 아무도 같이 놀자고 안 해요.\n"쟤는 맨날 자기 맘대로야"라고 수군거려요.\n\n<strong>규칙 없이 힘으로만 하면, 결국 친구를 잃게 돼요.</strong>',feeling:'외롭고 당황스럽다'}},
+{text:'🧍 끼워달라는 말을 못 하고 구석에 서 있어',key:'left',result:{type:'bad',emoji:'😔',text:'축구도, 그네도, 피구도...\n"나도 같이 하자"고 말할 틈이 없었어요.\n\n순서도 없고 팀을 정하는 방법도 없으니,\n목소리가 큰 아이들끼리 다 정해버려요.\n\n<strong>규칙이 없으면, 조용한 사람은 아예 자리를 얻지 못해요.</strong>',feeling:'혼자 남은 것 같고 서럽다'}}
+]},
+cafeteria:{
+intro:'급식 시간이에요.\n규칙이 없어서...\n\n줄을 서지 않아요. 먹고 싶은 만큼 마음대로 가져가요.',
+question:'급식실에서 무슨 일이 벌어지고 있나요?',
+choices:[
+{text:'🍖 좋아하는 반찬을 잔뜩 가져왔다!',key:'greedy',result:{type:'mid',emoji:'😬',text:'치킨을 5조각이나 가져왔어요! 신난다!\n\n그런데 뒤에 오는 친구들한테는 남은 게 없었어요.\n한 아이가 빈 접시를 들고 서 있는 걸 봤어요.\n\n<strong>나만 많이 가져가면, 누군가는 굶게 돼요.</strong>',feeling:'처음엔 좋았지만, 미안해졌다'}},
+{text:'😤 새치기당해서 밥을 늦게 받았다',key:'cutline',result:{type:'bad',emoji:'😡',text:'차례대로 기다리고 있었는데,\n몸집이 큰 아이가 슬쩍 앞으로 끼어들었어요.\n\n"어쩔~"이라는 한 마디에 아무것도 못 했어요.\n\n<strong>규칙이 없으면, 양심보다 "힘"이 이기게 돼요.</strong>',feeling:'불공평하고 억울하다'}},
+{text:'🍽️ 잔반을 아무 데나 두고 나갔다',key:'messy',result:{type:'bad',emoji:'🤢',text:'귀찮아서 식판을 아무 데나 놓고 나왔어요.\n\n다음 시간에 급식실에 갔더니... 파리가 날아다니고, 냄새가 심해요.\n"누가 치우는 거야?" — 아무도 치우지 않았어요.\n\n<strong>규칙이 없으면, "누군가 하겠지"만 남고 아무도 안 해요.</strong>',feeling:'지저분하고 불쾌하다'}},
+{text:'🥄 알레르기가 있는데 아무도 확인해주지 않아',key:'allergy',result:{type:'bad',emoji:'😰',text:'나는 새우를 먹으면 온몸이 부어올라요.\n그런데 배식 순서도, 확인해주는 사람도 없어요.\n\n<em>"각자 알아서 먹어~"</em>\n\n무서워서 아무것도 못 먹고 빈 식판 앞에 앉아 있었어요.\n\n<strong>규칙은 가장 도움이 필요한 사람을 먼저 지켜주는 장치예요.</strong>',feeling:'불안하고 무섭다'}}
+]},
+hallway:{
+intro:'수업이 끝나고 복도에 나왔어요.\n규칙이 없어서...\n\n아이들이 뛰어다니고, 문을 세게 여닫아요.',
+question:'복도에서 무슨 일이 벌어졌나요?',
+choices:[
+{text:'🏃 뛰어가다가 모퉁이에서 부딪혔다!',key:'crash',result:{type:'bad',emoji:'🤕',text:'급하게 뛰어가다가 모퉁이에서 작은 1학년 아이와 부딪혔어요!\n\n아이가 넘어져서 울기 시작했어요.\n"미안..." 했지만, 다친 건 돌릴 수 없었어요.\n\n<strong>복도에서 뛰지 않는 규칙은, 누군가를 다치게 하지 않기 위한 약속이었어요.</strong>',feeling:'미안하고 후회된다'}},
+{text:'📢 큰 소리로 떠들었더니 옆 반이 시험 중이었다',key:'loud',result:{type:'mid',emoji:'😳',text:'"야! 빨리 와!" 하고 큰 소리로 불렀어요.\n\n그런데 옆 반 문이 열리더니 선생님이 나왔어요.\n"지금 우리 반 시험 보고 있는데요..."\n\n몰랐어요. 내 큰 소리가 다른 반을 방해하고 있었다는 걸.\n\n<strong>같은 건물에서 함께 지내려면, 서로를 생각하는 약속이 필요해요.</strong>',feeling:'당황스럽고 미안하다'}},
+{text:'🚪 문을 세게 닫았더니 뒤에 사람이 있었다',key:'door',result:{type:'bad',emoji:'😨',text:'교실 문을 "쾅!" 하고 닫았어요.\n\n그런데... "으악!" 하는 비명.\n뒤에서 오던 친구의 손가락이 문틈에 끼었어요.\n\n친구가 손을 붙잡고 울었어요.\n\n<strong>"조심"이라는 규칙은, 이런 사고를 막기 위해 있는 거였어요.</strong>',feeling:'무섭고 정말 미안하다'}},
+{text:'🫱 넘어진 친구를 나 혼자 도와줬다',key:'helper',result:{type:'mid',emoji:'🧹',text:'복도에 물이 쏟아져 있었어요. 아무도 치우지 않았죠.\n지나가던 친구가 미끄러져 넘어졌어요.\n\n내가 달려가 일으켜 세우고, 휴지로 물을 닦았어요.\n\n그런데 다음 날에도, 그 다음 날에도 똑같은 일이 벌어졌어요.\n\n<strong>착한 마음만으로는 부족해요. 모두가 함께 지킬 약속이 있어야 반복되지 않아요.</strong>',feeling:'고맙기도 하고, 답답하기도 하다'}}
+]}
+};
+
+function renderMain(){
+const c=document.getElementById('main-content');
+if(currentStep===0)renderStep0(c);
+else if(currentStep===1)renderStep1(c);
+else if(currentStep===2)renderStep2(c);
+else if(currentStep===3)renderStep3(c);
+else {currentStep=0;renderStep0(c);}
+}
+window.renderMain=renderMain;
+
+function perspCount(rec){if(!rec)return 0;if(rec.perspectives)return rec.perspectives.length;return rec.choiceKey?1:0;}
+function perspKeys(rec){if(!rec)return [];if(rec.perspectives)return rec.perspectives.map(p=>p.choiceKey);return rec.choiceKey?[rec.choiceKey]:[];}
+
+// ───── Step 0: 규칙 없는 세상 시뮬레이션 (선택형 분기) ─────
+function renderStep0(c){
+const done=Object.keys(simCompleted).length;
+const totalLoc=LOCATIONS.length;
+let persp=0,maxPersp=0;
+LOCATIONS.forEach(l=>{persp+=perspCount(simCompleted[l.key]);maxPersp+=SIM_SCENARIOS[l.key].choices.length;});
+c.innerHTML=`
+<div class="step-indicator"><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+<div class="card">
+<h2 style="text-align:center;font-size:20px;">🌪️ 규칙이 사라진 세상</h2>
+<p style="text-align:center;font-size:15px;color:var(--text-light);margin:8px 0 16px;">장소를 골라보세요. 규칙이 사라지면 어떤 일이 벌어질까요?<br>직접 체험해봐요!</p>
+<div class="location-grid">
+${LOCATIONS.map(l=>{const n=perspCount(simCompleted[l.key]);const t=SIM_SCENARIOS[l.key].choices.length;return `
+<div class="location-card ${simCompleted[l.key]?'completed':''}" onclick="enterSim('${l.key}')">
+<span class="emoji">${l.emoji}</span>
+<span class="name">${l.name}</span>
+${simCompleted[l.key]?`<div style="font-size:11px;color:var(--success);margin-top:4px;">✅ ${n}/${t}가지 입장</div>`:'<div style="font-size:11px;color:var(--text-light);margin-top:4px;">터치하여 체험</div>'}
+</div>`;}).join('')}
+</div>
+<div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100,done/totalLoc*100)}%"></div></div>
+<p style="font-size:13px;color:var(--text-light);text-align:center;">${done}/${totalLoc}곳 체험 완료 ${done>=2?'':'| 최소 2곳 이상 체험하세요'}</p>
+<p style="font-size:12px;color:var(--text-light);text-align:center;margin-top:4px;">👀 같은 장소도 <strong>다른 사람의 입장</strong>이 되어 다시 체험할 수 있어요 (${persp}/${maxPersp}가지 입장 체험)</p>
+${done>=2?`<button class="btn btn-primary" onclick="goStep(1)" style="margin-top:12px;">💡 규칙의 비밀 발견하기 →</button>`:''}
+</div>
+<div class="card" style="text-align:center;">
+<h3 style="font-size:16px;">🕵️ 보너스: 규칙 탐정 게임</h3>
+<p style="font-size:13px;color:var(--text-light);font-weight:400;margin:6px 0;">이 규칙, 좋은 규칙일까요 아쉬운 규칙일까요?<br>탐정이 되어 판단하고, 더 좋은 말로 바꿔보세요!</p>
+${gamesPlayed?`<p style="font-size:13px;">⭐ 최고 기록 <strong style="color:var(--primary);">${bestScore}점</strong> · 도전 ${gamesPlayed}회</p>`:''}
+<button class="btn btn-secondary" onclick="startDetective()">🕵️ 도전하기</button>
+</div>`;
+}
+
+window.enterSim=function(key){
+const sc=SIM_SCENARIOS[key];if(!sc)return;
+const loc=LOCATIONS.find(l=>l.key===key);
+const doneKeys=perspKeys(simCompleted[key]);
+const c=document.getElementById('main-content');
+c.innerHTML=`
+<div class="card">
+<div style="font-size:40px;text-align:center;margin-bottom:8px;">${loc.emoji} 🚫</div>
+<h2 style="text-align:center;font-size:18px;">규칙 없는 ${loc.name}</h2>
+<div class="story-box" style="margin:12px 0;">${sc.intro.replace(/\n/g,'<br>')}</div>
+<h3 style="font-size:16px;margin:16px 0 8px;">${sc.question}</h3>
+${doneKeys.length?`<p style="font-size:12px;color:var(--success);text-align:center;margin-bottom:6px;">✅ ${doneKeys.length}가지 입장을 체험했어요 (${sc.choices.length}가지 중) — 다른 입장도 골라보세요!</p>`:''}
+${sc.choices.map(ch=>`<button class="choice-btn ${doneKeys.indexOf(ch.key)>=0?'selected':''}" onclick="simChoice('${key}','${ch.key}')">${ch.text}</button>`).join('')}
+<button class="btn btn-secondary" onclick="goStep(0)" style="margin-top:12px;">← 장소 선택으로</button>
+</div>`;
+};
+
+let simDraftLoc='',simDraftKey='';
+window.saveSimDraft=function(){const t=document.getElementById('sim-feeling');if(!t||!simDraftLoc)return;simDrafts[simDraftLoc+'|'+simDraftKey]=t.value;saveSoon();};
+
+window.simChoice=async function(loc,choiceKey){
+const sc=SIM_SCENARIOS[loc];
+const choice=sc.choices.find(ch=>ch.key===choiceKey);if(!choice)return;
+const r=choice.result;
+simChoices[loc]=choiceKey;simDraftLoc=loc;simDraftKey=choiceKey;
+const rec=simCompleted[loc];
+let prev='';
+if(rec){if(rec.perspectives){const f=rec.perspectives.find(p=>p.choiceKey===choiceKey);if(f)prev=f.feeling||'';}else if(rec.choiceKey===choiceKey)prev=rec.feeling||'';}
+if(simDrafts[loc+'|'+choiceKey])prev=simDrafts[loc+'|'+choiceKey];
+const c=document.getElementById('main-content');
+c.innerHTML=`
+<div class="card">
+<div style="font-size:48px;text-align:center;animation:popIn 0.5s ease-out;">${r.emoji}</div>
+<div class="${r.type==='bad'?'result-bad':r.type==='good'?'result-good':'result-mid'}" style="margin:12px 0;">
+${r.text.replace(/\n/g,'<br>')}
+</div>
+<div class="card" style="padding:14px;background:rgba(124,58,237,0.03);">
+<label style="font-size:14px;font-weight:900;">이 상황에서 어떤 기분이 들었어요?</label>
+<p style="font-size:13px;color:var(--text-light);margin:4px 0;">💡 힌트: ${r.feeling}</p>
+<textarea id="sim-feeling" oninput="saveSimDraft()" placeholder="나의 느낌을 적어보세요..." style="margin-top:6px;min-height:60px;">${esc(prev)}</textarea>
+</div>
+<button class="btn btn-primary" onclick="saveSim('${loc}','${choiceKey}')" style="margin-top:12px;">💾 체험 완료!</button>
+<button class="btn btn-secondary" onclick="enterSim('${loc}')">← 다른 입장 골라보기</button>
+</div>`;
+};
+
+window.saveSim=async function(loc,choiceKey){
+const feeling=document.getElementById('sim-feeling')?.value.trim();
+if(!feeling){showToast('느낌을 적어주세요!','error');return;}
+const ck=choiceKey||simChoices[loc];
+const rec=simCompleted[loc]||{};
+let ps=rec.perspectives?rec.perspectives.slice():(rec.choiceKey?[{choiceKey:rec.choiceKey,feeling:rec.feeling||'',at:rec.completedAt||''}]:[]);
+const entry={choiceKey:ck,feeling:feeling,at:new Date().toISOString()};
+const idx=ps.findIndex(p=>p.choiceKey===ck);
+if(idx>=0)ps[idx]=entry;else ps.push(entry);
+simCompleted[loc]={feeling:feeling,choiceKey:ck,perspectives:ps,completedAt:new Date().toISOString()};
+delete simDrafts[loc+'|'+ck];
+simDraftLoc='';
+await saveMyData();
+const l=LOCATIONS.find(x=>x.key===loc);
+showToast(`✅ ${l?l.name:''} 체험 완료! (${ps.length}/${SIM_SCENARIOS[loc].choices.length}가지 입장)`,'success');
+currentStep=0;renderMain();
+};
+
+// ───── Step 1: 규칙의 비밀 발견 (인터랙티브) ─────
+function renderStep1(c){
+c.innerHTML=`
+<div class="step-indicator"><div class="step-dot done"></div><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+<div class="card">
+<h2 style="text-align:center;font-size:20px;">💡 규칙의 진짜 비밀</h2>
+<div class="story-box" style="text-align:center;font-size:17px;">
+시뮬레이션에서 느꼈나요?<br><br>
+규칙이 없으면...<br>
+<strong style="color:var(--error);">강한 사람만 좋고, 약한 사람은 피해를 봐요.</strong><br><br>
+그래서 규칙은<br>
+<strong style="color:var(--primary);font-size:19px;">"서로를 보호하기 위한 약속"</strong>이에요.
+</div>
+<div class="comparison" style="margin:20px 0;">
+<div class="compare-card before" style="padding:14px;">
+<div style="font-size:24px;">❌</div>
+<div style="font-size:12px;font-weight:900;margin:4px 0;">이전 생각</div>
+<div style="font-size:15px;font-weight:900;">혼나는 기준</div>
+</div>
+<div class="compare-card after" style="padding:14px;">
+<div style="font-size:24px;">✅</div>
+<div style="font-size:12px;font-weight:900;margin:4px 0;">새로운 시각</div>
+<div style="font-size:15px;font-weight:900;">서로를 위한 약속</div>
+</div>
+</div>
+<h3 style="font-size:17px;margin:20px 0 12px;">✨ 좋은 규칙의 4가지 조건</h3>
+<div class="card" style="padding:14px;display:flex;align-items:center;gap:12px;margin:8px 0;"><span style="font-size:28px;">🛡️</span><div><strong>모두를 보호해요</strong><br><span style="font-size:13px;color:var(--text-light);font-weight:400;">한쪽만 좋은 게 아니라, 모두에게 공평해요</span></div></div>
+<div class="card" style="padding:14px;display:flex;align-items:center;gap:12px;margin:8px 0;"><span style="font-size:28px;">💬</span><div><strong>이유가 있어요</strong><br><span style="font-size:13px;color:var(--text-light);font-weight:400;">"왜" 필요한지 설명할 수 있어요</span></div></div>
+<div class="card" style="padding:14px;display:flex;align-items:center;gap:12px;margin:8px 0;"><span style="font-size:28px;">✨</span><div><strong>긍정적이에요</strong><br><span style="font-size:13px;color:var(--text-light);font-weight:400;">"~하지 마" 대신 "~하자"로 말해요</span></div></div>
+<div class="card" style="padding:14px;display:flex;align-items:center;gap:12px;margin:8px 0;"><span style="font-size:28px;">💪</span><div><strong>지킬 수 있어요</strong><br><span style="font-size:13px;color:var(--text-light);font-weight:400;">너무 어렵지 않고, 실제로 실천 가능해요</span></div></div>
+<div class="comparison" style="margin:16px 0;">
+<div class="compare-card before" style="padding:12px;"><div style="font-size:11px;font-weight:900;">나쁜 규칙 ❌</div><div style="font-size:15px;font-weight:900;margin-top:4px;">"떠들지 마!"</div></div>
+<div class="compare-card after" style="padding:12px;"><div style="font-size:11px;font-weight:900;">좋은 규칙 ✅</div><div style="font-size:15px;font-weight:900;margin-top:4px;">"조용한 목소리로<br>이야기하자"</div></div>
+</div>
+<div style="display:flex;gap:8px;margin-top:16px;">
+<button class="btn btn-secondary" onclick="goStep(0)" style="flex:1;">← 이전</button>
+<button class="btn btn-primary" onclick="goStep(2)" style="flex:1;">📜 규칙 카드 만들기 →</button>
+</div>
+</div>`;
+}
+
+// ───── Step 2: 규칙 카드 만들기 + 도감 + 투표 ─────
+function renderStep2(c){
+const locEmojis={classroom:'🏫',playground:'⚽',cafeteria:'🍽️',hallway:'🚶',other:'📜'};
+c.innerHTML=`
+<div class="step-indicator"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot active"></div><div class="step-dot"></div></div>
+<div class="card">
+<h2 style="text-align:center;font-size:20px;">📜 규칙 카드 만들기</h2>
+<p style="text-align:center;font-size:15px;color:var(--text-light);margin-bottom:16px;">"~하지 마" 대신 "~하자"로 만들어봐요!</p>
+
+<!-- 규칙 카드 도감 -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+<h3 style="font-size:16px;">📖 내 규칙 카드 도감</h3>
+<span class="badge">${ruleCards.length}장 수집</span>
+</div>
+<div class="dex-grid">
+${DEX_SLOTS.map(i=>{
+const card=ruleCards[i];
+return card?`
+<div class="dex-slot filled" onclick="viewCard(${i})">
+<span class="dex-emoji">${locEmojis[card.location]||'📜'}</span>
+<span class="dex-name" style="font-size:11px;color:var(--text);line-height:1.3;">${esc(card.rule.length>12?card.rule.substring(0,12)+'...':card.rule)}</span>
+</div>`:`
+<div class="dex-slot empty">?</div>`;}).join('')}
+</div>
+${ruleCards.length===0?'<p style="font-size:13px;color:var(--text-light);text-align:center;">아래에서 첫 번째 규칙 카드를 만들어보세요! 🎴</p>':''}
+${ruleCards.length>=MAX_CARDS?'<p style="font-size:13px;color:var(--success);text-align:center;">🎊 도감이 가득 찼어요! 대단해요!</p>':''}
+
+<!-- 새 카드 만들기 -->
+<div class="card" style="padding:16px;background:rgba(124,58,237,0.03);border:2px dashed var(--primary-light);margin-top:16px;">
+<h3 style="font-size:15px;margin-bottom:8px;">🎴 새 규칙 카드 만들기</h3>
+<label style="font-size:13px;">장소 선택</label>
+<div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;">
+${[...LOCATIONS,{key:'other',emoji:'📜',name:'기타'}].map(l=>`<button class="btn-small btn-secondary" id="loc-${l.key}" onclick="pickLoc('${l.key}')" style="font-size:13px;padding:8px 12px;">${l.emoji} ${l.name}</button>`).join('')}
+</div>
+<label style="font-size:13px;margin-top:10px;display:block;">규칙 ("~하자" 형태로)</label>
+<input type="text" id="new-rule" oninput="saveCardDraft()" placeholder='예: "조용한 목소리로 이야기하자"' style="margin-top:4px;" value="${esc(draftRule)}">
+<label style="font-size:13px;margin-top:10px;display:block;">왜 이 규칙이 필요할까요?</label>
+<textarea id="new-reason" oninput="saveCardDraft()" placeholder="이 규칙이 있으면 누가, 어떻게 좋아질까요?" style="margin-top:4px;min-height:60px;">${esc(draftReason)}</textarea>
+<button class="btn btn-primary" onclick="createCard()" style="margin-top:10px;">🎴 카드 만들기!</button>
+</div>
+
+<!-- 우리 반 규칙 카드 (투표) -->
+${!isSoloMode?`
+<div style="margin-top:20px;">
+<h3 style="font-size:16px;margin-bottom:8px;">🗳️ 우리 반 규칙 카드 (투표하기)</h3>
+<p style="font-size:13px;color:var(--text-light);">친구들이 만든 규칙 카드에 좋아요를 눌러보세요!</p>
+<div id="class-rules-area"><p style="font-size:13px;color:var(--text-light);text-align:center;margin-top:8px;">불러오는 중...</p></div>
+</div>`:''}
+
+<div style="display:flex;gap:8px;margin-top:20px;">
+<button class="btn btn-secondary" onclick="goStep(1)" style="flex:1;">← 이전</button>
+${ruleCards.length>=1?`<button class="btn btn-primary" onclick="goStep(3)" style="flex:1;">✨ 마무리하기 →</button>`:'<button class="btn btn-primary" disabled style="flex:1;">카드 1장 이상 만들어주세요</button>'}
+</div>
+</div>`;
+if(pickedLoc)setTimeout(()=>{const b=document.getElementById('loc-'+pickedLoc);if(b){b.style.background='var(--primary)';b.style.color='white';}},0);
+if(!isSoloMode)loadClassRules();
+}
+
+let pickedLoc='';
+window.saveCardDraft=function(){const a=document.getElementById('new-rule'),b=document.getElementById('new-reason');if(a)draftRule=a.value;if(b)draftReason=b.value;saveSoon();};
+window.pickLoc=function(key){pickedLoc=key;document.querySelectorAll('[id^="loc-"]').forEach(e=>{e.style.background=e.id==='loc-'+key?'var(--primary)':'';e.style.color=e.id==='loc-'+key?'white':'';});};
+
+window.createCard=async function(){
+if(!pickedLoc){showToast('장소를 선택해주세요!','error');return;}
+const rule=document.getElementById('new-rule')?.value.trim();
+const reason=document.getElementById('new-reason')?.value.trim();
+if(!rule){showToast('규칙을 입력해주세요!','error');return;}
+if(!reason){showToast('이유도 적어주세요!','error');return;}
+if(ruleCards.length>=MAX_CARDS){showToast('도감이 가득 찼어요! (최대 6장)','error');return;}
+ruleCards.push({location:pickedLoc,rule,reason,votes:0,createdAt:new Date().toISOString()});
+draftRule='';draftReason='';
+await saveMyData();
+showToast(`🎴 규칙 카드 완성! (${ruleCards.length}/${MAX_CARDS})`,'success');
+pickedLoc='';draftRule='';draftReason='';renderStep2(document.getElementById('main-content'));
+};
+
+window.viewCard=function(idx){
+const card=ruleCards[idx];if(!card)return;
+const locEmojis={classroom:'🏫',playground:'⚽',cafeteria:'🍽️',hallway:'🚶',other:'📜'};
+const locNames={classroom:'교실',playground:'운동장',cafeteria:'급식실',hallway:'복도',other:'기타'};
+showConfirmModal(`
+<div style="text-align:left;">
+<div style="text-align:center;font-size:32px;margin-bottom:8px;">${locEmojis[card.location]||'📜'}</div>
+<div style="font-size:12px;color:var(--primary);font-weight:900;text-align:center;">${locNames[card.location]||'기타'}</div>
+<div style="font-size:18px;font-weight:900;text-align:center;margin:8px 0;">✅ ${esc(card.rule)}</div>
+<div style="font-size:14px;color:var(--text-light);font-weight:400;text-align:center;">💡 ${esc(card.reason)}</div>
+</div>
+<br>이 카드를 삭제할까요?`,async()=>{ruleCards.splice(idx,1);await saveMyData();renderStep2(document.getElementById('main-content'));showToast('카드가 삭제되었어요.');});
+document.getElementById('confirmOkBtn').textContent='삭제';
+};
+
+async function loadClassRules(){
+const area=document.getElementById('class-rules-area');if(!area)return;
+const all=await DB.getAllStudents(roomCode);
+const locEmojis={classroom:'🏫',playground:'⚽',cafeteria:'🍽️',hallway:'🚶',other:'📜'};
+const locNames={classroom:'교실',playground:'운동장',cafeteria:'급식실',hallway:'복도',other:'기타'};
+let allCards=[];
+Object.entries(all).forEach(([name,d])=>{
+(d.ruleCards||[]).forEach((r,i)=>{allCards.push({...r,author:name,cardId:name+'_'+i});});
+});
+if(!allCards.length){area.innerHTML='<p style="font-size:13px;color:var(--text-light);text-align:center;">아직 친구들의 카드가 없어요.</p>';return;}
+area.innerHTML=allCards.map(card=>`
+<div class="rule-card-container">
+<div class="rule-card-item">
+<div class="card-header">
+<span class="card-location">${locEmojis[card.location]||'📜'} ${locNames[card.location]||'기타'}</span>
+<span class="card-number">by ${esc(card.author)}</span>
+</div>
+<div class="card-rule">✅ ${esc(card.rule)}</div>
+<div class="card-reason">💡 ${esc(card.reason)}</div>
+<div class="card-votes">
+<button class="vote-btn ${myVotes.has(card.cardId)?'voted':''}" data-cid="${esc(card.cardId)}" onclick="voteCard(this)">
+${myVotes.has(card.cardId)?'💜 좋아요':'🤍 좋아요'}
+</button>
+</div>
+</div></div>`).join('');
+}
+
+window.voteCard=async function(ref){
+const cardId=(ref&&ref.getAttribute)?ref.getAttribute('data-cid'):ref;
+if(!cardId)return;
+if(myVotes.has(cardId)){myVotes.delete(cardId);}else{myVotes.add(cardId);}
+await saveMyData({myVotes:Array.from(myVotes)});
+loadClassRules();
+};
+
+// ───── Step 3: 성찰 ─────
+function renderStep3(c){
+c.innerHTML=`
+<div class="step-indicator"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot active"></div></div>
+<div class="card">
+<h2 style="text-align:center;font-size:20px;">💎 마음 기록</h2>
+<div class="story-box" style="text-align:center;">
+오늘 우리는 발견했어요.<br><br>
+규칙은 <strong>"혼내기 위한 것"</strong>이 아니라,<br>
+<strong style="color:var(--primary);font-size:18px;">서로를 보호하고 배려하기 위한 약속</strong>이에요.<br><br>
+<span style="font-size:14px;color:var(--text-light);">"혼날까 봐" 멈추는 게 아니라,<br>"누군가 불편할 수 있으니까" 스스로 조절하는 것.</span>
+</div>
+<div style="margin-top:16px;">
+<label style="font-size:15px;font-weight:900;">1. 오늘 가장 마음에 남은 것은?</label>
+<textarea id="ref-text" oninput="saveRefDraft()" placeholder="시뮬레이션에서 느낀 것, 생각이 바뀐 점..." style="margin-top:6px;">${esc(reflectionText)}</textarea>
+</div>
+<div style="margin-top:16px;">
+<label style="font-size:15px;font-weight:900;">2. 내가 오늘부터 지키고 싶은 약속 하나 <span style="color:var(--error);font-size:13px;">(필수)</span></label>
+<input type="text" id="ref-rule" oninput="saveRefDraft()" placeholder='"~하자" 형태로 적어보세요' style="margin-top:6px;" value="${esc(reflectionRule)}">
+<p style="font-size:12px;color:var(--text-light);font-weight:400;margin-top:6px;">💡 이렇게 적어볼 수 있어요 — "복도에서는 걸어 다니자", "친구 물건은 먼저 물어보고 빌리자", "내 의견도 말하고 친구 의견도 끝까지 듣자"</p>
+</div>
+<div style="display:flex;gap:8px;margin-top:20px;">
+<button class="btn btn-secondary" onclick="goStep(2)" style="flex:1;">← 이전</button>
+<button class="btn btn-primary" onclick="submitReflection()" style="flex:1;">✨ 완료하기</button>
+</div>
+</div>`;
+}
+window.saveRefDraft=function(){const a=document.getElementById('ref-text'),b=document.getElementById('ref-rule');if(a)reflectionText=a.value;if(b)reflectionRule=b.value;saveSoon();};
+
+window.submitReflection=async function(){
+reflectionText=document.getElementById('ref-text')?.value.trim()||'';
+reflectionRule=document.getElementById('ref-rule')?.value.trim()||'';
+if(!reflectionRule){showToast('지키고 싶은 약속을 적어주세요!','error');return;}
+await saveMyData({reflectionText,reflectionRule,completedAt:new Date().toISOString()});
+showComplete();
+};
+
+function showComplete(){
+const locNames={classroom:'교실',playground:'운동장',cafeteria:'급식실',hallway:'복도',other:'기타'};
+let persp=0;LOCATIONS.forEach(l=>{persp+=perspCount(simCompleted[l.key]);});
+document.getElementById('complete-summary').innerHTML=`
+<div class="card" style="padding:16px;">
+<h3 style="font-size:16px;margin-bottom:8px;">📖 내 규칙 카드 도감 (${ruleCards.length}장)</h3>
+${ruleCards.map(r=>`<div style="padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:14px;">✅ [${locNames[r.location]||'기타'}] ${esc(r.rule)}</div>`).join('')}
+</div>
+<div class="card" style="padding:16px;">
+<h3 style="font-size:16px;margin-bottom:8px;">💎 오늘의 약속</h3>
+<p style="font-size:18px;font-weight:900;color:var(--primary);">"${esc(reflectionRule)}"</p>
+</div>
+<div class="card" style="padding:16px;">
+<h3 style="font-size:16px;margin-bottom:8px;">🌪️ 시뮬레이션 ${Object.keys(simCompleted).length}곳 · ${persp}가지 입장 체험</h3>
+${Object.entries(simCompleted).map(([k,v])=>{const l=LOCATIONS.find(x=>x.key===k);const ps=(v&&v.perspectives)?v.perspectives:[{feeling:v.feeling}];return ps.map(p=>`<div style="font-size:13px;padding:4px 0;">${l?l.emoji:''} ${l?l.name:k}: "${esc(p.feeling)}"</div>`).join('');}).join('')}
+</div>
+${gamesPlayed?`<div class="card" style="padding:16px;"><h3 style="font-size:16px;margin-bottom:8px;">🕵️ 규칙 탐정 게임</h3><p style="font-size:15px;">⭐ 최고 기록 <strong style="color:var(--primary);">${bestScore}점</strong> · 도전 ${gamesPlayed}회</p></div>`:''}
+${!isSoloMode?'<p style="font-size:13px;color:var(--success);text-align:center;">✅ 같은 닉네임으로 다시 들어오면 이어할 수 있어요!</p>':'<p style="font-size:13px;color:var(--text-light);text-align:center;">💾 혼자 체험 모드예요. 아래에서 내 기록을 파일로 저장할 수 있어요.</p>'}`;
+const sb=document.getElementById('solo-save-btn');if(sb)sb.style.display=isSoloMode?'block':'none';
+showScreen('screen-complete');
+}
+window.showComplete=showComplete;
+
+window.downloadMyResult=function(){
+const locNames={classroom:'교실',playground:'운동장',cafeteria:'급식실',hallway:'복도',other:'기타'};
+let t='📜 규칙은 왜 필요할까 — 나의 활동 기록\n';
+t+='작성: '+new Date().toLocaleString('ko-KR')+'\n';
+t+='='.repeat(34)+'\n\n';
+t+='[ 규칙이 사라진 세상 체험 ]\n';
+Object.entries(simCompleted).forEach(([k,v])=>{const l=LOCATIONS.find(x=>x.key===k);const ps=(v&&v.perspectives)?v.perspectives:[{feeling:v.feeling}];ps.forEach(p=>{t+=' - '+(l?l.name:k)+': "'+(p.feeling||'')+'"\n';});});
+t+='\n[ 내가 만든 규칙 카드 ('+ruleCards.length+'장) ]\n';
+ruleCards.forEach((r,i)=>{t+=' '+(i+1)+'. ['+(locNames[r.location]||'기타')+'] '+r.rule+'\n    왜? '+r.reason+'\n';});
+if(gamesPlayed)t+='\n[ 규칙 탐정 게임 ]\n 최고 기록 '+bestScore+'점 / 도전 '+gamesPlayed+'회\n';
+t+='\n[ 오늘 가장 마음에 남은 것 ]\n'+(reflectionText||'-')+'\n';
+t+='\n[ 오늘부터 지키고 싶은 약속 ]\n"'+(reflectionRule||'-')+'"\n';
+t+='\n규칙은 혼내기 위한 것이 아니라, 함께 지내기 위한 약속이에요.\n';
+try{
+const blob=new Blob(['﻿'+t],{type:'text/plain;charset=utf-8'});
+const url=URL.createObjectURL(blob);
+const a=document.createElement('a');a.href=url;a.download='나의_규칙카드.txt';
+document.body.appendChild(a);a.click();document.body.removeChild(a);
+setTimeout(()=>URL.revokeObjectURL(url),1500);
+showToast('📄 내 결과를 저장했어요!','success');
+}catch(e){showToast('📄 저장이 어려운 환경이에요. 화면을 캡처해 보관해주세요.');}
+};
+
+// ═══════════════════════════════════════════════════════
+// 🕵️ 보너스 — 규칙 탐정 게임 (판별 + 고쳐쓰기, 재도전형)
+// ═══════════════════════════════════════════════════════
+const RULE_QUIZ=[
+{rule:'복도에서 뛰지 마!',good:false,cond:'✨ 긍정적이에요',why:'"~하지 마"는 하면 안 되는 것만 알려줄 뿐, 무엇을 해야 하는지는 알려주지 않아요.',fix:['복도에서는 걸어서 다니자','복도에서 뛰면 벌점 3점']},
+{rule:'급식은 온 순서대로 줄을 서서 받자',good:true,cond:'🛡️ 모두를 보호해요',why:'힘이 세거나 목소리가 큰 사람이 아니라, 모두에게 똑같은 기준이 생겨요.',fix:[]},
+{rule:'떠드는 사람은 화장실 청소 담당!',good:false,cond:'🛡️ 모두를 보호해요',why:'벌을 주는 데만 초점이 있어요. 규칙은 누군가를 골라 혼내려고 있는 게 아니에요.',fix:['이야기할 때는 옆 사람에게만 들리는 목소리로 하자','떠들면 이름을 칠판에 적는다']},
+{rule:'수업 시간에 하고 싶은 말이 있으면 손을 들고 이야기하자',good:true,cond:'💬 이유가 있어요',why:'모두가 이야기할 기회를 얻을 수 있고, 왜 필요한지도 설명할 수 있어요.',fix:[]},
+{rule:'하루 종일 한 마디도 하지 말자',good:false,cond:'💪 지킬 수 있어요',why:'아무도 지킬 수 없는 규칙이에요. 못 지키는 규칙은 금방 무시당해요.',fix:['수업 중에는 조용히, 쉬는 시간에는 즐겁게 이야기하자','말하면 하루 동안 말하기 금지']},
+{rule:'친구의 물건은 빌리기 전에 먼저 물어보자',good:true,cond:'🛡️ 모두를 보호해요',why:'내 물건도, 친구 물건도 함께 지켜져요. 모두에게 공평해요.',fix:[]},
+{rule:'발표는 성적이 좋은 사람만 할 수 있다',good:false,cond:'🛡️ 모두를 보호해요',why:'한쪽에게만 좋은 규칙이에요. 누군가의 기회를 빼앗는 건 규칙이 아니라 차별이에요.',fix:['발표는 돌아가면서 모두 한 번씩 해보자','발표는 손을 가장 빨리 든 사람만 한다']},
+{rule:'그네는 열 번 타고 다음 친구에게 넘겨주자',good:true,cond:'💪 지킬 수 있어요',why:'기준이 분명해서 다투지 않아도 되고, 실제로 지킬 수 있어요.',fix:[]},
+{rule:'왜인지 묻지 말고 그냥 지켜',good:false,cond:'💬 이유가 있어요',why:'이유를 모르면 마음으로 받아들이기 어려워요. 좋은 규칙은 "왜"를 설명할 수 있어요.',fix:['이 규칙이 왜 필요한지 함께 이야기하고 정하자','질문하는 사람은 반성문을 쓴다']},
+{rule:'모둠 활동에서는 모두 한 번씩 의견을 말하자',good:true,cond:'🛡️ 모두를 보호해요',why:'말수가 적은 친구의 목소리도 사라지지 않아요.',fix:[]},
+{rule:'떠들면 급식을 못 먹는다',good:false,cond:'🛡️ 모두를 보호해요',why:'꼭 필요한 것(밥)을 빼앗는 건 규칙이 아니라 벌이에요.',fix:['이동할 때는 앞사람 뒤를 따라 조용히 걷자','떠든 사람은 맨 마지막에 밥을 먹는다']},
+{rule:'도서관에서는 작은 목소리로 이야기하자',good:true,cond:'✨ 긍정적이에요',why:'"하지 마"가 아니라 "이렇게 하자"로 말해서, 무엇을 해야 할지 바로 알 수 있어요.',fix:[]}
+];
+const DET_ROUND=8;
+
+window.startDetective=function(from){
+detReturn=(from==='complete')?'complete':currentStep;
+detQ=shuffleArr(RULE_QUIZ.slice()).slice(0,DET_ROUND);
+detIdx=0;detScore=0;
+renderDetective();
+showScreen('screen-main');
+};
+
+function renderDetective(){
+const c=document.getElementById('main-content');
+if(detIdx>=detQ.length){renderDetectiveEnd(c);return;}
+const q=detQ[detIdx];
+c.innerHTML=`
+<div class="card">
+<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-light);"><span>🕵️ 규칙 탐정</span><span>${detIdx+1} / ${detQ.length} · ⭐ ${detScore}점</span></div>
+<div class="progress-bar"><div class="progress-fill" style="width:${detIdx/detQ.length*100}%"></div></div>
+<div class="rule-card-item" style="margin:14px 0;">
+<div class="card-header"><span class="card-location">📜 규칙 판별</span><span class="card-number">#${detIdx+1}</span></div>
+<div class="card-rule" style="text-align:center;font-size:18px;">"${esc(q.rule)}"</div>
+</div>
+<p style="text-align:center;font-size:15px;">이 규칙, 어떤가요?</p>
+<button class="choice-btn" onclick="answerDetective(true)">👍 좋은 규칙이에요</button>
+<button class="choice-btn" onclick="answerDetective(false)">🤔 아쉬운 규칙이에요</button>
+<button class="btn btn-secondary" onclick="quitDetective()" style="margin-top:12px;">← 그만하고 돌아가기</button>
+</div>`;
+}
+
+window.answerDetective=function(v){
+const q=detQ[detIdx];
+const correct=(v===q.good);
+if(correct)detScore+=10;
+const opts=q.good?[]:shuffleArr([{t:q.fix[0],ok:true},{t:q.fix[1],ok:false}]);
+const c=document.getElementById('main-content');
+c.innerHTML=`
+<div class="card">
+<div style="font-size:44px;text-align:center;animation:popIn 0.4s ease-out;">${correct?'🎯':'💭'}</div>
+<p style="text-align:center;font-weight:900;color:${correct?'var(--success)':'var(--text-light)'};">${correct?'같은 눈으로 봤어요 +10점':'그렇게 볼 수도 있어요. 같이 다시 살펴봐요'}</p>
+<div class="${q.good?'result-good':'result-bad'}" style="margin:12px 0;">
+<div style="font-weight:900;text-align:center;margin-bottom:6px;">${q.good?'✅ 좋은 규칙이에요':'🤔 아쉬운 규칙이에요'}</div>
+<div style="font-size:15px;font-weight:900;text-align:center;margin-bottom:8px;">"${esc(q.rule)}"</div>
+<div style="font-size:14px;font-weight:400;">${esc(q.why)}</div>
+<div style="font-size:13px;color:var(--primary);font-weight:900;margin-top:8px;">관련된 조건: ${q.cond}</div>
+</div>
+${q.good?`<button class="btn btn-primary" onclick="nextDetective()">다음 →</button>`:`
+<p style="font-size:15px;font-weight:900;margin-top:8px;">이 규칙, 어떻게 바꾸면 좋을까요? <span style="font-size:12px;color:var(--text-light);font-weight:400;">(+5점)</span></p>
+${opts.map(o=>`<button class="choice-btn" onclick="fixDetective(${o.ok?'true':'false'})">${esc(o.t)}</button>`).join('')}`}
+</div>`;
+};
+
+window.fixDetective=function(ok){
+if(ok){detScore+=5;showToast('👍 +5점! 함께 할 행동을 알려주는 말이 더 좋아요.','success');}
+else{showToast('🤔 벌이나 금지보다, 무엇을 하면 좋은지 알려주는 말을 골라봐요.');}
+nextDetective();
+};
+
+window.nextDetective=function(){detIdx++;renderDetective();};
+
+async function renderDetectiveEnd(c){
+const isBest=detScore>bestScore;
+if(isBest)bestScore=detScore;
+gamesPlayed++;
+// ⭐ 만점 계산 오류 수정: '아쉬운 규칙'은 고쳐쓰기 +5점이 더 붙는데
+//    분모를 문항수×10으로만 잡아 백분율이 100을 넘을 수 있었다.
+//    (8문항 중 1개를 틀려도 "완벽해요!" 메시지가 뜨던 문제)
+//    → 이번 라운드에서 실제로 받을 수 있는 최고점을 분모로 쓴다.
+const detMax=detQ.reduce((a,q)=>a+10+(q.good?0:5),0)||(DET_ROUND*10);
+const pct=Math.round(detScore/detMax*100);
+let msg='🌱 규칙을 보는 눈이 자라고 있어요!';
+if(pct>=100)msg='🎊 완벽해요! 진짜 규칙 탐정이네요!';
+else if(pct>=80)msg='🏆 대단해요! 좋은 규칙의 조건을 잘 알고 있어요.';
+else if(pct>=50)msg='⭐ 좋아요! 조금만 더 하면 전문가!';
+c.innerHTML=`
+<div class="card" style="text-align:center;">
+<div style="font-size:52px;animation:popIn 0.6s ease-out;">🕵️</div>
+<h2 style="font-size:20px;">규칙 탐정 완료!</h2>
+<p style="font-size:34px;font-weight:900;color:var(--primary);margin:8px 0;">${detScore}점</p>
+${isBest?'<p style="color:var(--success);font-weight:900;">🔥 NEW BEST! 최고 기록을 갱신했어요!</p>':`<p style="font-size:14px;color:var(--text-light);">최고 기록 ${bestScore}점</p>`}
+<p style="font-size:14px;margin:8px 0;">${msg}</p>
+<p style="font-size:13px;color:var(--text-light);">지금까지 ${gamesPlayed}번 도전했어요</p>
+<button class="btn btn-primary" onclick="startDetective()" style="margin-top:12px;">🔄 다시 도전하기 (문제가 바뀌어요!)</button>
+<button class="btn btn-secondary" onclick="goStep(2)">📜 규칙 카드 만들러 가기</button>
+<button class="btn btn-secondary" onclick="quitDetective()">← 돌아가기</button>
+</div>`;
+await saveMyData();
+}
+
+window.quitDetective=function(){
+if(detReturn==='complete'){showComplete();return;}
+goStep(typeof detReturn==='number'?detReturn:0);
+};
+
+window.goStep=function(s){currentStep=s;renderMain();showScreen('screen-main');};
+window.backToMain=function(){currentStep=2;renderMain();showScreen('screen-main');showToast('📜 규칙 카드를 더 만들어보세요!','success');};
+window.confirmGoHome=function(){const n=ruleCards.length;showConfirmModal(n>0?`처음 화면으로 돌아갈까요?<br><br>📜 규칙 카드 ${n}장이 있어요.<br>${isSoloMode?'⚠️ 혼자 체험 모드는 나가면 기록이 사라져요!':'✅ 같은 닉네임으로 다시 들어오면 이어할 수 있어요!'}`:'처음 화면으로 돌아갈까요?',()=>{if(unsubscribe){unsubscribe();unsubscribe=null;}showScreen('screen-start');});};
+
+// ═══ Dashboard ═══
+function startDashboardListener(){if(unsubscribe){unsubscribe();unsubscribe=null;}unsubscribe=DB.onStudentsChange(roomCode,d=>{dashboardData=d;renderDashboard();});}
+window.refreshDashboard=async function(){dashboardData=await DB.getAllStudents(roomCode);renderDashboard();};
+window.switchTab=function(id,el){document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById(id)?.classList.add('active');let btn=(el&&el.classList)?el:null;if(!btn){try{if(typeof event!=='undefined'&&event&&event.target)btn=event.target;}catch(e){}}if(!btn)btn=document.querySelector('.tab-btn[data-tab="'+id+'"]');if(btn)btn.classList.add('active');};
+
+const PERSP_NAMES={reader:'📖 민지',talker:'😄 준호',observer:'👀 하은'};
+const LOC_NAMES={classroom:'교실',playground:'운동장',cafeteria:'급식실',hallway:'복도',other:'기타'};
+const LOC_EMOJIS={classroom:'🏫',playground:'⚽',cafeteria:'🍽️',hallway:'🚶',other:'📜'};
+
+const WHY_LABELS={noreason:'🙈 이유를 몰라서',scary:'😨 혼내는 말투라서',notmine:'🙋 함께 만들지 않아서'};
+const STORY_LABELS={angry:'😤 소리침',leave:'😢 나감',ask:'🙋 부탁함'};
+let ttsScripts={};
+
+function bar(label,val,max){return `<div class="chart-row"><span class="chart-label">${label}</span><div class="chart-bar"><div class="chart-fill" style="width:${max?Math.round(val/max*100):0}%"></div></div><span class="chart-count">${val}</span></div>`;}
+
+function renderDashboard(){
+const entries=Object.entries(dashboardData);
+const total=entries.length;
+const completed=entries.filter(([,d])=>d.completedAt).length;
+const ov=document.getElementById('tab-overview');
+const dt=document.getElementById('tab-detail');
+const tts=document.getElementById('tts-content');
+ttsScripts={};
+
+if(!total){
+ov.innerHTML='<div class="card"><p style="text-align:center;color:var(--text-light);">아직 참여한 학생이 없습니다.</p></div>';
+dt.innerHTML='<div class="card"><p style="text-align:center;color:var(--text-light);">아직 참여한 학생이 없습니다.</p></div>';
+tts.innerHTML='<p style="text-align:center;color:var(--text-light);">읽어줄 내용이 없습니다.</p>';
+return;
+}
+
+// ── 집계 ──
+const storyCh={angry:0,leave:0,ask:0};
+const whyCh={noreason:0,scary:0,notmine:0};
+const simLocs={};LOCATIONS.forEach(l=>simLocs[l.key]=0);
+const ruleLocs={};LOCATIONS.forEach(l=>ruleLocs[l.key]=0);ruleLocs.other=0;
+const allCards=[];const feelings=[];
+let perspTotal=0;
+entries.forEach(([n,d])=>{
+const sc=d.simChoices&&d.simChoices.storyChoice;if(sc&&storyCh[sc]!==undefined)storyCh[sc]++;
+const wc=d.simChoices&&d.simChoices.whyChoice;if(wc&&whyCh[wc]!==undefined)whyCh[wc]++;
+Object.entries(d.simCompleted||{}).forEach(([k,v])=>{
+if(simLocs[k]!==undefined)simLocs[k]++;
+const ps=(v&&v.perspectives)?v.perspectives:[{feeling:v&&v.feeling,choiceKey:v&&v.choiceKey}];
+perspTotal+=ps.length;
+ps.forEach(p=>{if(p&&p.feeling)feelings.push({name:n,loc:k,feeling:p.feeling});});
+});
+(d.ruleCards||[]).forEach(r=>{allCards.push({...r,author:n});if(ruleLocs[r.location]!==undefined)ruleLocs[r.location]++;});
+});
+const voteCount={};entries.forEach(([,d])=>{(d.myVotes||[]).forEach(v=>{voteCount[v]=(voteCount[v]||0)+1;});});
+const topVoted=allCards.map(c=>{const mine=allCards.filter(x=>x.author===c.author);return{...c,totalVotes:voteCount[c.author+'_'+mine.indexOf(c)]||0};}).sort((a,b)=>b.totalVotes-a.totalVotes).slice(0,5);
+const refRules=entries.filter(([,d])=>d.reflectionRule).map(([n,d])=>({name:n,rule:d.reflectionRule}));
+const players=entries.filter(([,d])=>d.gamesPlayed).map(([n,d])=>({name:n,best:d.bestScore||0,plays:d.gamesPlayed||0})).sort((a,b)=>b.best-a.best);
+const storyMax=Math.max(...Object.values(storyCh),1);
+const whyMax=Math.max(...Object.values(whyCh),1);
+const simMax=Math.max(...Object.values(simLocs),1);
+const ruleMax=Math.max(...Object.values(ruleLocs),1);
+const maxPersp=LOCATIONS.reduce((a,l)=>a+SIM_SCENARIOS[l.key].choices.length,0);
+// 규칙 이유 키워드
+const STOP=['그리고','하지만','때문','우리','친구','규칙','있어요','해요','같이','정말','너무','수가','것이','싶어','으면','되면','에서','하면','하고','않아','거예요','있는','하는','좋아','만약','조금'];
+const freq={};
+allCards.forEach(c=>String(c.reason||'').split(/[^가-힣A-Za-z]+/).forEach(w=>{if(w.length>=2&&STOP.indexOf(w)<0)freq[w]=(freq[w]||0)+1;}));
+const topWords=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,18);
+const wMax=topWords.length?topWords[0][1]:1;
+
+// ── 현황 탭 ──
+ov.innerHTML=`
+<div class="card"><h3 style="font-size:16px;margin-bottom:8px;">📊 참여 현황</h3>
+<div class="progress-bar"><div class="progress-fill" style="width:${Math.round(completed/total*100)}%"></div></div>
+<p style="font-size:14px;color:var(--text-light);">참여 ${total}명 / 완료 ${completed}명 · 규칙 카드 ${allCards.length}장 · 시뮬레이션 ${perspTotal}회 체험</p></div>
+
+<div class="card"><h3 style="font-size:16px;margin-bottom:12px;">📖 도서관 장면 — 민지는 어떻게 했을까?</h3>
+${bar(STORY_LABELS.angry,storyCh.angry,storyMax)}
+${bar(STORY_LABELS.leave,storyCh.leave,storyMax)}
+${bar(STORY_LABELS.ask,storyCh.ask,storyMax)}
+</div>
+
+<div class="card"><h3 style="font-size:16px;margin-bottom:12px;">🪧 규칙이 있었는데도 안 지켜진 이유</h3>
+${bar(WHY_LABELS.noreason,whyCh.noreason,whyMax)}
+${bar(WHY_LABELS.scary,whyCh.scary,whyMax)}
+${bar(WHY_LABELS.notmine,whyCh.notmine,whyMax)}
+<p style="font-size:12px;color:var(--text-light);font-weight:400;margin-top:8px;">💬 이 결과로 "우리 반 규칙은 어디에 해당할까?"를 함께 이야기해보세요.</p>
+</div>
+
+<div class="card"><h3 style="font-size:16px;margin-bottom:12px;">🌪️ 시뮬레이션 체험 현황</h3>
+${LOCATIONS.map(l=>bar(l.emoji+' '+l.name,simLocs[l.key],simMax)).join('')}
+<p style="font-size:12px;color:var(--text-light);font-weight:400;margin-top:8px;">총 ${perspTotal}회 체험 (반 전체가 모두 체험하면 ${total*maxPersp}회)</p>
+</div>
+
+<div class="card"><h3 style="font-size:16px;margin-bottom:12px;">📜 장소별 규칙 카드 수</h3>
+${LOCATIONS.map(l=>bar(l.emoji+' '+l.name,ruleLocs[l.key],ruleMax)).join('')}
+${bar('📜 기타',ruleLocs.other,ruleMax)}
+</div>
+
+${players.length?`<div class="card"><h3 style="font-size:16px;margin-bottom:12px;">🕵️ 규칙 탐정 게임 기록</h3>
+<table style="width:100%;font-size:13px;border-collapse:collapse;">
+<tr style="background:#F3F4F6;"><th style="padding:6px;text-align:left;">닉네임</th><th style="padding:6px;">최고점수</th><th style="padding:6px;">도전</th></tr>
+${players.map(p=>`<tr><td style="padding:6px;border-top:1px solid #eee;">${esc(p.name)}</td><td style="padding:6px;text-align:center;border-top:1px solid #eee;">⭐ ${p.best}</td><td style="padding:6px;text-align:center;border-top:1px solid #eee;">${p.plays}회</td></tr>`).join('')}
+</table></div>`:''}
+
+${topVoted.length?`<div class="card"><h3 style="font-size:16px;margin-bottom:12px;">🏆 인기 규칙 카드 TOP ${Math.min(5,topVoted.length)}</h3>
+${topVoted.map((c,i)=>`<div style="padding:10px 0;border-bottom:1px solid #f0f0f0;"><strong>${i+1}위.</strong> ${LOC_EMOJIS[c.location]||'📜'} ${esc(c.rule)} <span style="color:var(--primary);">💜${c.totalVotes}</span><br><span style="font-size:12px;color:var(--text-light);">${esc(c.author)} — ${esc(c.reason)}</span></div>`).join('')}
+</div>`:''}
+
+${topWords.length?`<div class="card"><h3 style="font-size:16px;margin-bottom:12px;">☁️ 규칙이 필요한 이유 — 자주 나온 말</h3>
+<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;line-height:1.9;">
+${topWords.map(([w,n])=>`<span style="font-size:${Math.round(13+n/wMax*15)}px;font-weight:900;color:rgba(124,58,237,${(0.45+n/wMax*0.55).toFixed(2)});">${esc(w)}</span>`).join('')}
+</div></div>`:''}
+
+${refRules.length?`<div class="card"><h3 style="font-size:16px;margin-bottom:12px;">💎 오늘의 약속 모음 (${refRules.length}개)</h3>
+${refRules.map(r=>`<div style="padding:6px 0;border-bottom:1px solid #f0f0f0;"><strong>${esc(r.name)}:</strong> "${esc(r.rule)}"</div>`).join('')}</div>`:''}
+
+${feelings.length?`<div class="card"><h3 style="font-size:16px;margin-bottom:12px;">💬 규칙이 사라진 세상에서 느낀 마음</h3>
+${feelings.slice(0,40).map(f=>`<div style="padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:13px;font-weight:400;">${LOC_EMOJIS[f.loc]||''} <strong>${esc(f.name)}</strong> — "${esc(f.feeling)}"</div>`).join('')}
+${feelings.length>40?`<p style="font-size:12px;color:var(--text-light);margin-top:6px;">외 ${feelings.length-40}건 (상세기록·엑셀에서 전체 확인)</p>`:''}
+</div>`:''}`;
+
+// ── 상세 탭 ──
+dt.innerHTML=`<div class="card"><h3 style="font-size:16px;margin-bottom:12px;">📋 학생별 상세 기록 <span style="font-size:12px;color:var(--text-light);font-weight:400;">(카드를 눌러 펼치기)</span></h3>
+${entries.map(([n,d])=>{
+const ps=[];Object.entries(d.simCompleted||{}).forEach(([k,v])=>{const arr=(v&&v.perspectives)?v.perspectives:[{feeling:v&&v.feeling,choiceKey:v&&v.choiceKey}];arr.forEach(p=>ps.push({loc:k,f:p.feeling||''}));});
+return `<div class="card" style="padding:14px;margin:8px 0;cursor:pointer;" onclick="const b=this.querySelector('.db');b.style.display=b.style.display==='none'?'block':'none';">
+<div style="display:flex;justify-content:space-between;align-items:center;"><strong>${esc(n)}</strong><span class="badge" style="font-size:11px;">${d.completedAt?'✅':'⏳'} 카드${(d.ruleCards||[]).length}장</span></div>
+<div class="db" style="display:none;margin-top:10px;font-size:13px;font-weight:400;">
+<p>📅 ${d.joinedAt?new Date(d.joinedAt).toLocaleString('ko-KR'):'-'}${d.lastVisit?' (재방문 '+new Date(d.lastVisit).toLocaleString('ko-KR')+')':''}</p>
+<p>📖 도서관 장면: ${STORY_LABELS[d.simChoices&&d.simChoices.storyChoice]||'-'}</p>
+<p>🪧 안내문 장면: ${WHY_LABELS[d.simChoices&&d.simChoices.whyChoice]||'-'}</p>
+<p>🌪️ 시뮬레이션: ${Object.keys(d.simCompleted||{}).length}곳 / ${ps.length}가지 입장</p>
+${ps.map(p=>`<div style="padding:3px 0 3px 12px;border-left:3px solid #E5E7EB;margin:3px 0;">${LOC_EMOJIS[p.loc]||''} "${esc(p.f)}"</div>`).join('')}
+${(d.ruleCards||[]).map(r=>`<div style="padding:4px 0 4px 12px;border-left:3px solid var(--primary-light);margin:4px 0;">✅ [${LOC_NAMES[r.location]||''}] ${esc(r.rule)}<br><span style="color:var(--text-light);font-size:12px;">💡 ${esc(r.reason)}</span></div>`).join('')}
+${d.gamesPlayed?`<p>🕵️ 규칙 탐정: 최고 ${d.bestScore||0}점 / ${d.gamesPlayed}회 도전</p>`:''}
+<p>💎 약속: ${esc(d.reflectionRule||'-')}</p>
+${d.reflectionText?`<p>📝 ${esc(d.reflectionText)}</p>`:''}
+</div></div>`;}).join('')}</div>`;
+
+// ── TTS 탭 (영역별 재생 + 스크립트 미리보기) ──
+let sc1=`참여 현황입니다. 총 ${total}명이 참여했고, ${completed}명이 활동을 마쳤습니다. 규칙 카드는 모두 ${allCards.length}장 만들어졌습니다.`;
+let sc2='';
+if(allCards.length){sc2=`우리 반 규칙 카드 ${allCards.length}장을 읽어드리겠습니다. `;allCards.forEach((r,i)=>{sc2+=`${i+1}번. ${LOC_NAMES[r.location]||'기타'}. ${r.rule}. 이유는, ${r.reason}. `;});}
+let sc3='';
+if(refRules.length){sc3='오늘의 약속 모음입니다. ';refRules.forEach(r=>{sc3+=`${r.name} 학생. ${r.rule}. `;});}
+let sc4='';
+if(feelings.length){sc4='규칙이 사라진 세상에서 느낀 마음입니다. ';feelings.slice(0,25).forEach(f=>{sc4+=`${LOC_NAMES[f.loc]||''}. ${f.feeling}. `;});}
+const secs=[{k:'s1',t:'📊 참여 현황',v:sc1},{k:'s2',t:'📜 우리 반 규칙 카드',v:sc2},{k:'s3',t:'💎 오늘의 약속',v:sc3},{k:'s4',t:'💬 시뮬레이션에서 느낀 마음',v:sc4}].filter(x=>x.v);
+secs.forEach(x=>ttsScripts[x.k]=x.v);
+tts.innerHTML=`<h3 style="font-size:16px;margin-bottom:8px;">🔊 영역별 읽어주기</h3>
+<p style="font-size:12px;color:var(--text-light);font-weight:400;margin-bottom:12px;">📝 버튼을 누르면 읽어줄 내용을 미리 볼 수 있어요.</p>
+${secs.map(x=>`<div class="card" style="padding:12px;margin:8px 0;">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;">
+<strong style="font-size:14px;">${x.t}</strong>
+<span><button class="btn-small btn-secondary" onclick="speakTTS('${x.k}')">▶️ 재생</button><button class="btn-small btn-secondary" onclick="stopTTS()">⏹️ 정지</button><button class="btn-small btn-secondary" onclick="toggleScript('${x.k}')">📝 스크립트</button></span>
+</div>
+<div id="tts-script-${x.k}" style="display:none;font-size:13px;font-weight:400;line-height:1.8;max-height:200px;overflow-y:auto;background:#f9f9f9;padding:12px;border-radius:8px;margin-top:8px;">${esc(x.v)}</div>
+</div>`).join('')}
+<button class="btn btn-secondary" onclick="stopTTS()" style="margin-top:8px;">⏹️ 전체 멈춤</button>`;
+}
+
+let currentUtterance=null,isSpeaking=false;
+window.toggleScript=function(k){const e=document.getElementById('tts-script-'+k);if(e)e.style.display=e.style.display==='none'?'block':'none';};
+window.speakTTS=function(k){
+try{
+if(isSpeaking){window.speechSynthesis.cancel();isSpeaking=false;}
+let t=ttsScripts[k];
+if(!t){const e=document.getElementById('tts-script-'+k);t=e?(e.textContent||e.innerText||''):'';}
+if(!t)return;
+currentUtterance=new SpeechSynthesisUtterance(t);
+currentUtterance.lang='ko-KR';currentUtterance.rate=0.9;
+currentUtterance.onend=()=>{isSpeaking=false;};
+window.speechSynthesis.speak(currentUtterance);isSpeaking=true;
+}catch(e){}
+};
+window.stopTTS=function(){try{window.speechSynthesis.cancel();}catch(e){}isSpeaking=false;};
+
+// ═══ Excel ═══
+window.downloadExcel=function(){
+const entries=Object.entries(dashboardData);
+if(!entries.length){showToast('데이터가 없습니다.','error');return;}
+const ws=[['닉네임','참여시간','완료여부','도서관 장면 선택','안내문 장면 선택','시뮬레이션 장소수','체험한 입장수','시뮬레이션 느낌','규칙 카드수','규칙 카드 목록','탐정게임 최고점','탐정게임 도전수','오늘의 약속','소감']];
+entries.forEach(([n,d])=>{
+const rt=(d.ruleCards||[]).map(r=>`[${LOC_NAMES[r.location]||''}]${r.rule}(${r.reason})`).join(' | ');
+let pc=0;const fl=[];
+Object.entries(d.simCompleted||{}).forEach(([k,v])=>{const arr=(v&&v.perspectives)?v.perspectives:[{feeling:v&&v.feeling}];pc+=arr.length;arr.forEach(p=>{if(p.feeling)fl.push((LOC_NAMES[k]||k)+': '+p.feeling);});});
+ws.push([n,
+d.joinedAt?new Date(d.joinedAt).toLocaleString('ko-KR'):'',
+d.completedAt?'완료':'진행중',
+STORY_LABELS[d.simChoices&&d.simChoices.storyChoice]||'',
+WHY_LABELS[d.simChoices&&d.simChoices.whyChoice]||'',
+Object.keys(d.simCompleted||{}).length,
+pc,
+fl.join(' | '),
+(d.ruleCards||[]).length,
+rt,
+d.bestScore||0,
+d.gamesPlayed||0,
+d.reflectionRule||'',
+d.reflectionText||'']);
+});
+const sh=XLSX.utils.aoa_to_sheet(ws);
+sh['!cols']=[{wch:10},{wch:18},{wch:8},{wch:14},{wch:18},{wch:12},{wch:10},{wch:40},{wch:10},{wch:50},{wch:12},{wch:12},{wch:26},{wch:40}];
+const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,sh,'결과');
+XLSX.writeFile(wb,`SEL_규칙_${roomCode}.xlsx`);
+showToast('📥 엑셀 다운로드!','success');
+};
+
+// ═══ PDF (dashboardData에서 HTML 직접 빌드 → 새 창 인쇄) ═══
+window.downloadPDF=function(){
+const entries=Object.entries(dashboardData);
+if(!entries.length){showToast('데이터가 없습니다.','error');return;}
+const total=entries.length;const completed=entries.filter(([,d])=>d.completedAt).length;
+const allC=[];const refs=[];const fl=[];
+const storyCh={angry:0,leave:0,ask:0},whyCh={noreason:0,scary:0,notmine:0};
+entries.forEach(([n,d])=>{
+(d.ruleCards||[]).forEach(r=>allC.push({...r,author:n}));
+if(d.reflectionRule)refs.push({name:n,rule:d.reflectionRule});
+const s1=d.simChoices&&d.simChoices.storyChoice;if(s1&&storyCh[s1]!==undefined)storyCh[s1]++;
+const w1=d.simChoices&&d.simChoices.whyChoice;if(w1&&whyCh[w1]!==undefined)whyCh[w1]++;
+Object.entries(d.simCompleted||{}).forEach(([k,v])=>{const arr=(v&&v.perspectives)?v.perspectives:[{feeling:v&&v.feeling}];arr.forEach(p=>{if(p.feeling)fl.push({name:n,loc:k,f:p.feeling});});});
+});
+let body=`<div class="card"><h3>참여 현황</h3><p>참여 ${total}명 / 완료 ${completed}명 / 규칙 카드 ${allC.length}장</p></div>`;
+body+=`<div class="card"><h3>장면별 선택 분포</h3><table><tr><th>장면</th><th>선택</th><th>인원</th></tr>`
++Object.keys(storyCh).map(k=>`<tr><td>도서관 장면</td><td>${esc(STORY_LABELS[k])}</td><td>${storyCh[k]}</td></tr>`).join('')
++Object.keys(whyCh).map(k=>`<tr><td>안내문 장면</td><td>${esc(WHY_LABELS[k])}</td><td>${whyCh[k]}</td></tr>`).join('')
++`</table></div>`;
+if(allC.length)body+=`<div class="card"><h3>우리 반 규칙 카드 (${allC.length}개)</h3><table><tr><th>장소</th><th>규칙</th><th>왜 필요한가</th><th>작성자</th></tr>${allC.map(c=>`<tr><td>${esc(LOC_NAMES[c.location]||'기타')}</td><td>${esc(c.rule)}</td><td>${esc(c.reason)}</td><td>${esc(c.author)}</td></tr>`).join('')}</table></div>`;
+if(refs.length)body+=`<div class="card"><h3>오늘의 약속 (${refs.length}개)</h3><table><tr><th>닉네임</th><th>약속</th></tr>${refs.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.rule)}</td></tr>`).join('')}</table></div>`;
+if(fl.length)body+=`<div class="card"><h3>규칙이 사라진 세상에서 느낀 마음</h3><table><tr><th>닉네임</th><th>장소</th><th>느낌</th></tr>${fl.map(f=>`<tr><td>${esc(f.name)}</td><td>${esc(LOC_NAMES[f.loc]||f.loc)}</td><td>${esc(f.f)}</td></tr>`).join('')}</table></div>`;
+body+=`<div class="card"><h3>학생별 기록</h3><table><tr><th>닉네임</th><th>참여시간</th><th>완료</th><th>카드수</th><th>탐정게임</th><th>오늘의 약속</th><th>소감</th></tr>${entries.map(([n,d])=>`<tr><td>${esc(n)}</td><td>${d.joinedAt?new Date(d.joinedAt).toLocaleString('ko-KR'):'-'}</td><td>${d.completedAt?'완료':'진행중'}</td><td>${(d.ruleCards||[]).length}</td><td>${d.gamesPlayed?(d.bestScore||0)+'점/'+d.gamesPlayed+'회':'-'}</td><td>${esc(d.reflectionRule||'-')}</td><td>${esc(d.reflectionText||'-')}</td></tr>`).join('')}</table></div>`;
+try{
+const pw=window.open('','_blank');
+if(pw){
+pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>대시보드</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet"><style>*{font-family:'Noto Sans KR',sans-serif;}body{padding:24px;font-size:14px;color:#1F2937;line-height:1.6;}.print-header{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #7C3AED;}h2{color:#7C3AED;font-size:20px;}h3{color:#7C3AED;font-size:16px;margin:12px 0 8px;}.card{border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin:12px 0;page-break-inside:avoid;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #E5E7EB;padding:8px;font-size:13px;text-align:left;vertical-align:top;}th{background:#F3F4F6;}.pg{background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;text-align:center;}@media print{.pg{display:none;}}</style></head><body><div class="pg">💡 PDF로 저장: 인쇄 대화상자에서 대상을 "PDF로 저장"으로 선택하세요.</div><div class="print-header"><h2>📜 규칙은 왜 필요할까</h2><p style="color:#6B7280;font-size:12px;">방 ${roomCode} | ${new Date().toLocaleString('ko-KR')}</p></div>${body}<scr`+`ipt>setTimeout(function(){window.print();},1000);</scr`+`ipt></body></html>`);
+pw.document.close();
+showToast('📄 새 창에서 PDF로 저장하세요.','success');
+return;
+}
+}catch(e){}
+try{showToast('📄 Ctrl+P로 PDF 저장하세요.');setTimeout(()=>window.print(),500);}catch(e){showToast('📄 Ctrl+P (⌘+P)를 눌러주세요.');}
+};
+
+// ═══ 데이터 초기화 — 학생 기록만 삭제, 방 문서(비밀번호·만료일)는 보존 ═══
+window.resetData=function(){
+showConfirmModal('학생들의 활동 기록을 모두 삭제할까요?<br>⚠️ 되돌릴 수 없습니다.<br><br><span style="font-size:13px;color:var(--text-light);">방과 비밀번호는 그대로 유지되어, 같은 코드로 다시 수업할 수 있어요.</span>',async()=>{
+await DB.clearStudents(roomCode);
+dashboardData={};
+renderDashboard();
+if(unsubscribe){unsubscribe();unsubscribe=null;}
+startDashboardListener();
+showToast('🗑️ 학생 기록을 초기화했어요. (방은 그대로예요)','success');
+});
+};
+
+authReady.then(()=>{console.log('[SEL-23] Ready. Firebase:',useFirebase);});
+</script>
+</body>
+</html>

@@ -1,0 +1,2155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>화가 날 때, 멈추는 연습</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+    --primary: #7C3AED;
+    --primary-light: #A78BFA;
+    --primary-dark: #5B21B6;
+    --gradient: linear-gradient(135deg, #7C3AED 0%, #A78BFA 50%, #C4B5FD 100%);
+    --gradient-bg: linear-gradient(135deg, #EDE9FE 0%, #F5F3FF 50%, #FFFFFF 100%);
+    --success: #10B981;
+    --error: #EF4444;
+    --warning: #F59E0B;
+    --text: #1F2937;
+    --text-light: #6B7280;
+    --bg-card: rgba(255,255,255,0.95);
+    --thermo-green: #10B981;
+    --thermo-yellow: #F59E0B;
+    --thermo-orange: #F97316;
+    --thermo-red: #EF4444;
+    --thermo-darkred: #DC2626;
+}
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Noto Sans KR',sans-serif; }
+body { background: var(--gradient-bg); min-height:100vh; font-weight:700; font-size:18px; line-height:1.7; color:var(--text); }
+.container { max-width:500px; margin:0 auto; padding:16px; }
+.screen { display:none; }
+.screen.active { display:block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+h1,h2{font-weight:900;}
+.btn{padding:16px 24px;border-radius:16px;font-size:17px;font-weight:900;font-family:'Noto Sans KR',sans-serif;border:none;cursor:pointer;min-height:52px;transition:all 0.2s;width:100%;max-width:400px;display:block;margin:8px auto;text-align:center;}
+.btn-primary{background:var(--gradient);color:#fff;box-shadow:0 4px 15px rgba(124,58,237,0.3);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,0.4);}
+.btn-secondary{background:rgba(124,58,237,0.1);color:var(--primary);border:2px solid var(--primary-light);}
+.btn-secondary:hover{background:rgba(124,58,237,0.18);}
+.btn-danger{background:var(--error);color:#fff;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none!important;}
+.btn-small{padding:10px 16px;font-size:14px;min-height:40px;width:auto;display:inline-block;}
+
+input,textarea{min-height:48px;font-size:16px;font-family:'Noto Sans KR',sans-serif;font-weight:700;border:2px solid #E5E7EB;border-radius:12px;padding:12px 16px;width:100%;box-sizing:border-box;}
+input:focus,textarea:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(124,58,237,0.1);}
+textarea{min-height:80px;resize:vertical;}
+
+.card{background:var(--bg-card);border-radius:20px;padding:24px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+.privacy-notice{background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.15);border-radius:12px;padding:14px;font-size:13px;font-weight:400;color:var(--text-light);line-height:1.6;margin-top:16px;}
+.badge{display:inline-block;background:rgba(124,58,237,0.1);color:var(--primary);padding:6px 14px;border-radius:20px;font-size:14px;font-weight:700;}
+.nav-buttons{display:flex;gap:8px;margin-bottom:12px;}
+.nav-btn{background:rgba(124,58,237,0.08);border:none;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:700;color:var(--primary);cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.nav-btn:hover{background:rgba(124,58,237,0.15);}
+
+/* Choice buttons */
+.choice-btn{padding:16px;border:2px solid #E5E7EB;border-radius:14px;background:white;cursor:pointer;transition:all 0.2s;text-align:left;width:100%;display:block;margin:8px 0;font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700;color:var(--text);}
+.choice-btn:hover{border-color:var(--primary-light);background:rgba(124,58,237,0.03);}
+.choice-btn.selected{border-color:var(--primary);background:rgba(124,58,237,0.08);box-shadow:0 0 0 3px rgba(124,58,237,0.15);transform:scale(1.02);}
+.choice-btn.selected::after{content:' ✓';color:var(--primary);font-weight:900;}
+
+/* Thermometer */
+.thermo-container{position:relative;width:60px;height:240px;margin:0 auto 16px;background:#F3F4F6;border-radius:30px;overflow:hidden;border:3px solid #E5E7EB;}
+.thermo-fill{position:absolute;bottom:0;left:0;right:0;background:var(--thermo-green);transition:all 1s ease;border-radius:0 0 27px 27px;}
+.thermo-label{text-align:center;font-size:28px;font-weight:900;margin-bottom:4px;}
+.thermo-desc{text-align:center;font-size:14px;color:var(--text-light);margin-bottom:12px;}
+
+/* Story bubble */
+.story-bubble{background:white;border-radius:20px;padding:20px;margin:12px 0;border-left:4px solid var(--primary);box-shadow:0 2px 8px rgba(0,0,0,0.04);font-size:16px;line-height:1.8;}
+.story-char{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.story-char .avatar{width:48px;height:48px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.story-char .name{font-weight:900;font-size:16px;color:var(--primary);}
+
+/* Breathing circle */
+.breath-circle-wrap{display:flex;justify-content:center;align-items:center;height:200px;margin:20px 0;}
+.breath-circle{width:80px;height:80px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:18px;transition:all 0.3s;}
+.breath-circle.inhale{animation:breathIn 4s ease forwards;}
+.breath-circle.hold{animation:none;}
+.breath-circle.exhale{animation:breathOut 6s ease forwards;}
+@keyframes breathIn{from{width:80px;height:80px;font-size:18px}to{width:180px;height:180px;font-size:24px}}
+@keyframes breathOut{from{width:180px;height:180px;font-size:24px}to{width:80px;height:80px;font-size:18px}}
+
+/* Brake card collection */
+.brake-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:12px 0;}
+.brake-card{background:white;border:2px solid #E5E7EB;border-radius:16px;padding:16px;text-align:center;transition:all 0.3s;position:relative;}
+.brake-card.collected{border-color:var(--primary);background:rgba(124,58,237,0.05);}
+.brake-card.locked{opacity:0.4;filter:grayscale(1);}
+.brake-card .card-icon{font-size:36px;margin-bottom:8px;}
+.brake-card .card-name{font-size:14px;font-weight:900;color:var(--text);}
+.brake-card .card-badge{position:absolute;top:-8px;right:-8px;background:var(--success);color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;}
+
+/* Progress bar */
+.progress-bar{height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden;margin:8px 0;}
+.progress-fill{height:100%;background:var(--gradient);transition:width 0.5s;border-radius:4px;}
+
+/* Tabs */
+.tab-buttons{display:flex;gap:4px;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.tab-btn{flex-shrink:0;padding:10px 16px;border:none;background:rgba(124,58,237,0.08);border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text-light);}
+.tab-btn.active{background:var(--primary);color:white;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* Ending scene */
+.ending-scene{text-align:center;padding:20px;border-radius:20px;margin:12px 0;}
+.ending-good{background:linear-gradient(135deg,#D1FAE5,#A7F3D0);border:2px solid var(--success);}
+.ending-bad{background:linear-gradient(135deg,#FEE2E2,#FECACA);border:2px solid var(--error);}
+
+/* Timer ring */
+.timer-ring{position:relative;width:80px;height:80px;margin:0 auto;}
+.timer-ring svg{transform:rotate(-90deg);}
+.timer-ring circle{fill:none;stroke-width:6;}
+.timer-ring .bg{stroke:#E5E7EB;}
+.timer-ring .fg{stroke:var(--primary);stroke-linecap:round;transition:stroke-dashoffset 1s linear;}
+.timer-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:24px;font-weight:900;color:var(--primary);}
+
+/* Toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(31,41,55,0.95);color:white;padding:14px 28px;border-radius:14px;font-size:15px;font-weight:700;z-index:10000;opacity:0;transition:all 0.3s;max-width:90%;text-align:center;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:center;padding:20px;}
+.modal-content{background:white;border-radius:20px;padding:28px;max-width:360px;width:100%;text-align:center;}
+.modal-icon{font-size:48px;margin-bottom:12px;}
+.modal-message{font-size:16px;line-height:1.6;margin-bottom:20px;color:var(--text);}
+.modal-buttons{display:flex;gap:12px;}
+.modal-buttons .btn{flex:1;margin:0;}
+
+/* Explosion animation */
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.shake{animation:shake 0.3s 3;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.pulse{animation:pulse 0.6s 2;}
+
+/* Dashboard chart */
+.chart-container{width:100%;height:200px;position:relative;margin:12px 0;}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #F3F4F6;}
+.stat-label{font-size:14px;color:var(--text-light);}
+.stat-value{font-size:18px;font-weight:900;color:var(--primary);}
+
+/* Print */
+@media print{
+    body *{visibility:hidden;}
+    #dashboard-content,#dashboard-content *{visibility:visible;}
+    #dashboard-content{position:absolute;left:0;top:0;width:100%;}
+    .btn,.nav-buttons,.tab-buttons,#toast,.modal-overlay{display:none!important;}
+    .card{break-inside:avoid;box-shadow:none;border:1px solid #ddd;}
+}
+
+@media(max-width:768px){
+    body{font-size:16px;padding:8px;}
+    .container{max-width:100%;padding:12px;}
+    .btn{min-height:48px;font-size:16px;}
+    input,textarea{min-height:44px;font-size:16px;}
+    .thermo-container{height:180px;width:50px;}
+}
+@media(min-width:769px){.container{max-width:600px;}}
+</style>
+</head>
+<body>
+
+<!-- ═══ 시작 화면 ═══ -->
+<div class="screen active" id="screen-start">
+<div class="container" style="text-align:center;padding-top:40px;">
+    <div style="font-size:64px;margin-bottom:8px;">🚴</div>
+    <h1 style="font-size:26px;color:var(--primary);margin-bottom:4px;">화가 날 때, 멈추는 연습</h1>
+    <p style="color:var(--text-light);font-size:15px;margin-bottom:16px;">감정과 행동 사이, 작은 틈을 만드는 시간</p>
+    <span class="badge">⏱️ 예상 소요시간: 약 10~15분</span>
+    <div style="margin-top:28px;">
+        <button class="btn btn-primary" onclick="showScreen('screen-login')">👩‍🏫 방 만들기 / 입장하기</button>
+        <button class="btn btn-secondary" onclick="startSoloMode()">🌟 혼자 체험하기</button>
+    </div>
+    <div class="privacy-notice">
+        🔐 <strong>안심하세요!</strong><br>
+        우리가 사용하는 방 코드는 오직 입장할 때만 필요한 숫자일 뿐,
+        여러분이 누구인지 알려주는 이름표가 아니랍니다.
+        닉네임을 만들 때 개인정보를 포함하지 않도록 만들어 주세요.
+        여러분의 익명성은 소중히 보호됩니다.
+    </div>
+</div>
+</div>
+
+<!-- ═══ 로그인 화면 ═══ -->
+<div class="screen" id="screen-login">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-start')">← 처음으로</button></div>
+    <div class="card" style="text-align:center;">
+        <h2 style="margin-bottom:20px;">🚪 입장하기</h2>
+        <button class="btn btn-primary" onclick="showScreen('screen-create-room')" style="margin-bottom:8px;">👩‍🏫 방 만들기 (교사용)</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-teacher-login')" style="margin-bottom:8px;">🔑 교사로 접속하기</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-student-login')">🧒 학생으로 참여하기</button>
+    </div>
+    <div class="privacy-notice">
+        🔐 <strong>안심하세요!</strong><br>
+        입장 코드는 숫자로만 구성되어 있어 개인정보를 포함하지 않습니다.
+    </div>
+</div>
+</div>
+
+<!-- ═══ 방 만들기 ═══ -->
+<div class="screen" id="screen-create-room">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="text-align:center;margin-bottom:20px;">👩‍🏫 방 만들기</h2>
+        <label style="font-size:14px;color:var(--text-light);">선생님 닉네임</label>
+        <input id="create-teacher-name" placeholder="예: 김선생님" maxlength="10" style="margin-bottom:12px;">
+        <label style="font-size:14px;color:var(--text-light);">관리 비밀번호 (숫자 4자리)</label>
+        <input id="create-password" type="password" placeholder="숫자 4자리" maxlength="4" inputmode="numeric" pattern="[0-9]*" style="margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="createRoom()">🏠 방 만들기</button>
+    </div>
+</div>
+</div>
+
+<!-- ═══ 방 코드 표시 ═══ -->
+<div class="screen" id="screen-room-created">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+    <div class="card" style="text-align:center;">
+        <h2 style="margin-bottom:16px;">🎉 방이 만들어졌어요!</h2>
+        <p style="font-size:14px;color:var(--text-light);margin-bottom:8px;">학생들에게 이 코드를 알려주세요</p>
+        <div id="room-code-display" style="font-size:48px;font-weight:900;color:var(--primary);letter-spacing:8px;margin:16px 0;"></div>
+        <button class="btn btn-secondary" onclick="copyRoomCode()" style="margin-bottom:16px;">📋 코드 복사하기</button>
+        <button class="btn btn-primary" onclick="enterDashboard()">📊 대시보드로 이동</button>
+    </div>
+</div>
+</div>
+
+<!-- ═══ 교사 로그인 ═══ -->
+<div class="screen" id="screen-teacher-login">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="text-align:center;margin-bottom:20px;">🔑 교사로 접속</h2>
+        <label style="font-size:14px;color:var(--text-light);">방 코드 (숫자 6자리)</label>
+        <input id="teacher-room-code" placeholder="000000" maxlength="6" inputmode="numeric" style="margin-bottom:12px;">
+        <label style="font-size:14px;color:var(--text-light);">비밀번호</label>
+        <input id="teacher-password" type="password" placeholder="숫자 4자리" maxlength="4" inputmode="numeric" style="margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="joinAsTeacher()">🔓 접속하기</button>
+    </div>
+</div>
+</div>
+
+<!-- ═══ 학생 로그인 ═══ -->
+<div class="screen" id="screen-student-login">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="text-align:center;margin-bottom:20px;">🧒 학생으로 참여</h2>
+        <label style="font-size:14px;color:var(--text-light);">방 코드 (숫자 6자리)</label>
+        <input id="student-room-code" placeholder="000000" maxlength="6" inputmode="numeric" style="margin-bottom:12px;">
+        <label style="font-size:14px;color:var(--text-light);">닉네임</label>
+        <input id="student-nickname" placeholder="예: 용감한사자" maxlength="10" style="margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="joinAsStudent()">🚀 참여하기</button>
+    </div>
+    <div class="privacy-notice">
+        🔐 닉네임에 실명이나 개인정보를 쓰지 마세요. 여러분의 익명성은 소중히 보호됩니다.
+    </div>
+</div>
+</div>
+
+<!-- ═══ 스토리 도입 ═══ -->
+<div class="screen" id="screen-story">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:48px;margin-bottom:8px;">🚴</div>
+        <h2 style="color:var(--primary);margin-bottom:12px;">마음 브레이크</h2>
+        <p style="font-size:15px;line-height:1.8;color:var(--text);">
+            빠르게 달리는 자전거를 멈추려면<br>
+            <strong>브레이크</strong>를 잡아야 하죠?<br><br>
+            마음도 마찬가지예요.<br>
+            화가 점점 커질 때,<br>
+            <strong style="color:var(--primary);">"잠깐, 멈춰!"</strong> 할 수 있으면<br>
+            후회할 행동을 막을 수 있어요.<br><br>
+            오늘은 <strong>민준이의 하루</strong>를 따라가며<br>
+            마음 브레이크 잡는 연습을 해볼 거예요! 🌟
+        </p>
+        <button class="btn btn-primary" onclick="startEpisodes()" style="margin-top:16px;">📖 민준이의 하루 시작! →</button>
+    </div>
+</div>
+</div>
+
+<!-- ═══ 에피소드 (감정 온도 상승 + 멈춤 선택) ═══ -->
+<div class="screen" id="screen-episode">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="goBackEpisode()">← 뒤로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+
+    <!-- 감정 온도계 -->
+    <div class="card" style="text-align:center;padding:16px;">
+        <!-- ⭐ 시나리오가 3개(민준/서연/도윤)라서 주인공 이름을 renderEpisode()에서 바꿔 넣도록 span으로 분리 -->
+        <div style="font-size:13px;color:var(--text-light);margin-bottom:4px;"><span id="thermo-hero">민준이</span>의 감정 온도</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;">
+            <div class="thermo-container" style="height:160px;width:40px;">
+                <div class="thermo-fill" id="thermo-fill" style="height:10%;"></div>
+            </div>
+            <div>
+                <div class="thermo-label" id="thermo-label">10%</div>
+                <div class="thermo-desc" id="thermo-desc">평온한 상태</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 에피소드 내용 -->
+    <div id="episode-content"></div>
+</div>
+</div>
+
+<!-- ═══ 멈춤 전략 선택 ═══ -->
+<div class="screen" id="screen-brake-select">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-episode')">← 뒤로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="card" style="text-align:center;">
+        <h2 style="color:var(--success);margin-bottom:8px;">🛑 잘했어, 멈췄어!</h2>
+        <p style="font-size:15px;color:var(--text-light);margin-bottom:16px;">어떤 브레이크를 쓸까요?</p>
+        <div id="brake-options"></div>
+    </div>
+</div>
+</div>
+
+<!-- ═══ 브레이크 연습 ═══ -->
+<div class="screen" id="screen-brake-practice">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-brake-select')">← 뒤로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div id="brake-practice-content"></div>
+</div>
+</div>
+
+<!-- ═══ 폭발 엔딩 ═══ -->
+<div class="screen" id="screen-explode">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="ending-scene ending-bad">
+        <div style="font-size:64px;margin-bottom:12px;">💥</div>
+        <h2 style="color:var(--error);margin-bottom:8px;">감정이 폭발했어요!</h2>
+        <p style="font-size:15px;" id="explode-text"></p>
+    </div>
+    <div class="card">
+        <p style="text-align:center;font-size:15px;line-height:1.8;">
+            <span id="explode-hero">민준이</span>의 감정 온도가 100까지 올라가<br>
+            결국 터져 버렸어요.<br><br>
+            끝까지 가 본 것도 배움이에요.<br>
+            <strong style="color:var(--primary);"><span id="explode-hero2">민준이</span>는 어느 장면에서 멈췄으면 좋았을까요?</strong>
+        </p>
+        <div id="wish-stop-picker" style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:4px 0 8px;"></div>
+        <p id="wish-stop-note" style="text-align:center;font-size:13px;color:var(--text-light);min-height:20px;margin-bottom:8px;"></p>
+        <button class="btn btn-primary" onclick="retryEpisodes()">🔄 이번엔 그 장면에서 멈춰 보기</button>
+        <button class="btn btn-secondary" onclick="goToMain()">🏠 연습장으로 가기</button>
+    </div>
+</div>
+</div>
+
+<!-- ═══ 메인 (도감 + 게임 + 마음기록) ═══ -->
+<div class="screen" id="screen-main">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="card" style="text-align:center;">
+        <h2 style="color:var(--primary);margin-bottom:4px;">🚴 마음 브레이크 연습장</h2>
+        <p style="font-size:14px;color:var(--text-light);" id="main-nickname-display"></p>
+    </div>
+
+    <!-- 브레이크 도감 -->
+    <div class="card">
+        <h3 style="margin-bottom:8px;">📖 브레이크 기술 도감</h3>
+        <div class="progress-bar"><div class="progress-fill" id="dex-progress" style="width:0%"></div></div>
+        <div style="font-size:13px;color:var(--text-light);margin-bottom:12px;" id="dex-count">0/12 수집</div>
+        <div class="brake-grid" id="brake-dex"></div>
+        <div style="font-size:13px;color:var(--text-light);margin-top:8px;" id="dex-msg">🌱 에피소드를 진행하며 브레이크 기술을 모아보세요!</div>
+    </div>
+
+    <!-- 시나리오 재도전 -->
+    <div class="card" style="text-align:center;">
+        <h3 style="margin-bottom:8px;">🎮 시나리오 도전</h3>
+        <!-- ⭐ 아래 시나리오 선택칸에 이야기가 3개인데 민준이만 가리키던 안내문을 일반 문구로 수정 -->
+        <p style="font-size:14px;color:var(--text-light);margin-bottom:4px;">이야기를 골라 브레이크를 연습해요</p>
+        <div id="game-stats" style="font-size:13px;color:var(--primary);margin-bottom:12px;"></div>
+        <div id="scenario-picker" style="margin-bottom:12px;"></div>
+        <button class="btn btn-primary" onclick="startEpisodes()">🚴 시나리오 시작 →</button>
+    </div>
+
+    <!-- 마음 기록 -->
+    <div class="card" id="reflection-btn-area">
+        <h3 style="margin-bottom:8px;">📝 마음 기록</h3>
+        <p style="font-size:14px;color:var(--text-light);margin-bottom:12px;">나만의 멈추기 다짐을 적어보세요</p>
+        <button class="btn btn-secondary" onclick="openReflection()">📝 마음 기록 쓰기 →</button>
+    </div>
+
+    <!-- 완료 체크 -->
+    <div id="complete-check" style="text-align:center;margin-top:12px;display:none;">
+        <button class="btn btn-primary" onclick="goToComplete()">🎉 활동 완료하기 →</button>
+    </div>
+</div>
+</div>
+
+<!-- ═══ 마음 기록 (성찰) ═══ -->
+<div class="screen" id="screen-reflection">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-main')">← 뒤로</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="text-align:center;color:var(--primary);margin-bottom:16px;">📝 마음 기록</h2>
+
+        <label style="font-size:14px;color:var(--text-light);">1. 나는 주로 이럴 때 화가 나요</label>
+        <textarea id="ref-when" placeholder="예: 친구가 내 말을 안 들을 때, 억울할 때..." style="margin-bottom:8px;"></textarea>
+        <div style="font-size:12px;color:var(--text-light);font-weight:400;background:rgba(124,58,237,0.05);border-radius:10px;padding:10px;margin-bottom:16px;">
+            💡 <strong>이렇게 적어봐요</strong> · "동생이 내 물건을 말도 없이 쓸 때" · "열심히 했는데 아무도 몰라줄 때" · "줄 서 있는데 누가 끼어들 때"
+        </div>
+
+        <label style="font-size:14px;color:var(--text-light);">1-1. 그 상황은 어떤 유형에 가까운가요? (하나 선택)</label>
+        <div id="anger-type-choices" style="margin-bottom:16px;"></div>
+
+        <label style="font-size:14px;color:var(--text-light);">2. 화가 날 때 내 몸에서 나타나는 신호는?</label>
+        <div id="body-signal-choices" style="margin-bottom:16px;">
+            <button class="choice-btn" data-signal="얼굴이 빨개져요" onclick="toggleSignal(this,'얼굴이 빨개져요')">😳 얼굴이 빨개져요</button>
+            <button class="choice-btn" data-signal="주먹을 꽉 쥐어요" onclick="toggleSignal(this,'주먹을 꽉 쥐어요')">✊ 주먹을 꽉 쥐어요</button>
+            <button class="choice-btn" data-signal="목소리가 커져요" onclick="toggleSignal(this,'목소리가 커져요')">🗣️ 목소리가 커져요</button>
+            <button class="choice-btn" data-signal="눈물이 나요" onclick="toggleSignal(this,'눈물이 나요')">😢 눈물이 나요</button>
+            <button class="choice-btn" data-signal="가슴이 두근거려요" onclick="toggleSignal(this,'가슴이 두근거려요')">💓 가슴이 두근거려요</button>
+            <button class="choice-btn" data-signal="배가 아파요" onclick="toggleSignal(this,'배가 아파요')">🤢 배가 아파요</button>
+            <button class="choice-btn" data-signal="숨이 빨라져요" onclick="toggleSignal(this,'숨이 빨라져요')">💨 숨이 빨라져요</button>
+            <button class="choice-btn" data-signal="머리가 뜨거워져요" onclick="toggleSignal(this,'머리가 뜨거워져요')">🥵 머리가 뜨거워져요</button>
+            <button class="choice-btn" data-signal="이를 꽉 물어요" onclick="toggleSignal(this,'이를 꽉 물어요')">😬 이를 꽉 물어요</button>
+            <button class="choice-btn" data-signal="다리를 떨어요" onclick="toggleSignal(this,'다리를 떨어요')">🦵 다리를 떨어요</button>
+            <button class="choice-btn" data-signal="말이 잘 안 나와요" onclick="toggleSignal(this,'말이 잘 안 나와요')">🤐 말이 잘 안 나와요</button>
+            <button class="choice-btn" data-signal="눈앞이 캄캄해져요" onclick="toggleSignal(this,'눈앞이 캄캄해져요')">😵 눈앞이 캄캄해져요</button>
+        </div>
+
+        <label style="font-size:14px;color:var(--text-light);">3. 다음에 화가 나면, 나는 이 브레이크를 쓸 거예요</label>
+        <textarea id="ref-brake" placeholder="예: 눈을 감고 숫자 5까지 세기, 심호흡 3번..." style="margin-bottom:8px;"></textarea>
+        <div id="ref-brake-hint" style="font-size:12px;color:var(--text-light);font-weight:400;background:rgba(16,185,129,0.06);border-radius:10px;padding:10px;margin-bottom:16px;"></div>
+
+        <label style="font-size:14px;color:var(--text-light);">4. 화가 났다가 기분이 나아진 적이 있나요? 언제 나아졌어요?</label>
+        <textarea id="ref-better" placeholder="예: 물을 마시고 창밖을 봤을 때, 친구가 먼저 말 걸어줬을 때..." style="margin-bottom:16px;"></textarea>
+
+        <button class="btn btn-primary" onclick="submitReflection()">✅ 마음 기록 저장</button>
+    </div>
+</div>
+</div>
+
+<!-- ═══ 완료 화면 ═══ -->
+<div class="screen" id="screen-complete">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="backToMain()">← 다시 탐험하기</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:64px;margin-bottom:8px;">🎉</div>
+        <h2 style="color:var(--primary);margin-bottom:12px;">멋지게 해냈어요!</h2>
+        <div id="complete-summary"></div>
+    </div>
+    <div style="text-align:center;">
+        <button class="btn btn-primary" onclick="backToMain()">🔄 도감 더 채우러 가기</button>
+        <button class="btn btn-secondary" id="solo-save-btn" onclick="downloadMyResult()" style="display:none;">📄 내 결과 저장하기</button>
+    </div>
+</div>
+</div>
+
+<!-- ═══ 교사 대시보드 ═══ -->
+<div class="screen" id="screen-dashboard">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+    <div class="card" style="text-align:center;padding:16px;">
+        <h2 style="color:var(--primary);margin-bottom:4px;">📊 교사 대시보드</h2>
+        <p style="font-size:14px;color:var(--text-light);">방 코드: <strong id="dash-room-code"></strong></p>
+        <button class="btn-small btn-secondary" onclick="refreshDashboard()" style="margin-top:8px;">🔄 새로고침</button>
+    </div>
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('tab-overview', this)">📊 현황</button>
+        <button class="tab-btn" onclick="switchTab('tab-detail', this)">📋 상세기록</button>
+        <button class="tab-btn" onclick="switchTab('tab-export', this)">📥 내보내기</button>
+        <button class="tab-btn" onclick="switchTab('tab-tts', this)">🔊 TTS</button>
+    </div>
+    <div id="dashboard-content">
+        <div class="tab-content active" id="tab-overview"></div>
+        <div class="tab-content" id="tab-detail"></div>
+        <div class="tab-content" id="tab-export">
+            <div class="card" style="text-align:center;">
+                <button class="btn btn-primary" onclick="downloadExcel()" style="margin-bottom:8px;">📥 엑셀 다운로드</button>
+                <button class="btn btn-secondary" onclick="downloadPDF()">📄 PDF 다운로드</button>
+            </div>
+        </div>
+        <div class="tab-content" id="tab-tts">
+            <div class="card">
+                <h3 style="margin-bottom:4px;text-align:center;">🔊 결과 읽어주기</h3>
+                <p style="font-size:13px;color:var(--text-light);text-align:center;margin-bottom:12px;">영역을 골라 재생하거나, 먼저 스크립트를 확인하세요.</p>
+                <div style="border-bottom:1px solid #F3F4F6;padding-bottom:10px;margin-bottom:10px;">
+                    <div style="font-size:14px;font-weight:900;margin-bottom:6px;">📊 참여 현황 요약</div>
+                    <button class="btn-small btn-secondary" onclick="speakSection('overview')">▶️ 재생</button>
+                    <button class="btn-small btn-secondary" onclick="stopSpeaking()">⏹️ 정지</button>
+                    <button class="btn-small btn-secondary" onclick="previewScript('overview')">📝 스크립트</button>
+                </div>
+                <div style="border-bottom:1px solid #F3F4F6;padding-bottom:10px;margin-bottom:10px;">
+                    <div style="font-size:14px;font-weight:900;margin-bottom:6px;">🚴 브레이크 전략 분포</div>
+                    <button class="btn-small btn-secondary" onclick="speakSection('brake')">▶️ 재생</button>
+                    <button class="btn-small btn-secondary" onclick="stopSpeaking()">⏹️ 정지</button>
+                    <button class="btn-small btn-secondary" onclick="previewScript('brake')">📝 스크립트</button>
+                </div>
+                <div style="border-bottom:1px solid #F3F4F6;padding-bottom:10px;margin-bottom:10px;">
+                    <div style="font-size:14px;font-weight:900;margin-bottom:6px;">😤 화날 때 상황 유형</div>
+                    <button class="btn-small btn-secondary" onclick="speakSection('anger')">▶️ 재생</button>
+                    <button class="btn-small btn-secondary" onclick="stopSpeaking()">⏹️ 정지</button>
+                    <button class="btn-small btn-secondary" onclick="previewScript('anger')">📝 스크립트</button>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <div style="font-size:14px;font-weight:900;margin-bottom:6px;">📋 학생별 기록</div>
+                    <button class="btn-small btn-secondary" onclick="speakSection('detail')">▶️ 재생</button>
+                    <button class="btn-small btn-secondary" onclick="stopSpeaking()">⏹️ 정지</button>
+                    <button class="btn-small btn-secondary" onclick="previewScript('detail')">📝 스크립트</button>
+                </div>
+                <div id="tts-preview" style="display:none;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:12px;font-size:13px;font-weight:400;line-height:1.7;white-space:pre-wrap;"></div>
+            </div>
+            <div class="card" style="text-align:center;">
+                <button class="btn btn-primary" onclick="speakDashboard()" style="margin-bottom:8px;">▶️ 전체 결과 읽기</button>
+                <button class="btn btn-secondary" onclick="stopSpeaking()">⏹️ 정지</button>
+            </div>
+        </div>
+    </div>
+    <div class="card" style="text-align:center;margin-top:12px;">
+        <p style="font-size:13px;color:var(--warning);">⚠️ 수업이 끝나면 데이터 초기화를 눌러주세요. 30일 후 자동 삭제됩니다.</p>
+        <button class="btn btn-danger btn-small" onclick="resetData()" style="margin-top:8px;">🗑️ 데이터 초기화</button>
+    </div>
+</div>
+</div>
+
+<!-- ═══ 토스트 ═══ -->
+<div id="toast" class="toast"></div>
+
+<!-- ═══ 확인 모달 ═══ -->
+<div id="confirmModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-icon">⚠️</div>
+        <div class="modal-message" id="confirmMessage"></div>
+        <div class="modal-buttons">
+            <button class="btn btn-secondary" onclick="closeConfirmModal()">취소</button>
+            <button class="btn btn-primary" id="confirmOkBtn" style="background:var(--error)">확인</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ 메인 스크립트 ═══ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s",
+    authDomain: "emo-dex.firebaseapp.com",
+    projectId: "emo-dex",
+    storageBucket: "emo-dex.firebasestorage.app",
+    messagingSenderId: "994736049700",
+    appId: "1:994736049700:web:8233fa7b68cd6e0cccd2b1",
+    measurementId: "G-6YLB5C6VNR"
+};
+
+const APP_ID = 'sel-lesson-08';
+let app, auth, db, currentUser = null;
+let useFirebase = false;
+const localDB = {};
+
+try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+} catch(e) { console.log('[Firebase] Init failed:', e.message); }
+
+// ═══ Auth ═══
+let authReady = new Promise((resolve) => {
+    if (!auth) { resolve(null); return; }
+    const timeout = setTimeout(() => resolve(null), 5000);
+    onAuthStateChanged(auth, (user) => {
+        if (user) { currentUser = user; useFirebase = true; clearTimeout(timeout); resolve(user); }
+    });
+    signInAnonymously(auth).catch(e => { clearTimeout(timeout); resolve(null); });
+});
+
+// ═══ Firestore Path Helpers ═══
+function getRoomRef(code) { return doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code); }
+function getStudentRef(code, nick) { return doc(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students', nick); }
+function getStudentsCollection(code) { return collection(db, 'artifacts', APP_ID, 'public', 'data', 'rooms', code, 'students'); }
+
+// ═══ DB Wrapper ═══
+const DB = {
+    async saveRoom(code, data) {
+        if (useFirebase) { try { await setDoc(getRoomRef(code), data); return; } catch(e){} }
+        localDB['room_'+code] = {...(localDB['room_'+code]||{}), ...data};
+    },
+    async getRoom(code) {
+        if (useFirebase) { try { const s = await getDoc(getRoomRef(code)); return s.exists()?s.data():null; } catch(e){} }
+        return localDB['room_'+code] || null;
+    },
+    async saveStudent(code, nick, data) {
+        if (useFirebase) { try { await setDoc(getStudentRef(code, nick), data, {merge:true}); return; } catch(e){} }
+        if (!localDB['students_'+code]) localDB['students_'+code] = {};
+        localDB['students_'+code][nick] = {...(localDB['students_'+code][nick]||{}), ...data};
+    },
+    async getStudent(code, nick) {
+        if (useFirebase) { try { const s = await getDoc(getStudentRef(code, nick)); return s.exists()?s.data():null; } catch(e){} }
+        return localDB['students_'+code]?.[nick] || null;
+    },
+    async getAllStudents(code) {
+        if (useFirebase) {
+            try {
+                const snap = await getDocs(getStudentsCollection(code));
+                const result = {};
+                snap.forEach(d => { result[d.id] = d.data(); });
+                return result;
+            } catch(e){}
+        }
+        return localDB['students_'+code] || {};
+    },
+    async deleteRoom(code) {
+        if (useFirebase) {
+            try {
+                const snap = await getDocs(getStudentsCollection(code));
+                for (const d of snap.docs) { await deleteDoc(d.ref); }
+                await deleteDoc(getRoomRef(code));
+            } catch(e){}
+        }
+        delete localDB['room_'+code];
+        delete localDB['students_'+code];
+    },
+    onStudentsChange(code, callback) {
+        if (useFirebase) {
+            try { return onSnapshot(getStudentsCollection(code), (snap) => {
+                const result = {};
+                snap.forEach(d => { result[d.id] = d.data(); });
+                callback(result);
+            }); } catch(e){}
+        }
+        callback(localDB['students_'+code] || {});
+        return null;
+    }
+};
+
+// ═══ 상태 변수 ═══
+let currentRoomCode = '';
+let currentNickname = '';
+let isTeacher = false;
+let isSoloMode = false;
+let unsubscribe = null;
+let dashboardData = {};
+
+// 에피소드 진행
+let currentEpisode = 0;
+let thermoLevel = 10;
+let stoppedAt = -1;
+let chosenBrake = '';
+let totalPlays = 0;
+let bestStopLevel = 999;
+
+// 브레이크 도감
+let collectedBrakes = new Set();
+let reflectionDone = false;
+let bodySignals = [];
+let brakeUsage = {};
+let brakeNotes = {};
+let selectedAngerType = '';
+
+// ═══ 에피소드 데이터 ═══
+const EPISODES = [
+    {
+        id: 1, tempAdd: 15,
+        title: '🌅 아침 — 늦잠의 시작',
+        story: `민준이는 어젯밤 게임을 하다 늦게 잠들었어요. 아침에 알람이 울렸지만 꾸벅꾸벅... 눈을 떴더니 이미 8시 10분!<br><br>"아, 안돼! 지각이다!"<br><br>허겁지겁 일어나 세수도 제대로 못하고 옷을 입었어요. 아침밥도 못 먹고 현관문을 나서는데, 오늘따라 신발 끈이 자꾸 풀려요.`,
+        emotion: '짜증이 나기 시작해요 😤'
+    },
+    {
+        id: 2, tempAdd: 20,
+        title: '🚌 등교길 — 겹치는 불운',
+        story: `헐레벌떡 뛰어가는데 버스가 코앞에서 떠나버렸어요. 다음 버스까지 10분을 기다려야 해요.<br><br>비까지 부슬부슬 내리기 시작했는데... 우산이 없어요. 겨우 학교에 도착하니 머리카락이 축축해졌고, 지각이에요.<br><br>교실 문을 열자마자 친구들이 쳐다봐요.<br>선생님이 말씀하세요. "민준아, 또 지각이구나."`,
+        emotion: '화가 올라오기 시작해요 😠'
+    },
+    {
+        id: 3, tempAdd: 20,
+        title: '📚 수업 시간 — 억울한 순간',
+        story: `수학 시간, 짝꿍 현서가 민준이의 지우개를 물어보지도 않고 가져다 썼어요.<br><br>"야, 그거 내 거잖아!"<br><br>현서는 "잠깐 빌린 건데 뭐" 하며 돌려줬지만, 지우개가 까맣게 더러워져 있었어요. 게다가 선생님은 민준이가 떠든다고 주의만 주셨어요.<br><br><em>"나는 항의한 건데... 왜 나만 혼나?"</em>`,
+        emotion: '억울하고 분한 마음이 커져요 😡'
+    },
+    {
+        id: 4, tempAdd: 20,
+        title: '🍽️ 점심시간 — 무시당한 기분',
+        story: `점심 급식에 민준이가 제일 싫어하는 반찬만 나왔어요. 그래도 참고 먹으려는데...<br><br>친구들이 축구할 사람을 모으고 있었어요. 민준이가 "나도 낄래!" 했는데 은서가 말했어요.<br><br>"어... 이미 인원 다 찼는데?"<br><br>그런데 바로 뒤에 온 태윤이는 들어갔어요. 민준이만 빼고.`,
+        emotion: '서럽고 화가 치밀어 올라요 🔥'
+    },
+    {
+        id: 5, tempAdd: 15,
+        title: '⏰ 방과 후 — 마지막 한 방',
+        story: `하교 시간, 민준이는 교실 뒤에서 가방을 챙기고 있었어요. 그때 지나가던 승우가 장난으로 민준이 가방을 톡 쳤어요.<br><br>가방이 바닥에 떨어지며 필통이 열려서 연필과 지우개가 와르르 쏟아졌어요.<br><br>승우: "앗, 미안~ 일부러 그런 거 아니야!"<br><br>민준이의 손이 부르르 떨려요. 이가 꽉 물려요. 뭔가 터질 것 같은 순간...`,
+        emotion: '💥 감정이 폭발 직전이에요!'
+    }
+];
+
+// ═══ 추가 시나리오 (원본 민준이 이야기는 그대로 두고 새 이야기를 더한다) ═══
+const EPISODES_SEOYEON = [
+    {
+        id: 1, tempAdd: 15,
+        title: '🎒 아침 — 사라진 준비물',
+        story: `서연이는 어제 밤늦게까지 모둠 발표 자료를 만들었어요. 색종이로 오린 글자, 직접 그린 그림까지 정성껏 담은 봉투를 책상 위에 올려두고 잤죠.<br><br>그런데 아침에 보니 봉투가 없어요.<br><br>"엄마! 내 봉투 못 봤어?"<br>"어젯밤에 책상 정리했는데... 어디 뒀더라?"<br><br>겨우 찾았지만 봉투는 반쯤 구겨져 있었어요.`,
+        emotion: '속상하고 조금 짜증이 나요 😔'
+    },
+    {
+        id: 2, tempAdd: 20,
+        title: '🧩 1교시 — 지나쳐진 내 의견',
+        story: `모둠 회의 시간. 서연이가 손을 들고 말했어요.<br><br>"우리 발표를 퀴즈처럼 만들면 어때?"<br><br>아무도 대답하지 않았어요. 잠시 뒤 지호가 똑같은 말을 했어요.<br><br>"야, 퀴즈처럼 하면 재밌겠다!"<br>"오, 지호 아이디어 좋다!"<br><br>모두가 지호를 보며 고개를 끄덕였어요.`,
+        emotion: '내 말이 없어진 것 같아 화가 올라와요 😠'
+    },
+    {
+        id: 3, tempAdd: 20,
+        title: '💬 쉬는 시간 — 등 뒤에서 들린 말',
+        story: `물을 마시러 가는 길, 사물함 뒤에서 목소리가 들려왔어요.<br><br>"서연이는 왜 자꾸 자기 마음대로 하려고 해?"<br><br>서연이는 걸음을 멈췄어요. 심장이 쿵쾅거려요.<br><br>고개를 돌리자 말하던 친구가 얼른 입을 다물고 딴 데를 봐요.<br><br><em>"나는 그냥 잘하고 싶었을 뿐인데..."</em>`,
+        emotion: '억울하고 서러운 마음이 커져요 😢'
+    },
+    {
+        id: 4, tempAdd: 20,
+        title: '🎨 미술 시간 — 망가진 작품',
+        story: `발표 포스터에 마지막 색을 칠하고 있는데, 옆자리 친구가 팔을 휙 움직이다 물통을 쓰러뜨렸어요.<br><br>파란 물이 포스터 한가운데로 주르륵.<br><br>"어? 아 미안. 근데 어차피 거기 다시 칠하면 되잖아."<br><br>서연이가 세 시간 걸려 그린 부분이었어요. 손끝이 떨려요.`,
+        emotion: '화가 확 치밀어 올라요 🔥'
+    },
+    {
+        id: 5, tempAdd: 15,
+        title: '📱 하교 전 — 단톡방의 웃음',
+        story: `가방을 메고 나오는데 휴대폰이 울려요. 모둠 단톡방이에요.<br><br>누군가 서연이의 젖은 포스터 사진을 올렸어요.<br>그 아래로 웃음 이모티콘이 우르르 달렸어요. 😂😂😂<br><br>서연이는 화면을 꽉 쥐었어요. 얼굴이 확 달아오르고, 목이 뻐근해져요.<br><br>지금 당장 뭐라도 쓰고 싶은 순간...`,
+        emotion: '💥 감정이 폭발 직전이에요!'
+    }
+];
+
+const EPISODES_DOYUN = [
+    {
+        id: 1, tempAdd: 15,
+        title: '🌤️ 아침 조회 — 갑자기 바뀐 순서',
+        story: `오늘은 운동회 연습 날이에요. 도윤이는 일주일 내내 이어달리기 마지막 주자를 연습했어요.<br><br>그런데 아침 조회에서 선생님이 말씀하셨어요.<br><br>"오늘은 순서를 조금 바꿔볼게. 도윤이는 두 번째로 뛰자."<br><br>"네? 왜요?"<br>"이유는 이따 설명할게. 일단 준비하자."`,
+        emotion: '이유를 몰라서 답답하고 서운해요 😕'
+    },
+    {
+        id: 2, tempAdd: 20,
+        title: '🏃 이어달리기 — 놓쳐버린 바통',
+        story: `연습이 시작됐어요. 앞 주자가 달려오고, 도윤이가 손을 뻗었어요.<br><br>탁— 바통이 손끝을 스치더니 바닥에 떨어졌어요.<br><br>"아! 도윤이 뭐 해!"<br>"야, 손 좀 제대로 벌려야지!"<br><br>여기저기서 소리가 들려요. 도윤이는 얼른 바통을 주워 뛰었지만, 이미 한참 뒤처졌어요.`,
+        emotion: '창피하고 화가 나기 시작해요 😠'
+    },
+    {
+        id: 3, tempAdd: 20,
+        title: '🥤 물 마시는 줄 — 새치기',
+        story: `쉬는 시간, 목이 타서 정수기 줄에 섰어요. 앞에 다섯 명. 겨우 두 명 남았을 때—<br><br>친구 셋이 웃으며 슬쩍 앞으로 끼어들었어요.<br><br>"우리 잠깐만~"<br><br>도윤이가 "야, 줄 서야지" 했더니 한 명이 말했어요.<br>"에이, 뭘 그런 걸로 그래."<br><br>결국 도윤이는 또 뒤로 밀렸어요.`,
+        emotion: '억울하고 분한 마음이 커져요 😡'
+    },
+    {
+        id: 4, tempAdd: 20,
+        title: '📣 응원 연습 — 나만 지적받는 기분',
+        story: `응원 연습 시간. 다 같이 구호를 외치는데 선생님이 말씀하셨어요.<br><br>"도윤아, 동작이 자꾸 늦어. 다시!"<br><br>다시 했지만 또 "도윤아, 팔!" 하는 소리가 들렸어요. 옆 친구들도 비슷하게 하는 것 같은데 이름은 도윤이만 불려요.<br><br>뒤에서 누가 킥킥 웃는 소리가 들렸어요.`,
+        emotion: '서럽고 화가 치밀어 올라요 🔥'
+    },
+    {
+        id: 5, tempAdd: 15,
+        title: '🧹 정리 시간 — 혼자 남은 운동장',
+        story: `연습이 끝나고 정리 시간. 콘과 바통을 챙기는 사이, 친구들이 하나둘 사라졌어요.<br><br>"우리 먼저 간다~"<br><br>정신을 차려보니 넓은 운동장에 도윤이 혼자예요. 콘 스무 개를 혼자 옮기고 있는데, 저 멀리서 웃음소리가 들려요.<br><br>도윤이의 손에 힘이 꽉 들어가요. 콘을 던져버리고 싶은 순간...`,
+        emotion: '💥 감정이 폭발 직전이에요!'
+    }
+];
+
+const SCENARIOS = [
+    {
+        id: 'minjun', name: '민준이의 하루', avatar: '👦', hero: '민준이',
+        label: '🚴 민준이의 하루', sub: '늦잠으로 시작된 하루',
+        episodes: EPISODES,
+        explode: '민준이는 결국 승우에게 소리를 질러버렸어요.<br>"야!! 일부러 그런 거지?!"<br><br>승우는 깜짝 놀라 울어버렸고,<br>민준이도 금방 후회했어요...'
+    },
+    {
+        id: 'seoyeon', name: '서연이의 하루', avatar: '👧', hero: '서연이',
+        label: '🎨 서연이의 하루', sub: '모둠 발표를 준비하는 날',
+        episodes: EPISODES_SEOYEON,
+        explode: '서연이는 단톡방에 화를 그대로 쏟아냈어요.<br>"너희 진짜 최악이야!!"<br><br>화면은 순식간에 조용해졌고,<br>서연이의 마음도 더 무거워졌어요...'
+    },
+    {
+        id: 'doyun', name: '도윤이의 하루', avatar: '🧒', hero: '도윤이',
+        label: '🏃 도윤이의 하루', sub: '운동회 연습이 있던 날',
+        episodes: EPISODES_DOYUN,
+        explode: '도윤이는 들고 있던 콘을 바닥에 힘껏 내던졌어요.<br>"나만 하냐고!!"<br><br>지나가던 선생님이 놀라서 돌아봤고,<br>도윤이도 곧 마음이 무거워졌어요...'
+    }
+];
+
+let currentScenario = 0;
+let clearedScenarios = new Set();
+function epList() { return SCENARIOS[currentScenario].episodes; }
+
+// ═══ 브레이크 기술 데이터 ═══
+const BRAKES = [
+    { id:'breath', icon:'🌬️', name:'숨 고르기', desc:'천천히 숨을 들이쉬고 내쉬어요', practice:'breathing' },
+    { id:'count', icon:'🔢', name:'숫자 세기', desc:'마음속으로 10까지 천천히 세요', practice:'counting' },
+    { id:'palm', icon:'✋', name:'손바닥 느끼기', desc:'두 손을 책상에 대고 온기를 느껴요', practice:'palm' },
+    { id:'walk', icon:'🚶', name:'그 자리 떠나기', desc:'잠깐 다른 곳으로 이동해요', practice:'walk' },
+    { id:'squeeze', icon:'💪', name:'주먹 쥐고 풀기', desc:'꽉 쥐었다가 천천히 펴요', practice:'squeeze' },
+    { id:'word', icon:'💬', name:'마음 말하기', desc:'"나 지금 화났어"라고 속으로 말해요', practice:'word' },
+    { id:'water', icon:'💧', name:'물 한 모금', desc:'차가운 물을 아주 천천히 한 모금', practice:'timer', sec:8,
+      guide:'컵이나 물병을 들고 <strong>아주 천천히</strong> 한 모금 마셔요.<br>물이 목을 지나가는 시원한 느낌에만 집중해요.<br><br><strong>8초</strong> 동안 해볼게요.',
+      done:'입 안이 시원해지면서 마음도 한 박자 느려졌나요?' },
+    { id:'shoulder', icon:'🫳', name:'어깨 툭 떨구기', desc:'어깨를 올렸다가 툭 떨어뜨려요', practice:'timer', sec:6,
+      guide:'어깨를 귀 가까이까지 <strong>쓱</strong> 올려보세요.<br>그리고 "후—" 하면서 <strong>툭</strong> 떨어뜨려요.<br><br><strong>6초</strong> 동안 두 번 반복해요.',
+      done:'어깨가 조금 가벼워졌나요? 힘이 빠진 만큼 마음도 내려와요.' },
+    { id:'ground', icon:'👀', name:'다섯 가지 찾기', desc:'눈에 보이는 물건 5개를 찾아요', practice:'tap', taps:5,
+      guide:'고개를 들고 천천히 주변을 둘러보세요.<br>눈에 보이는 물건을 <strong>하나씩</strong> 찾을 때마다 버튼을 눌러요.<br>화난 생각에서 잠깐 눈을 떼는 연습이에요.',
+      tapLabel:'하나 찾았어요 👆', done:'주변을 둘러보는 동안 화가 조금 멀어졌나요?' },
+    { id:'cloud', icon:'☁️', name:'생각 구름 보내기', desc:'화난 생각을 구름에 태워 보내요', practice:'timer', sec:10,
+      guide:'지금 머릿속에 떠오른 화난 생각을<br>하얀 <strong>구름</strong> 위에 살짝 올려놓아요.<br>바람이 불면 구름은 천천히 흘러가요.<br><br><strong>10초</strong> 동안 지켜볼게요.',
+      done:'구름이 조금 멀어졌나요? 생각은 지나가는 거예요.' },
+    { id:'later', icon:'⏭️', name:'1분 뒤 나 만나기', desc:'조금 뒤의 내 모습을 상상해요', practice:'reflect',
+      guide:'지금 소리를 지르면 <strong>1분 뒤의 나</strong>는 어떤 기분일까요?<br>반대로 지금 멈추면, 1분 뒤의 나는 어떨까요?<br>잠깐 그 모습을 떠올려봐요.',
+      prompt:'1분 뒤의 나에게 한마디 적어볼까요?', placeholder:'예: 참길 잘했어. 지금은 마음이 괜찮아졌어.' },
+    { id:'help', icon:'🙋', name:'도와줘 신호 보내기', desc:'믿을 만한 어른에게 도움을 청해요', practice:'reflect',
+      guide:'혼자 참기가 너무 힘들 때는<br><strong>도와달라고 말하는 것</strong>도 훌륭한 브레이크예요.<br>선생님, 부모님, 상담 선생님 누구든 좋아요.',
+      prompt:'내가 도움을 청할 수 있는 사람은 누구인가요?', placeholder:'예: 담임 선생님, 엄마, 옆 반 친구' }
+];
+
+// ═══ 화날 때 상황 유형 ═══
+const ANGER_TYPES = [
+    { id:'unfair',  icon:'⚖️', label:'억울할 때' },
+    { id:'ignored', icon:'🙈', label:'무시당했다고 느낄 때' },
+    { id:'tease',   icon:'😾', label:'놀리거나 장난칠 때' },
+    { id:'promise', icon:'🤝', label:'약속을 어겼을 때' },
+    { id:'stuff',   icon:'📦', label:'내 물건을 함부로 할 때' },
+    { id:'blocked', icon:'🚧', label:'마음대로 잘 안 될 때' },
+    { id:'nag',     icon:'📢', label:'자꾸 지적받을 때' },
+    { id:'left',    icon:'🚪', label:'끼워주지 않을 때' }
+];
+
+// ═══ 공통 함수 ═══
+function showToast(msg, type='info') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = type==='error'?'rgba(239,68,68,0.95)':type==='success'?'rgba(16,185,129,0.95)':'rgba(31,41,55,0.95)';
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 3000);
+}
+window.showToast = showToast;
+
+window.showScreen = function(id) {
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    const t = document.getElementById(id);
+    if(t){t.classList.add('active'); window.scrollTo(0,0);}
+};
+
+let confirmCallback = null;
+window.showConfirmModal = function(msg, onConfirm) {
+    document.getElementById('confirmMessage').innerHTML = msg;
+    document.getElementById('confirmModal').style.display = 'flex';
+    confirmCallback = onConfirm;
+    document.getElementById('confirmOkBtn').onclick = () => {
+        const cb = confirmCallback;
+        closeConfirmModal();
+        if(cb) cb();
+    };
+};
+window.closeConfirmModal = function() {
+    document.getElementById('confirmModal').style.display = 'none';
+    confirmCallback = null;
+    document.getElementById('confirmOkBtn').textContent = '확인';
+    document.getElementById('confirmOkBtn').style.background = 'var(--error)';
+};
+
+// ═══ 조사 도우미 ═══
+// ⭐ 앞말 받침에 따라 조사를 골라준다. 예전에는 '숨 고르기'+'으로' → "숨 고르기으로" 같은 비문이 나왔다.
+function josa(word, withBatchim, withoutBatchim, fallback) {
+    const s = String(word == null ? '' : word).trim();
+    if (!s) return fallback || withoutBatchim;
+    const code = s.charCodeAt(s.length - 1);
+    // ⭐ 숫자·영문으로 끝나는 닉네임은 받침을 알 수 없으므로 fallback('은(는)')이 주어지면 그것을 쓴다
+    if (code < 0xAC00 || code > 0xD7A3) return fallback || withoutBatchim;
+    const jong = (code - 0xAC00) % 28;
+    if (jong === 0) return withoutBatchim;                     // 받침 없음
+    if (jong === 8 && withoutBatchim === '로') return '로';     // ㄹ 받침은 '로'
+    return withBatchim;
+}
+
+// ═══ 비밀번호 해시 ═══
+async function hashPassword(pw) {
+    const enc = new TextEncoder().encode(pw + 'sel-salt-08');
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// ═══ 클립보드 ═══
+async function copyToClipboard(text) {
+    try { await navigator.clipboard.writeText(text); showToast('✅ 코드가 복사되었습니다!','success'); }
+    catch(e) {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.cssText='position:fixed;opacity:0;left:-9999px';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { document.execCommand('copy'); showToast('✅ 코드가 복사되었습니다!','success'); }
+        catch(e2) { showToast('📋 코드: '+text+' (직접 복사해주세요)'); }
+        document.body.removeChild(ta);
+    }
+}
+window.copyRoomCode = function() { copyToClipboard(currentRoomCode); };
+
+// ═══ 방 만들기 ═══
+window.createRoom = async function() {
+    await authReady;
+    const name = document.getElementById('create-teacher-name').value.trim();
+    const pw = document.getElementById('create-password').value.trim();
+    if(!name){ showToast('닉네임을 입력해주세요.','error'); return; }
+    if(!pw || pw.length!==4 || !/^\d{4}$/.test(pw)){ showToast('비밀번호는 숫자 4자리를 입력해주세요.','error'); return; }
+
+    const code = String(Math.floor(Math.random()*900000)+100000);
+    const hashed = await hashPassword(pw);
+    const exp = new Date(); exp.setDate(exp.getDate()+30);
+
+    await DB.saveRoom(code, {
+        teacherName: name, password: hashed,
+        createdAt: new Date().toISOString(), expiresAt: exp.toISOString()
+    });
+
+    currentRoomCode = code; isTeacher = true; isSoloMode = false;
+    document.getElementById('room-code-display').textContent = code;
+    showScreen('screen-room-created');
+};
+
+window.enterDashboard = function() {
+    document.getElementById('dash-room-code').textContent = currentRoomCode;
+    showScreen('screen-dashboard');
+    startDashboardListener();
+};
+
+// ═══ 교사 로그인 ═══
+window.joinAsTeacher = async function() {
+    await authReady;
+    const code = document.getElementById('teacher-room-code').value.trim();
+    const pw = document.getElementById('teacher-password').value.trim();
+    if(!code||!pw){ showToast('방 코드와 비밀번호를 입력해주세요.','error'); return; }
+
+    const room = await DB.getRoom(code);
+    if(!room){ showToast('존재하지 않는 방입니다.','error'); return; }
+    if(room.expiresAt && new Date(room.expiresAt)<new Date()){ await DB.deleteRoom(code); showToast('만료된 방입니다.','error'); return; }
+
+    const hashed = await hashPassword(pw);
+    if(room.password !== hashed){ showToast('비밀번호가 틀렸습니다.','error'); return; }
+
+    currentRoomCode = code; isTeacher = true; isSoloMode = false;
+    document.getElementById('dash-room-code').textContent = code;
+    showScreen('screen-dashboard');
+    startDashboardListener();
+};
+
+// ═══ 학생 입장 + 재입장 이어하기 ═══
+window.joinAsStudent = async function() {
+    await authReady;
+    const code = document.getElementById('student-room-code').value.trim();
+    const nick = document.getElementById('student-nickname').value.trim();
+    if(!code||!nick){ showToast('방 코드와 닉네임을 입력해주세요.','error'); return; }
+
+    const room = await DB.getRoom(code);
+    if(!room){ showToast('존재하지 않는 방입니다.','error'); return; }
+    if(room.expiresAt && new Date(room.expiresAt)<new Date()){ await DB.deleteRoom(code); showToast('만료된 방입니다.','error'); return; }
+
+    const existing = await DB.getStudent(code, nick);
+    if(existing) {
+        showConfirmModal(
+            `<strong>${nick}</strong>님, 이전에 참여한 기록이 있어요!<br><br>`+
+            `📖 도감: ${existing.collectedCount||0}개 수집<br>`+
+            `🎮 도전 횟수: ${existing.totalPlays||0}회<br>`+
+            `🎬 완주한 이야기: ${(existing.clearedList||[]).length}개<br><br>`+
+            `이어서 할까요?`,
+            async () => {
+                currentRoomCode = code; currentNickname = nick;
+                isTeacher = false; isSoloMode = false;
+                restoreStudentData(existing);
+                await DB.saveStudent(code, nick, { lastVisit: new Date().toISOString() });
+                showToast(`🎉 ${nick}님, 다시 오셨군요!`,'success');
+                goToMain();
+            }
+        );
+        document.getElementById('confirmOkBtn').textContent = '이어하기';
+        document.getElementById('confirmOkBtn').style.background = 'var(--primary)';
+        return;
+    }
+
+    // 신규
+    currentRoomCode = code; currentNickname = nick;
+    isTeacher = false; isSoloMode = false;
+    resetStudentState();
+    await DB.saveStudent(code, nick, { joinedAt: new Date().toISOString(), collectedList:[], collectedCount:0, totalPlays:0, bestStopLevel:999 });
+    showScreen('screen-story');
+};
+
+function restoreStudentData(data) {
+    collectedBrakes = new Set(data.collectedList || []);
+    totalPlays = data.totalPlays || 0;
+    bestStopLevel = (typeof data.bestStopLevel === 'number') ? data.bestStopLevel : 999;
+    reflectionDone = !!(data.refWhen || data.refBrake || data.completedAt);
+    bodySignals = data.bodySignals || [];
+    selectedSignals = [...bodySignals];
+    selectedAngerType = data.angerType || '';
+    brakeUsage = data.brakeUsage || {};
+    brakeNotes = data.brakeNotes || {};
+    clearedScenarios = new Set(data.clearedList || []);
+    currentEpisode = 0; thermoLevel = 10; stoppedAt = -1; chosenBrake = '';
+    setTimeout(()=>{
+        const w=document.getElementById('ref-when'); if(w) w.value=data.refWhen||'';
+        const b=document.getElementById('ref-brake'); if(b) b.value=data.refBrake||'';
+        const g=document.getElementById('ref-better'); if(g) g.value=data.refBetter||'';
+        document.querySelectorAll('#body-signal-choices .choice-btn').forEach(btn=>{
+            const sig = btn.getAttribute('data-signal');
+            btn.classList.toggle('selected', bodySignals.includes(sig));
+        });
+        renderAngerTypes();
+    },100);
+}
+
+// ═══ 혼자 체험하기 ═══
+function resetStudentState() {
+    collectedBrakes = new Set(); totalPlays = 0; bestStopLevel = 999;
+    reflectionDone = false; bodySignals = []; selectedSignals = [];
+    brakeUsage = {}; brakeNotes = {}; clearedScenarios = new Set();
+    selectedAngerType = ''; currentScenario = 0;
+    currentEpisode = 0; thermoLevel = 10; stoppedAt = -1; chosenBrake = '';
+    ['ref-when','ref-brake','ref-better'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+    document.querySelectorAll('#body-signal-choices .choice-btn').forEach(b=>b.classList.remove('selected'));
+    renderAngerTypes();
+}
+
+window.startSoloMode = function() {
+    isSoloMode = true; isTeacher = false;
+    currentNickname = '탐험가';
+    resetStudentState();
+    showScreen('screen-story');
+};
+
+// ═══ 메인 화면 이동 ═══
+function goToMain() {
+    document.getElementById('main-nickname-display').textContent = `${currentNickname}님의 연습장`;
+    renderDex();
+    renderScenarioPicker();
+    updateGameStats();
+    updateReflectionButton();
+    updateCompleteCheck();
+    renderBrakeHint();
+    showScreen('screen-main');
+}
+window.backToMain = function() {
+    goToMain();
+    showToast('📖 브레이크 기술을 더 모아보세요!','success');
+};
+
+// ═══ 에피소드 진행 ═══
+window.startEpisodes = function() {
+    currentEpisode = 0;
+    thermoLevel = 10;
+    stoppedAt = -1;
+    chosenBrake = '';
+    showScreen('screen-episode');
+    renderEpisode();
+};
+
+window.retryEpisodes = function() {
+    startEpisodes();
+};
+
+function renderEpisode() {
+    if(currentEpisode >= epList().length) {
+        // 모든 에피소드를 멈추지 않고 끝까지 감 → 폭발
+        showExplode();
+        return;
+    }
+    const ep = epList()[currentEpisode];
+    const sc = SCENARIOS[currentScenario];
+    updateThermometer(thermoLevel);
+    // ⭐ 온도계 제목의 주인공 이름을 현재 시나리오에 맞춰 바꾼다 (서연/도윤 이야기인데 '민준이'라고 나오던 문제)
+    const thermoHero = document.getElementById('thermo-hero');
+    if(thermoHero) thermoHero.textContent = sc.hero;
+
+    const container = document.getElementById('episode-content');
+    container.innerHTML = `
+        <div class="story-bubble">
+            <div class="story-char">
+                <div class="avatar">${sc.avatar}</div>
+                <div><div class="name">${sc.name}</div><div style="font-size:12px;color:var(--text-light);">${ep.title}</div></div>
+            </div>
+            <div style="font-size:15px;line-height:1.9;">${ep.story}</div>
+        </div>
+        <div class="card" style="text-align:center;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid var(--warning);">
+            <div style="font-size:14px;color:#92400E;margin-bottom:4px;">${sc.hero}의 마음 상태</div>
+            <div style="font-size:18px;font-weight:900;">${ep.emotion}</div>
+        </div>
+        <div style="text-align:center;margin-top:16px;">
+            <p style="font-size:16px;font-weight:900;color:var(--primary);margin-bottom:12px;">지금, 멈출까요?</p>
+            <button class="btn btn-primary" onclick="chooseStop()" style="background:var(--success);margin-bottom:8px;box-shadow:0 4px 15px rgba(16,185,129,0.3);">🛑 지금 멈추기!</button>
+            <button class="btn btn-secondary" onclick="chooseContinue()">😤 아직... 계속 가기</button>
+        </div>
+    `;
+}
+
+window.chooseStop = function() {
+    stoppedAt = currentEpisode;
+    // 랜덤으로 3개 브레이크 보여주기
+    const available = BRAKES.filter(b => !collectedBrakes.has(b.id));
+    let options = available.length >= 3 ? available : BRAKES;
+    // 셔플
+    options = [...options].sort(()=>Math.random()-0.5).slice(0,3);
+
+    const container = document.getElementById('brake-options');
+    container.innerHTML = options.map(b => `
+        <button class="choice-btn" onclick="selectBrake('${b.id}')" style="text-align:center;">
+            <span style="font-size:32px;display:block;margin-bottom:4px;">${b.icon}</span>
+            <strong>${b.name}</strong><br>
+            <span style="font-size:13px;color:var(--text-light);">${b.desc}</span>
+        </button>
+    `).join('');
+    showScreen('screen-brake-select');
+};
+
+window.chooseContinue = function() {
+    const ep = epList()[currentEpisode];
+    if(!ep) { showExplode(); return; }
+    thermoLevel = Math.min(100, thermoLevel + ep.tempAdd);
+    currentEpisode++;
+    if(thermoLevel >= 100 || currentEpisode >= epList().length) {
+        showExplode();
+    } else {
+        renderEpisode();
+    }
+};
+
+// ═══ 브레이크 선택 & 연습 ═══
+window.selectBrake = function(brakeId) {
+    chosenBrake = brakeId;
+    countNum = 0; tapNum = 0; breathCount = 0;
+    if(genTimerId) { clearInterval(genTimerId); genTimerId = null; }
+    clearPracticeTimers(); // ⭐ 앞서 시작한 숨쉬기/손바닥/주먹 타이머가 남아 있으면 정리 (사라진 요소를 건드려 오류가 나거나, 시작도 안 한 '완료' 버튼이 저절로 뜨던 문제)
+    const brake = BRAKES.find(b=>b.id===brakeId);
+    renderBrakePractice(brake);
+    showScreen('screen-brake-practice');
+};
+
+function renderBrakePractice(brake) {
+    const container = document.getElementById('brake-practice-content');
+    let practiceHTML = '';
+
+    switch(brake.practice) {
+        case 'breathing':
+            practiceHTML = `
+                <div class="card" style="text-align:center;">
+                    <h2 style="color:var(--primary);margin-bottom:8px;">🌬️ 숨 고르기 연습</h2>
+                    <p style="font-size:14px;color:var(--text-light);margin-bottom:16px;">원을 보면서 함께 숨쉬어요</p>
+                    <div class="breath-circle-wrap">
+                        <div class="breath-circle" id="breath-circle">준비</div>
+                    </div>
+                    <div style="font-size:18px;font-weight:900;color:var(--primary);margin-bottom:8px;" id="breath-instruction">시작 버튼을 눌러주세요</div>
+                    <div style="font-size:13px;color:var(--text-light);margin-bottom:16px;" id="breath-count">3회 반복합니다</div>
+                    <button class="btn btn-primary" id="breath-start-btn" onclick="startBreathing()">▶️ 시작</button>
+                    <button class="btn btn-primary" id="breath-done-btn" onclick="completeBrakePractice()" style="display:none;">✅ 완료! 도감에 추가하기</button>
+                </div>`;
+            break;
+        case 'counting':
+            practiceHTML = `
+                <div class="card" style="text-align:center;">
+                    <h2 style="color:var(--primary);margin-bottom:8px;">🔢 숫자 세기 연습</h2>
+                    <p style="font-size:14px;color:var(--text-light);margin-bottom:16px;">마음속으로 천천히 10까지 세어보세요</p>
+                    <div style="font-size:72px;font-weight:900;color:var(--primary);margin:20px 0;" id="count-display">0</div>
+                    <div style="font-size:15px;color:var(--text-light);margin-bottom:16px;" id="count-instruction">버튼을 누를 때마다 숫자가 올라가요. 천천히!</div>
+                    <button class="btn btn-primary" id="count-btn" onclick="countUp()">다음 숫자 👆</button>
+                    <button class="btn btn-primary" id="count-done-btn" onclick="completeBrakePractice()" style="display:none;">✅ 완료! 도감에 추가하기</button>
+                </div>`;
+            break;
+        case 'palm':
+            practiceHTML = `
+                <div class="card" style="text-align:center;">
+                    <h2 style="color:var(--primary);margin-bottom:8px;">✋ 손바닥 느끼기 연습</h2>
+                    <p style="font-size:15px;line-height:1.8;margin-bottom:16px;">
+                        두 손을 책상 위에 올려놓으세요.<br>
+                        손바닥이 책상에 닿는 느낌에 집중해보세요.<br><br>
+                        <strong>10초</strong> 동안 느껴볼게요.
+                    </p>
+                    <div class="timer-ring">
+                        <svg width="80" height="80"><circle class="bg" cx="40" cy="40" r="34"/><circle class="fg" id="palm-ring" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="0"/></svg>
+                        <div class="timer-text" id="palm-timer">10</div>
+                    </div>
+                    <div style="margin-top:16px;">
+                        <button class="btn btn-primary" id="palm-start-btn" onclick="startPalm()">▶️ 시작</button>
+                        <button class="btn btn-primary" id="palm-done-btn" onclick="completeBrakePractice()" style="display:none;">✅ 완료! 도감에 추가하기</button>
+                    </div>
+                </div>`;
+            break;
+        case 'walk':
+            practiceHTML = `
+                <div class="card" style="text-align:center;">
+                    <h2 style="color:var(--primary);margin-bottom:8px;">🚶 그 자리 떠나기</h2>
+                    <p style="font-size:15px;line-height:1.8;margin-bottom:16px;">
+                        화가 너무 클 때는<br>잠깐 그 자리를 떠나는 것도 방법이에요.<br><br>
+                        <strong>"잠깐 나갔다 올게요"</strong>라고<br>한마디 하고 이동하면 돼요.
+                    </p>
+                    <div style="font-size:64px;margin:16px 0;">🚶‍♂️→🌳</div>
+                    <p style="font-size:14px;color:var(--text-light);margin-bottom:16px;">화를 가지고 떠나는 게 아니라,<br>마음을 가라앉히러 가는 거예요.</p>
+                    <button class="btn btn-primary" onclick="completeBrakePractice()">✅ 이해했어요! 도감에 추가하기</button>
+                </div>`;
+            break;
+        case 'squeeze':
+            practiceHTML = `
+                <div class="card" style="text-align:center;">
+                    <h2 style="color:var(--primary);margin-bottom:8px;">💪 주먹 쥐고 풀기</h2>
+                    <p style="font-size:15px;line-height:1.8;margin-bottom:16px;">
+                        두 손을 꽉 쥐어보세요.<br>5초 동안 최대한 세게!<br>
+                        그다음 천천히 펴보세요.
+                    </p>
+                    <div style="font-size:64px;margin:12px 0;" id="squeeze-icon">✊</div>
+                    <div style="font-size:18px;font-weight:900;color:var(--primary);margin-bottom:12px;" id="squeeze-instruction">시작 버튼을 눌러주세요</div>
+                    <button class="btn btn-primary" id="squeeze-start-btn" onclick="startSqueeze()">▶️ 시작</button>
+                    <button class="btn btn-primary" id="squeeze-done-btn" onclick="completeBrakePractice()" style="display:none;">✅ 완료! 도감에 추가하기</button>
+                </div>`;
+            break;
+        case 'word':
+            practiceHTML = `
+                <div class="card" style="text-align:center;">
+                    <h2 style="color:var(--primary);margin-bottom:8px;">💬 마음 말하기</h2>
+                    <p style="font-size:15px;line-height:1.8;margin-bottom:16px;">
+                        화가 나면 속으로 이렇게 말해봐요:<br><br>
+                        <strong style="font-size:20px;color:var(--primary);">"나 지금 화가 났어."</strong><br><br>
+                        그것만으로도 마음이 한 박자 느려져요.<br>
+                        감정에 이름을 붙이면, 감정이 작아지거든요.
+                    </p>
+                    <div style="font-size:48px;margin:12px 0;">🗣️→😌</div>
+                    <label style="font-size:14px;color:var(--text-light);">나만의 마음 말을 적어볼까요?</label>
+                    <input id="my-word" placeholder='예: "지금은 참자, 나중에 얘기하자"' style="margin:8px 0 16px;">
+                    <button class="btn btn-primary" onclick="completeBrakePractice()">✅ 완료! 도감에 추가하기</button>
+                </div>`;
+            break;
+        case 'timer':
+            practiceHTML = `
+                <div class="card" style="text-align:center;">
+                    <h2 style="color:var(--primary);margin-bottom:8px;">${brake.icon} ${brake.name}</h2>
+                    <p style="font-size:15px;line-height:1.8;margin-bottom:16px;">${brake.guide}</p>
+                    <div class="timer-ring">
+                        <svg width="80" height="80"><circle class="bg" cx="40" cy="40" r="34"/><circle class="fg" id="gen-ring" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="0"/></svg>
+                        <div class="timer-text" id="gen-timer">${brake.sec}</div>
+                    </div>
+                    <div style="font-size:14px;color:var(--text-light);margin-top:12px;" id="gen-msg">시작 버튼을 눌러주세요</div>
+                    <div style="margin-top:12px;">
+                        <button class="btn btn-primary" id="gen-start-btn" onclick="startGenTimer(${brake.sec})">▶️ 시작</button>
+                        <button class="btn btn-primary" id="gen-done-btn" onclick="completeBrakePractice()" style="display:none;">✅ 완료! 도감에 추가하기</button>
+                    </div>
+                </div>`;
+            break;
+        case 'tap':
+            practiceHTML = `
+                <div class="card" style="text-align:center;">
+                    <h2 style="color:var(--primary);margin-bottom:8px;">${brake.icon} ${brake.name}</h2>
+                    <p style="font-size:15px;line-height:1.8;margin-bottom:12px;">${brake.guide}</p>
+                    <div style="font-size:64px;font-weight:900;color:var(--primary);margin:12px 0;" id="tap-display">0</div>
+                    <div style="font-size:15px;color:var(--text-light);margin-bottom:16px;" id="tap-msg">${brake.taps}개를 찾아보세요</div>
+                    <button class="btn btn-primary" id="tap-btn" onclick="tapOnce(${brake.taps})">${brake.tapLabel}</button>
+                    <button class="btn btn-primary" id="tap-done-btn" onclick="completeBrakePractice()" style="display:none;">✅ 완료! 도감에 추가하기</button>
+                </div>`;
+            break;
+        case 'reflect':
+            practiceHTML = `
+                <div class="card" style="text-align:center;">
+                    <h2 style="color:var(--primary);margin-bottom:8px;">${brake.icon} ${brake.name}</h2>
+                    <p style="font-size:15px;line-height:1.8;margin-bottom:16px;">${brake.guide}</p>
+                    <label style="font-size:14px;color:var(--text-light);">${brake.prompt}</label>
+                    <input id="brake-reflect-input" placeholder="${brake.placeholder}" style="margin:8px 0 16px;">
+                    <button class="btn btn-primary" onclick="completeBrakePractice()">✅ 완료! 도감에 추가하기</button>
+                </div>`;
+            break;
+    }
+    genDoneMsg = brake.done || '';
+    container.innerHTML = practiceHTML;
+}
+
+// ═══ 범용 연습 (타이머 / 탭) ═══
+let genDoneMsg = '';
+let genTimerId = null;
+// ⭐ 연습 화면에서 돌린 타이머 목록. 다른 브레이크로 넘어갈 때 한꺼번에 정리한다.
+//    (setTimeout / setInterval 은 같은 id 공간을 쓰므로 clearInterval + clearTimeout 을 함께 호출해도 안전)
+let practiceTimers = [];
+function clearPracticeTimers() {
+    practiceTimers.forEach(function(t){ clearInterval(t); clearTimeout(t); });
+    practiceTimers = [];
+}
+window.startGenTimer = function(total) {
+    const startBtn = document.getElementById('gen-start-btn');
+    if(startBtn) startBtn.style.display = 'none';
+    const ring = document.getElementById('gen-ring');
+    const timer = document.getElementById('gen-timer');
+    const msg = document.getElementById('gen-msg');
+    let sec = total;
+    if(msg) msg.textContent = '천천히... 지금 이 순간에만 집중해요';
+    if(genTimerId) clearInterval(genTimerId);
+    genTimerId = setInterval(()=>{
+        sec--;
+        if(timer) timer.textContent = sec > 0 ? sec : '😌';
+        if(ring) ring.style.strokeDashoffset = (1 - Math.max(sec,0)/total) * 213.6;
+        if(sec <= 0) {
+            clearInterval(genTimerId); genTimerId = null;
+            if(msg) msg.textContent = '🎉 ' + (genDoneMsg || '완료했어요!');
+            const done = document.getElementById('gen-done-btn');
+            if(done) done.style.display = 'block';
+        }
+    }, 1000);
+};
+
+let tapNum = 0;
+window.tapOnce = function(target) {
+    tapNum++;
+    const disp = document.getElementById('tap-display');
+    const msg = document.getElementById('tap-msg');
+    if(disp) { disp.textContent = tapNum; disp.classList.add('pulse'); setTimeout(()=>disp.classList.remove('pulse'),600); }
+    if(tapNum >= target) {
+        const btn = document.getElementById('tap-btn');
+        if(btn) btn.style.display = 'none';
+        if(msg) msg.textContent = '🎉 ' + (genDoneMsg || '완료했어요!');
+        const done = document.getElementById('tap-done-btn');
+        if(done) done.style.display = 'block';
+    } else if(msg) {
+        msg.textContent = `천천히... ${target - tapNum}개 더 찾아보세요`;
+    }
+};
+
+// ═══ 브레이크 미니게임들 ═══
+let breathCount = 0;
+let breathPhase = '';
+window.startBreathing = function() {
+    breathCount = 0;
+    document.getElementById('breath-start-btn').style.display = 'none';
+    doBreathCycle();
+};
+
+function doBreathCycle() {
+    if(breathCount >= 3) {
+        document.getElementById('breath-instruction').textContent = '🎉 숨 고르기 완료!';
+        document.getElementById('breath-count').textContent = '마음이 한결 차분해졌나요?';
+        document.getElementById('breath-circle').className = 'breath-circle';
+        document.getElementById('breath-circle').textContent = '😌';
+        document.getElementById('breath-done-btn').style.display = 'block';
+        return;
+    }
+    const circle = document.getElementById('breath-circle');
+    // 들이쉬기 4초
+    circle.className = 'breath-circle inhale';
+    circle.textContent = '들이쉬기';
+    document.getElementById('breath-instruction').textContent = '코로 천천히 들이쉬세요... 🌬️';
+    document.getElementById('breath-count').textContent = `${breathCount+1}/3회`;
+    // ⭐ 아래 단계별 타이머를 practiceTimers에 등록해 두면, 도중에 다른 브레이크로 넘어가도 정리된다
+    practiceTimers.push(setTimeout(()=>{
+        // 멈추기 2초
+        circle.className = 'breath-circle';
+        circle.style.width = '180px'; circle.style.height = '180px';
+        circle.textContent = '멈추기';
+        document.getElementById('breath-instruction').textContent = '잠깐 멈추세요... ⏸️';
+        practiceTimers.push(setTimeout(()=>{
+            // 내쉬기 6초
+            circle.className = 'breath-circle exhale';
+            circle.textContent = '내쉬기';
+            document.getElementById('breath-instruction').textContent = '입으로 천천히 내쉬세요... 💨';
+            practiceTimers.push(setTimeout(()=>{
+                breathCount++;
+                circle.style.width=''; circle.style.height='';
+                doBreathCycle();
+            }, 6000));
+        }, 2000));
+    }, 4000));
+}
+
+let countNum = 0;
+window.countUp = function() {
+    countNum++;
+    document.getElementById('count-display').textContent = countNum;
+    document.getElementById('count-display').classList.add('pulse');
+    setTimeout(()=>document.getElementById('count-display').classList.remove('pulse'),600);
+    if(countNum >= 10) {
+        document.getElementById('count-btn').style.display = 'none';
+        document.getElementById('count-instruction').textContent = '🎉 10까지 세기 완료! 마음이 차분해졌나요?';
+        document.getElementById('count-done-btn').style.display = 'block';
+    } else {
+        document.getElementById('count-instruction').textContent = `천천히... ${10-countNum}개 남았어요`;
+    }
+};
+
+window.startPalm = function() {
+    document.getElementById('palm-start-btn').style.display = 'none';
+    let sec = 10;
+    const ring = document.getElementById('palm-ring');
+    const timer = document.getElementById('palm-timer');
+    const interval = setInterval(()=>{
+        sec--;
+        timer.textContent = sec;
+        ring.style.strokeDashoffset = (1 - sec/10) * 213.6;
+        if(sec <= 0) {
+            clearInterval(interval);
+            timer.textContent = '😌';
+            const done = document.getElementById('palm-done-btn'); // ⭐ 화면이 바뀌었을 수 있으므로 null 확인
+            if(done) done.style.display = 'block';
+        }
+    }, 1000);
+    practiceTimers.push(interval); // ⭐ 중도 이탈 시 정리하도록 등록
+};
+
+window.startSqueeze = function() {
+    document.getElementById('squeeze-start-btn').style.display = 'none';
+    const icon = document.getElementById('squeeze-icon');
+    const inst = document.getElementById('squeeze-instruction');
+    icon.textContent = '✊'; icon.style.fontSize = '80px';
+    inst.textContent = '꽉 쥐세요! 5초...';
+    let sec = 5;
+    const interval = setInterval(()=>{
+        sec--;
+        inst.textContent = `꽉 쥐세요! ${sec}초...`;
+        if(sec <= 0) {
+            clearInterval(interval);
+            icon.textContent = '🖐️'; icon.style.fontSize = '80px';
+            inst.textContent = '천천히 펴세요... 힘을 빼요...';
+            practiceTimers.push(setTimeout(()=>{
+                icon.textContent = '😌'; icon.style.fontSize = '64px';
+                inst.textContent = '🎉 완료! 손이 따뜻하지 않나요?';
+                const done = document.getElementById('squeeze-done-btn'); // ⭐ 화면이 바뀌었을 수 있으므로 null 확인
+                if(done) done.style.display = 'block';
+            }, 3000));
+        }
+    }, 1000);
+    practiceTimers.push(interval); // ⭐ 중도 이탈 시 정리하도록 등록
+};
+
+// ═══ 브레이크 연습 완료 ═══
+window.completeBrakePractice = async function() {
+    const brake = BRAKES.find(b=>b.id===chosenBrake);
+    const isNew = !collectedBrakes.has(chosenBrake);
+    collectedBrakes.add(chosenBrake);
+    totalPlays++;
+    brakeUsage[chosenBrake] = (brakeUsage[chosenBrake]||0) + 1;
+    clearedScenarios.add(SCENARIOS[currentScenario].id);
+
+    // 학생이 직접 적은 마음 말 / 브레이크 메모 저장
+    const wordInput = document.getElementById('my-word');
+    const reflectInput = document.getElementById('brake-reflect-input');
+    const note = (wordInput && wordInput.value.trim()) || (reflectInput && reflectInput.value.trim()) || '';
+    if(note) brakeNotes[chosenBrake] = note;
+
+    // 멈춘 온도(에피소드 번호)가 낮을수록 좋음
+    const stopTemp = thermoLevel;
+    if(stoppedAt < bestStopLevel) bestStopLevel = stoppedAt;
+
+    // Firebase 저장
+    if(!isSoloMode) {
+        await DB.saveStudent(currentRoomCode, currentNickname, {
+            collectedList: Array.from(collectedBrakes),
+            collectedCount: collectedBrakes.size,
+            totalPlays: totalPlays,
+            bestStopLevel: bestStopLevel,
+            lastBrake: chosenBrake,
+            lastStopTemp: stopTemp,
+            lastStopEpisode: stoppedAt + 1,
+            brakeUsage: brakeUsage,
+            brakeNotes: brakeNotes,
+            clearedList: Array.from(clearedScenarios),
+            lastScenario: SCENARIOS[currentScenario].name,
+            lastVisit: new Date().toISOString()
+        });
+    }
+
+    if(isNew) {
+        showToast(`📖 "${brake.name}" 기술 도감에 추가! (${collectedBrakes.size}/${BRAKES.length})`,'success');
+    } else {
+        showToast(`💪 "${brake.name}" 기술 다시 연습 완료!`,'success');
+    }
+
+    // 결과 화면
+    showBrakeResult(brake, stopTemp);
+};
+
+function showBrakeResult(brake, stopTemp) {
+    const container = document.getElementById('brake-practice-content');
+    const sc = SCENARIOS[currentScenario]; // ⭐ 주인공 이름을 현재 시나리오에서 가져온다
+    const tempColor = stopTemp < 30 ? 'var(--success)' : stopTemp < 70 ? 'var(--warning)' : 'var(--error)';
+
+    container.innerHTML = `
+        <div class="ending-scene ending-good">
+            <div style="font-size:64px;margin-bottom:8px;">🎉</div>
+            <h2 style="color:var(--success);margin-bottom:8px;">브레이크 성공!</h2>
+            <p style="font-size:15px;">
+                감정 온도 <strong style="color:${tempColor}">${stopTemp}%</strong>에서 멈췄어요!
+            </p>
+        </div>
+        <div class="card">
+            <div style="text-align:center;">
+                <p style="font-size:15px;line-height:1.8;margin-bottom:16px;">
+                    ${sc.hero}는 <strong>${brake.icon} ${brake.name}</strong>${josa(brake.name,'으로','로')}<br>
+                    마음을 가라앉힐 수 있었어요!<br><br>
+                    ${stopTemp < 30
+                        ? '💚 아직 초록인데 미리 멈췄네요. 화가 나기 전에 멈추는 것도 방법이에요. 이번엔 노랑 신호가 올 때까지 한 장면 더 가 볼까요?'
+                        : stopTemp < 70
+                            ? '💛 노랑 신호에서 멈췄어요. 몸이 보내는 신호를 알아차린 거예요.'
+                            : '🧡 빨강 직전에 멈췄어요. 늦게라도 멈춘 게 폭발과는 달라요. 다음엔 노랑에서 알아차려 볼까요?'}
+                </p>
+                <button class="btn btn-primary" onclick="goToMain()" style="margin-bottom:8px;">🏠 연습장으로 돌아가기</button>
+                <button class="btn btn-secondary" onclick="startEpisodes()">🔄 다시 도전하기</button>
+            </div>
+        </div>
+    `;
+    showScreen('screen-brake-practice');
+}
+
+function showExplode() {
+    totalPlays++;
+    const sc = SCENARIOS[currentScenario];
+    if(!isSoloMode) {
+        DB.saveStudent(currentRoomCode, currentNickname, {
+            totalPlays: totalPlays,
+            lastStopTemp: 100,
+            lastStopEpisode: 0,
+            lastScenario: sc.name,
+            lastVisit: new Date().toISOString()
+        });
+    }
+    const heroEl = document.getElementById('explode-hero');
+    if(heroEl) heroEl.textContent = sc.hero;
+    const heroEl2 = document.getElementById('explode-hero2');
+    if(heroEl2) heroEl2.textContent = sc.hero;
+    // 어느 장면에서 멈췄으면 좋았을지 고르기 (골라도 되고 안 골라도 된다)
+    wishStop = -1;
+    const picker = document.getElementById('wish-stop-picker');
+    if(picker) picker.innerHTML = sc.episodes.map((ep, i) =>
+        `<button class="choice-btn" id="wish-${i}" style="width:auto;min-width:52px;padding:8px 12px;margin:0;" onclick="pickWishStop(${i})">${i+1}</button>`).join('');
+    const note = document.getElementById('wish-stop-note');
+    if(note) note.textContent = '';
+    document.getElementById('explode-text').innerHTML = sc.explode;
+    const thermoFill = document.getElementById('thermo-fill');
+    if(thermoFill) { thermoFill.style.height='100%'; thermoFill.style.background='var(--thermo-darkred)'; }
+    showScreen('screen-explode');
+}
+
+let wishStop = -1;
+window.pickWishStop = function(i) {
+    const sc = SCENARIOS[currentScenario];
+    const ep = sc.episodes[i];
+    wishStop = (wishStop === i) ? -1 : i;
+    sc.episodes.forEach((_, k) => { const b = document.getElementById('wish-' + k); if(b) b.classList.toggle('selected', k === wishStop); });
+    const note = document.getElementById('wish-stop-note');
+    if(note) note.textContent = wishStop >= 0 ? `${i+1}번째 장면 "${ep.title.replace(/^\S+\s/, '')}"에서 멈추기로 했어요. 다시 도전할 때 그 장면에서 멈춰 봐요.` : '';
+    if(!isSoloMode && wishStop >= 0) {
+        DB.saveStudent(currentRoomCode, currentNickname, { wishStopEpisode: i + 1, lastVisit: new Date().toISOString() });
+    }
+};
+
+function goBackEpisode() {
+    if(currentEpisode > 0) {
+        currentEpisode--;
+        const ep = epList()[currentEpisode];
+        thermoLevel = Math.max(10, thermoLevel - (ep ? ep.tempAdd : 0));
+        renderEpisode();
+    } else {
+        showScreen('screen-story');
+    }
+}
+window.goBackEpisode = goBackEpisode;
+
+// ═══ 감정 온도계 업데이트 ═══
+function updateThermometer(level) {
+    const fill = document.getElementById('thermo-fill');
+    const label = document.getElementById('thermo-label');
+    const desc = document.getElementById('thermo-desc');
+    if(!fill) return;
+    fill.style.height = level + '%';
+    label.textContent = level + '%';
+
+    if(level < 30) { fill.style.background='var(--thermo-green)'; desc.textContent='아직 괜찮아요'; }
+    else if(level < 50) { fill.style.background='var(--thermo-yellow)'; desc.textContent='마음이 불편해지고 있어요'; }
+    else if(level < 70) { fill.style.background='var(--thermo-orange)'; desc.textContent='화가 올라오고 있어요!'; }
+    else if(level < 90) { fill.style.background='var(--thermo-red)'; desc.textContent='위험! 곧 폭발할 것 같아요!'; }
+    else { fill.style.background='var(--thermo-darkred)'; desc.textContent='💥 폭발 직전!!!'; }
+}
+
+// ═══ 도감 렌더링 ═══
+function renderDex() {
+    const grid = document.getElementById('brake-dex');
+    const progress = document.getElementById('dex-progress');
+    const count = document.getElementById('dex-count');
+    const msg = document.getElementById('dex-msg');
+
+    grid.innerHTML = BRAKES.map(b => {
+        const collected = collectedBrakes.has(b.id);
+        return `<div class="brake-card ${collected?'collected':'locked'}">
+            ${collected?'<div class="card-badge">✓</div>':''}
+            <div class="card-icon">${collected?b.icon:'❓'}</div>
+            <div class="card-name">${collected?b.name:'???'}</div>
+        </div>`;
+    }).join('');
+
+    const pct = Math.round(collectedBrakes.size / BRAKES.length * 100);
+    progress.style.width = pct + '%';
+    count.textContent = `${collectedBrakes.size}/${BRAKES.length} 수집`;
+
+    if(collectedBrakes.size === 0) msg.textContent = '🌱 시나리오를 진행하며 브레이크 기술을 모아보세요!';
+    else if(pct < 50) msg.textContent = '🔥 좋은 시작이에요! 더 모아볼까요?';
+    else if(pct < 100) msg.textContent = '⭐ 절반 넘었어요! 조금만 더!';
+    else msg.textContent = '🎊 모든 브레이크 기술을 마스터했어요!';
+}
+
+function updateGameStats() {
+    const el = document.getElementById('game-stats');
+    if(!el) return;
+    let html = `도전 ${totalPlays}회`;
+    if(bestStopLevel < 999 && bestStopLevel >= 0) {
+        html += ` | 🏅 가장 일찍 멈춘 장면: ${bestStopLevel+1}번째`;
+    }
+    html += ` | 🎬 이야기 ${clearedScenarios.size}/${SCENARIOS.length} 완주`;
+    el.textContent = html;
+}
+
+function renderScenarioPicker() {
+    const el = document.getElementById('scenario-picker');
+    if(!el) return;
+    el.innerHTML = `<div style="font-size:13px;color:var(--text-light);margin-bottom:6px;">오늘은 누구의 하루를 따라가 볼까요?</div>` +
+        SCENARIOS.map((s,i)=>`
+            <button class="choice-btn${i===currentScenario?' selected':''}" onclick="pickScenario(${i})" style="text-align:left;padding:12px;font-size:15px;">
+                ${s.label}${clearedScenarios.has(s.id)?' 🏅':''}
+                <span style="display:block;font-size:12px;font-weight:400;color:var(--text-light);">${s.sub}</span>
+            </button>`).join('');
+}
+window.pickScenario = function(i) {
+    currentScenario = i;
+    renderScenarioPicker();
+};
+
+function renderAngerTypes() {
+    const el = document.getElementById('anger-type-choices');
+    if(!el) return;
+    el.innerHTML = ANGER_TYPES.map(a=>`
+        <button class="choice-btn${selectedAngerType===a.id?' selected':''}" data-anger="${a.id}" onclick="pickAngerType('${a.id}')" style="padding:12px;font-size:15px;">${a.icon} ${a.label}</button>`).join('');
+}
+window.pickAngerType = function(id) {
+    selectedAngerType = (selectedAngerType === id) ? '' : id;
+    renderAngerTypes();
+};
+
+function renderBrakeHint() {
+    const el = document.getElementById('ref-brake-hint');
+    if(!el) return;
+    if(collectedBrakes.size === 0) {
+        el.innerHTML = '💡 아직 모은 브레이크가 없어요. 시나리오를 한 번 해보고 오면 여기에 내가 써 본 기술이 떠요!';
+        return;
+    }
+    const names = BRAKES.filter(b=>collectedBrakes.has(b.id)).map(b=>`${b.icon} ${b.name}`).join(' · ');
+    el.innerHTML = `💡 <strong>내가 연습해 본 브레이크</strong><br>${names}`;
+}
+
+function updateReflectionButton() {
+    const area = document.getElementById('reflection-btn-area');
+    if(!area) return;
+    if(reflectionDone) {
+        area.innerHTML = `
+            <h3 style="margin-bottom:8px;">📝 마음 기록</h3>
+            <div style="font-size:13px;color:var(--success);font-weight:700;margin-bottom:8px;">✅ 마음 기록 작성 완료!</div>
+            <button class="btn btn-secondary" onclick="openReflection()">📝 수정하기</button>`;
+    } else {
+        area.innerHTML = `
+            <h3 style="margin-bottom:8px;">📝 마음 기록</h3>
+            <p style="font-size:14px;color:var(--text-light);margin-bottom:12px;">나만의 멈추기 다짐을 적어보세요</p>
+            <button class="btn btn-secondary" onclick="openReflection()">📝 마음 기록 쓰기 →</button>`;
+    }
+}
+
+function updateCompleteCheck() {
+    const el = document.getElementById('complete-check');
+    if(!el) return;
+    el.style.display = (collectedBrakes.size >= 1 || totalPlays >= 1 || reflectionDone) ? 'block' : 'none';
+}
+
+// ═══ 마음 기록 제출 ═══
+let selectedSignals = [];
+window.openReflection = function() {
+    renderBrakeHint();
+    renderAngerTypes();
+    showScreen('screen-reflection');
+};
+
+window.toggleSignal = function(btn, signal) {
+    btn.classList.toggle('selected');
+    const idx = selectedSignals.indexOf(signal);
+    if(idx >= 0) selectedSignals.splice(idx,1);
+    else selectedSignals.push(signal);
+};
+
+window.submitReflection = async function() {
+    const when = document.getElementById('ref-when').value.trim();
+    const brake = document.getElementById('ref-brake').value.trim();
+    const better = document.getElementById('ref-better') ? document.getElementById('ref-better').value.trim() : '';
+    if(!when && !brake) { showToast('하나 이상 적어주세요!','error'); return; }
+
+    reflectionDone = true;
+    bodySignals = [...selectedSignals];
+    const angerLabel = (ANGER_TYPES.find(a=>a.id===selectedAngerType)||{}).label || '';
+
+    if(!isSoloMode) {
+        await DB.saveStudent(currentRoomCode, currentNickname, {
+            refWhen: when, refBrake: brake, refBetter: better,
+            bodySignals: bodySignals,
+            angerType: selectedAngerType, angerLabel: angerLabel,
+            completedAt: new Date().toISOString(),
+            lastVisit: new Date().toISOString()
+        });
+    } else {
+        soloResult = { refWhen: when, refBrake: brake, refBetter: better, bodySignals, angerLabel };
+    }
+
+    showToast('📝 마음 기록이 저장되었어요!','success');
+    goToMain();
+};
+
+// ═══ 완료 화면 ═══
+window.goToComplete = function() {
+    const summary = document.getElementById('complete-summary');
+    const soloBtn = document.getElementById('solo-save-btn');
+    if(soloBtn) soloBtn.style.display = isSoloMode ? 'block' : 'none';
+    const myBrakes = BRAKES.filter(b=>collectedBrakes.has(b.id)).map(b=>`${b.icon} ${b.name}`).join(' · ') || '아직 없어요';
+    summary.innerHTML = `
+        <div style="text-align:left;font-size:15px;line-height:1.8;">
+            <p>📖 수집한 브레이크 기술: <strong style="color:var(--primary);">${collectedBrakes.size}/${BRAKES.length}개</strong></p>
+            <p>🎬 완주한 이야기: <strong style="color:var(--primary);">${clearedScenarios.size}/${SCENARIOS.length}개</strong></p>
+            <p>🎮 시나리오 도전: <strong style="color:var(--primary);">${totalPlays}회</strong></p>
+            ${reflectionDone ? '<p>📝 마음 기록: <strong style="color:var(--success);">작성 완료 ✅</strong></p>' : ''}
+        </div>
+        <div style="text-align:left;font-size:13px;color:var(--text-light);font-weight:400;background:rgba(124,58,237,0.05);border-radius:12px;padding:12px;margin-top:12px;">
+            🧰 <strong>나의 브레이크 상자</strong><br>${myBrakes}
+        </div>
+        <div style="margin-top:16px;padding:16px;background:linear-gradient(135deg,#EDE9FE,#F5F3FF);border-radius:16px;">
+            <p style="font-size:15px;line-height:1.8;">
+                💪 다음에 진짜 화가 나면<br>오늘 배운 것처럼 해봐요!<br><br>
+                <strong style="color:var(--primary);">멈추기 → 브레이크 쓰기 → 다시 생각하기</strong><br><br>
+                이 순서만 기억하면 돼요! 🌟
+            </p>
+        </div>
+        ${isSoloMode ? '<p style="font-size:13px;color:var(--text-light);margin-top:12px;">⚠️ 혼자 체험 모드는 나가면 기록이 사라져요!</p>' :
+            '<p style="font-size:13px;color:var(--success);margin-top:12px;">✅ 같은 닉네임으로 다시 들어오면 이어할 수 있어요!</p>'}
+    `;
+    showScreen('screen-complete');
+};
+
+// ═══ confirmGoHome ═══
+window.confirmGoHome = function() {
+    const count = collectedBrakes.size;
+    const msg = count > 0
+        ? `처음 화면으로 돌아갈까요?<br><br>📖 수집한 브레이크 기술 ${count}개가 있어요.<br>`+
+          (isSoloMode ? '⚠️ 혼자 체험 모드는 나가면 기록이 사라져요!' : '✅ 같은 닉네임으로 다시 들어오면 이어할 수 있어요!')
+        : '처음 화면으로 돌아갈까요?';
+    showConfirmModal(msg, ()=>{
+        if(unsubscribe){unsubscribe();unsubscribe=null;}
+        showScreen('screen-start');
+    });
+};
+
+// ═══ 교사 대시보드 ═══
+function startDashboardListener() {
+    if(unsubscribe){unsubscribe();unsubscribe=null;}
+    unsubscribe = DB.onStudentsChange(currentRoomCode, (students)=>{
+        dashboardData = students;
+        renderDashboard(students);
+    });
+    if(!unsubscribe) { refreshDashboard(); }
+}
+
+window.refreshDashboard = async function() {
+    const students = await DB.getAllStudents(currentRoomCode);
+    dashboardData = students;
+    renderDashboard(students);
+};
+
+function renderDashboard(students) {
+    const entries = Object.entries(students);
+    const total = entries.length;
+    const completed = entries.filter(([,d])=>d.completedAt).length;
+
+    // 멈추기 전략 분포 (사용 이력 전체 누적, 없으면 마지막 선택 사용)
+    const brakeCounts = {};
+    BRAKES.forEach(b => brakeCounts[b.name] = 0);
+    entries.forEach(([,d]) => {
+        if(d.brakeUsage && typeof d.brakeUsage === 'object' && Object.keys(d.brakeUsage).length) {
+            Object.entries(d.brakeUsage).forEach(([id,cnt])=>{
+                const br = BRAKES.find(b=>b.id===id);
+                if(br) brakeCounts[br.name] += (Number(cnt)||0);
+            });
+        } else if(d.lastBrake) {
+            const br = BRAKES.find(b=>b.id===d.lastBrake);
+            if(br) brakeCounts[br.name]++;
+        }
+    });
+
+    // 멈춘 장면 분포 (시나리오 길이에 맞춰 동적 생성)
+    const maxEp = Math.max.apply(null, SCENARIOS.map(s=>s.episodes.length));
+    const stopDist = {};
+    for(let i=1;i<=maxEp;i++) stopDist[i+'번째 장면'] = 0;
+    stopDist['끝까지 못 멈춤'] = 0;
+    entries.forEach(([,d]) => {
+        if(!d.totalPlays) return;
+        const k = d.lastStopEpisode;
+        if(k && k>=1 && k<=maxEp) stopDist[k+'번째 장면']++;
+        else stopDist['끝까지 못 멈춤']++;
+    });
+
+    // 화날 때 상황 유형 분포
+    const angerCounts = {};
+    ANGER_TYPES.forEach(a => angerCounts[a.label] = 0);
+    entries.forEach(([,d]) => { if(d.angerLabel && angerCounts[d.angerLabel]!==undefined) angerCounts[d.angerLabel]++; });
+    const angerAnswered = Object.values(angerCounts).reduce((a,b)=>a+b,0);
+
+    // 이야기 완주 분포
+    const scenarioCounts = {};
+    SCENARIOS.forEach(s => scenarioCounts[s.name] = 0);
+    entries.forEach(([,d]) => { (d.clearedList||[]).forEach(id=>{ const s=SCENARIOS.find(x=>x.id===id); if(s) scenarioCounts[s.name]++; }); });
+
+    // 도감 평균 수집률
+    const dexAvg = total ? Math.round(entries.reduce((a,[,d])=>a+(d.collectedCount||0),0)/total*10)/10 : 0;
+
+    // 몸 신호 분포
+    const signalCounts = {};
+    entries.forEach(([,d]) => {
+        (d.bodySignals||[]).forEach(s => { signalCounts[s] = (signalCounts[s]||0)+1; });
+    });
+
+    // 탭1: 현황
+    document.getElementById('tab-overview').innerHTML = `
+        <div class="card">
+            <h3>📊 참여 현황</h3>
+            <div class="stat-row"><span class="stat-label">참여 학생</span><span class="stat-value">${total}명</span></div>
+            <div class="stat-row"><span class="stat-label">마음 기록 완료</span><span class="stat-value">${completed}명</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${total?Math.round(completed/total*100):0}%"></div></div>
+        </div>
+        <div class="card">
+            <h3>🛑 멈춘 타이밍 분포</h3>
+            <p style="font-size:13px;color:var(--text-light);margin-bottom:8px;">몇 번째 장면에서 멈췄는지 (앞쪽일수록 일찍 멈춘 것)</p>
+            ${renderBarChart(stopDist)}
+        </div>
+        <div class="card">
+            <h3>😤 화날 때 상황 유형</h3>
+            <p style="font-size:13px;color:var(--text-light);margin-bottom:8px;">응답 ${angerAnswered}명</p>
+            ${angerAnswered ? renderBarChart(angerCounts) : '<p style="font-size:14px;color:var(--text-light);">아직 응답이 없습니다.</p>'}
+        </div>
+        <div class="card">
+            <h3>🚴 사용한 브레이크 전략</h3>
+            <p style="font-size:13px;color:var(--text-light);margin-bottom:8px;">연습한 횟수 누적 · 평균 수집 ${dexAvg}/${BRAKES.length}개</p>
+            ${renderBarChart(brakeCounts)}
+        </div>
+        <div class="card">
+            <h3>🎬 이야기별 완주 현황</h3>
+            ${renderBarChart(scenarioCounts)}
+        </div>
+        ${Object.keys(signalCounts).length ? `<div class="card">
+            <h3>💓 화날 때 몸 신호 (복수 응답)</h3>
+            ${renderBarChart(signalCounts)}
+        </div>` : ''}
+        ${renderWordCloud(entries)}
+    `;
+
+    // 탭2: 상세기록
+    document.getElementById('tab-detail').innerHTML = `
+        <div class="card">
+            <h3>📋 학생별 상세 기록</h3>
+            ${entries.length === 0 ? '<p style="font-size:14px;color:var(--text-light);">아직 참여한 학생이 없습니다.</p>' :
+            `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+                <tr style="background:#F3F4F6;"><th style="padding:8px;text-align:left;">닉네임</th><th>도감</th><th>도전</th><th>멈춘 장면</th><th>마지막 브레이크</th><th>상황 유형</th><th>기록</th></tr>
+                ${entries.map(([name,d])=>{
+                    const br = d.lastBrake ? (BRAKES.find(b=>b.id===d.lastBrake)||{}).name||'-' : '-';
+                    return `<tr style="border-bottom:1px solid #F3F4F6;">
+                        <td style="padding:8px;font-weight:900;">${name}</td>
+                        <td style="text-align:center;">${d.collectedCount||0}/${BRAKES.length}</td>
+                        <td style="text-align:center;">${d.totalPlays||0}회</td>
+                        <td style="text-align:center;">${d.lastStopEpisode?d.lastStopEpisode+'번째':'—'}${d.wishStopEpisode?`<br><span style="font-size:11px;color:var(--text-light);">다시 멈추고 싶은 곳 ${d.wishStopEpisode}번째</span>`:''}</td>
+                        <td style="text-align:center;">${br}</td>
+                        <td style="text-align:center;">${d.angerLabel||'—'}</td>
+                        <td style="text-align:center;">${d.completedAt?'✅':'—'}</td>
+                    </tr>`;
+                }).join('')}
+            </table>`}
+        </div>
+    `;
+}
+
+function renderBarChart(data) {
+    const max = Math.max(...Object.values(data), 1);
+    return Object.entries(data).map(([label,val])=>`
+        <div style="display:flex;align-items:center;gap:8px;margin:6px 0;">
+            <div style="width:80px;font-size:12px;text-align:right;flex-shrink:0;color:var(--text-light);">${label}</div>
+            <div style="flex:1;height:20px;background:#F3F4F6;border-radius:10px;overflow:hidden;">
+                <div style="height:100%;width:${Math.round(val/max*100)}%;background:var(--gradient);border-radius:10px;transition:width 0.5s;"></div>
+            </div>
+            <div style="width:30px;font-size:13px;font-weight:900;color:var(--primary);">${val}</div>
+        </div>
+    `).join('');
+}
+
+function renderWordCloud(entries) {
+    const words = [];
+    entries.forEach(([,d])=>{
+        if(d.refWhen) words.push(...d.refWhen.split(/[,.\s]+/).filter(w=>w.length>1));
+        if(d.refBrake) words.push(...d.refBrake.split(/[,.\s]+/).filter(w=>w.length>1));
+        if(d.refBetter) words.push(...d.refBetter.split(/[,.\s]+/).filter(w=>w.length>1));
+    });
+    if(words.length === 0) return '';
+    const freq = {};
+    words.forEach(w => { freq[w] = (freq[w]||0)+1; });
+    const sorted = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,20);
+    const maxF = sorted[0]?.[1] || 1;
+    return `<div class="card"><h3>💭 마음 기록 워드 클라우드</h3><div style="text-align:center;padding:12px;">
+        ${sorted.map(([w,f])=>{
+            const size = 14 + Math.round(f/maxF*18);
+            const colors = ['#7C3AED','#A78BFA','#5B21B6','#8B5CF6','#6D28D9'];
+            const color = colors[Math.floor(Math.random()*colors.length)];
+            return `<span style="display:inline-block;margin:4px 6px;font-size:${size}px;font-weight:900;color:${color};">${w}</span>`;
+        }).join('')}
+    </div></div>`;
+}
+
+// ═══ 엑셀/PDF ═══
+window.downloadExcel = function() {
+    const entries = Object.entries(dashboardData);
+    if(!entries.length) { showToast('내보낼 데이터가 없습니다.','error'); return; }
+    const wsData = [['닉네임','참여시간','마지막접속','도감수집','완주한이야기','도전횟수','마지막브레이크','연습한브레이크','멈춘장면','멈추고싶은장면','상황유형','화날때상황','몸신호','브레이크다짐','기분이나아진순간','기록완료']];
+    entries.forEach(([name,d])=>{
+        const br = d.lastBrake?(BRAKES.find(b=>b.id===d.lastBrake)||{}).name||'':'-';
+        const used = Object.keys(d.brakeUsage||{}).map(id=>(BRAKES.find(b=>b.id===id)||{}).name).filter(Boolean).join(', ');
+        const cleared = (d.clearedList||[]).map(id=>(SCENARIOS.find(s=>s.id===id)||{}).name).filter(Boolean).join(', ');
+        wsData.push([name,
+            d.joinedAt?new Date(d.joinedAt).toLocaleString('ko-KR'):'',
+            d.lastVisit?new Date(d.lastVisit).toLocaleString('ko-KR'):'',
+            (d.collectedCount||0)+'/'+BRAKES.length,
+            cleared,
+            d.totalPlays||0, br, used,
+            d.lastStopEpisode||'-',
+            d.wishStopEpisode||'-',
+            d.angerLabel||'',
+            d.refWhen||'', (d.bodySignals||[]).join(', '), d.refBrake||'', d.refBetter||'',
+            d.completedAt?'완료':'미완료']);
+    });
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '참여결과');
+    XLSX.writeFile(wb, `SEL_마음브레이크_결과_${currentRoomCode}.xlsx`);
+    showToast('📥 엑셀 파일이 다운로드됩니다!','success');
+};
+
+window.downloadPDF = function() {
+    const entries = Object.entries(dashboardData);
+    if(!entries.length){ showToast('내보낼 데이터가 없습니다.','error'); return; }
+
+    let pdfBody = '';
+    const total = entries.length;
+    const completed = entries.filter(([,d])=>d.completedAt).length;
+    const dexAvg = total ? Math.round(entries.reduce((a,[,d])=>a+(d.collectedCount||0),0)/total*10)/10 : 0;
+    pdfBody += `<div class="card"><h3>📊 참여 현황</h3><p>참여 ${total}명 / 마음기록 완료 ${completed}명 / 평균 도감 수집 ${dexAvg}개(${BRAKES.length}개 중)</p></div>`;
+
+    // 멈춘 장면 분포
+    const maxEp = Math.max.apply(null, SCENARIOS.map(s=>s.episodes.length));
+    const stopDist = {};
+    for(let i=1;i<=maxEp;i++) stopDist[i+'번째 장면'] = 0;
+    stopDist['끝까지 못 멈춤'] = 0;
+    entries.forEach(([,d])=>{
+        if(!d.totalPlays) return;
+        const k = d.lastStopEpisode;
+        if(k && k>=1 && k<=maxEp) stopDist[k+'번째 장면']++; else stopDist['끝까지 못 멈춤']++;
+    });
+    pdfBody += `<div class="card"><h3>🛑 멈춘 타이밍 분포</h3><table><tr><th>구분</th><th>인원</th></tr>`;
+    Object.entries(stopDist).forEach(([k,v])=>{ pdfBody += `<tr><td>${k}</td><td>${v}명</td></tr>`; });
+    pdfBody += `</table></div>`;
+
+    // 상황 유형 분포
+    const angerCounts = {};
+    ANGER_TYPES.forEach(a=>angerCounts[a.label]=0);
+    entries.forEach(([,d])=>{ if(d.angerLabel && angerCounts[d.angerLabel]!==undefined) angerCounts[d.angerLabel]++; });
+    pdfBody += `<div class="card"><h3>😤 화날 때 상황 유형</h3><table><tr><th>유형</th><th>인원</th></tr>`;
+    Object.entries(angerCounts).forEach(([k,v])=>{ pdfBody += `<tr><td>${k}</td><td>${v}명</td></tr>`; });
+    pdfBody += `</table></div>`;
+
+    // 브레이크 전략 분포
+    const brakeCounts = {};
+    BRAKES.forEach(b=>brakeCounts[b.name]=0);
+    entries.forEach(([,d])=>{
+        if(d.brakeUsage && Object.keys(d.brakeUsage).length) {
+            Object.entries(d.brakeUsage).forEach(([id,c])=>{ const br=BRAKES.find(b=>b.id===id); if(br) brakeCounts[br.name]+=(Number(c)||0); });
+        } else if(d.lastBrake) { const br=BRAKES.find(b=>b.id===d.lastBrake); if(br) brakeCounts[br.name]++; }
+    });
+    pdfBody += `<div class="card"><h3>🚴 사용한 브레이크 전략</h3><table><tr><th>전략</th><th>연습 횟수</th></tr>`;
+    Object.entries(brakeCounts).forEach(([k,v])=>{ pdfBody += `<tr><td>${k}</td><td>${v}회</td></tr>`; });
+    pdfBody += `</table></div>`;
+
+    pdfBody += `<div class="card"><h3>📋 학생별 상세 기록</h3><table><tr><th>닉네임</th><th>도감</th><th>도전</th><th>멈춘장면</th><th>멈추고싶은장면</th><th>브레이크</th><th>상황유형</th><th>화날때상황</th><th>다짐</th><th>나아진순간</th><th>완료</th></tr>`;
+    entries.forEach(([name,d])=>{
+        const br = d.lastBrake?(BRAKES.find(b=>b.id===d.lastBrake)||{}).name||'-':'-';
+        pdfBody += `<tr><td>${name}</td><td>${d.collectedCount||0}/${BRAKES.length}</td><td>${d.totalPlays||0}회</td><td>${d.lastStopEpisode||'-'}</td><td>${d.wishStopEpisode||'-'}</td><td>${br}</td><td>${d.angerLabel||'-'}</td><td>${d.refWhen||'-'}</td><td>${d.refBrake||'-'}</td><td>${d.refBetter||'-'}</td><td>${d.completedAt?'✅':'—'}</td></tr>`;
+    });
+    pdfBody += `</table></div>`;
+
+    try {
+        const pw = window.open('','_blank');
+        if(pw){
+            pw.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>SEL 대시보드 출력</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet"><style>*{font-family:'Noto Sans KR',sans-serif;margin:0;padding:0;box-sizing:border-box;}body{padding:24px;font-size:14px;color:#1F2937;line-height:1.6;}.print-header{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #7C3AED;}.print-header h2{color:#7C3AED;font-size:20px;margin-bottom:4px;}.print-header p{color:#6B7280;font-size:12px;}.card{border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin:12px 0;page-break-inside:avoid;}table{width:100%;border-collapse:collapse;margin:8px 0;}th,td{border:1px solid #E5E7EB;padding:8px 10px;text-align:left;font-size:13px;}th{background:#F3F4F6;font-weight:700;}h3{color:#7C3AED;font-size:16px;margin:12px 0 8px;}.print-guide{background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;text-align:center;}@media print{.print-guide{display:none;}}</style></head><body><div class="print-guide">💡 <strong>PDF로 저장하려면:</strong> 인쇄 대화상자에서 "대상"을 <strong>"PDF로 저장"</strong>으로 선택하세요.</div><div class="print-header"><h2>🚴 화가 날 때, 멈추는 연습 — 대시보드</h2><p>방 코드: ${currentRoomCode} | 출력: ${new Date().toLocaleString('ko-KR')}</p></div>${pdfBody}<scr`+`ipt>setTimeout(function(){window.print();},1000);</scr`+`ipt></body></html>`);
+            pw.document.close();
+            showToast('📄 새 창에서 인쇄 화면이 열립니다.','success');
+            return;
+        }
+    } catch(e){}
+    try { showToast('📄 인쇄 대화상자에서 "PDF로 저장"을 선택해주세요.','info'); setTimeout(()=>window.print(),500); return; } catch(e){}
+    showToast('📄 Ctrl+P (Mac: ⌘+P)를 눌러 PDF로 저장해주세요.','info');
+};
+
+// ═══ TTS ═══
+let isSpeaking = false;
+
+function buildTTSScript(section) {
+    const entries = Object.entries(dashboardData);
+    if(!entries.length) return '';
+    const total = entries.length;
+    const completed = entries.filter(([,d])=>d.completedAt).length;
+
+    if(section === 'overview') {
+        const dexAvg = Math.round(entries.reduce((a,[,d])=>a+(d.collectedCount||0),0)/total*10)/10;
+        const plays = entries.reduce((a,[,d])=>a+(d.totalPlays||0),0);
+        return `참여 현황입니다. 총 ${total}명이 참여했고, 그중 ${completed}명이 마음 기록을 작성했습니다. `+
+               `평균 브레이크 수집은 ${dexAvg}개이고, 시나리오 도전은 모두 합쳐 ${plays}회입니다.`;
+    }
+    if(section === 'brake') {
+        const counts = {};
+        BRAKES.forEach(b=>counts[b.name]=0);
+        entries.forEach(([,d])=>{
+            if(d.brakeUsage && Object.keys(d.brakeUsage).length) {
+                Object.entries(d.brakeUsage).forEach(([id,c])=>{ const br=BRAKES.find(b=>b.id===id); if(br) counts[br.name]+=(Number(c)||0); });
+            } else if(d.lastBrake) { const br=BRAKES.find(b=>b.id===d.lastBrake); if(br) counts[br.name]++; }
+        });
+        const used = Object.entries(counts).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+        if(!used.length) return '아직 사용한 브레이크 전략 기록이 없습니다.';
+        return '브레이크 전략 분포입니다. ' + used.map(([k,v])=>`${k} ${v}회`).join(', ') + '. '+
+               `가장 많이 쓰인 전략은 ${used[0][0]}입니다.`;
+    }
+    if(section === 'anger') {
+        const counts = {};
+        entries.forEach(([,d])=>{ if(d.angerLabel) counts[d.angerLabel]=(counts[d.angerLabel]||0)+1; });
+        const list = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+        if(!list.length) return '아직 화날 때 상황 유형 응답이 없습니다.';
+        return '화날 때 상황 유형입니다. ' + list.map(([k,v])=>`${k} ${v}명`).join(', ') + '.';
+    }
+    if(section === 'detail') {
+        return '학생별 기록입니다. ' + entries.map(([name,d])=>{
+            const br = d.lastBrake ? (BRAKES.find(b=>b.id===d.lastBrake)||{}).name || '없음' : '없음';
+            const stop = d.lastStopEpisode ? `${d.lastStopEpisode}번째 장면에서 멈췄고` : (d.wishStopEpisode ? `끝까지 가 본 뒤 ${d.wishStopEpisode}번째 장면에서 멈추고 싶다고 골랐고` : '끝까지 가 본 뒤 아직 멈추기는 해 보지 않았고');
+            // ⭐ 닉네임 받침에 따라 은/는을 골라 읽는다 ("지우은 3회 도전하여" 같은 비문 방지)
+            return `${name}${josa(name,'은','는','은(는)')} ${d.totalPlays||0}회 도전하여 ${stop}, ${br==='없음' ? '브레이크는 아직 써 보지 않았습니다' : br+' 브레이크를 사용했습니다'}.`;
+        }).join(' ');
+    }
+    return '';
+}
+
+function speakText(text) {
+    if(!text) { showToast('읽을 데이터가 없습니다.','error'); return; }
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang='ko-KR'; u.rate=0.9;
+    u.onend=()=>{isSpeaking=false;};
+    window.speechSynthesis.speak(u);
+    isSpeaking=true;
+}
+
+window.speakSection = function(section) {
+    if(isSpeaking) { window.speechSynthesis.cancel(); isSpeaking=false; }
+    speakText(buildTTSScript(section));
+};
+
+window.previewScript = function(section) {
+    const box = document.getElementById('tts-preview');
+    if(!box) return;
+    const text = buildTTSScript(section);
+    box.textContent = text || '아직 읽을 데이터가 없습니다.';
+    box.style.display = 'block';
+};
+
+window.speakDashboard = function() {
+    if(isSpeaking){window.speechSynthesis.cancel();isSpeaking=false;return;}
+    const entries = Object.entries(dashboardData);
+    if(!entries.length){showToast('읽을 데이터가 없습니다.','error');return;}
+    let text = `화가 날 때 멈추는 연습 대시보드 결과입니다. 총 ${entries.length}명이 참여했습니다. `;
+    entries.forEach(([name,d])=>{
+        const br = d.lastBrake?(BRAKES.find(b=>b.id===d.lastBrake)||{}).name:'없음';
+        text += `${name}${josa(name,'은','는','은(는)')} ${d.totalPlays||0}회 도전하여 ${br==='없음' ? '브레이크는 아직 써 보지 않았습니다' : br+' 브레이크를 사용했습니다'}. `; // ⭐ 닉네임 받침에 맞춰 조사 선택
+    });
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang='ko-KR'; u.rate=0.9;
+    u.onend=()=>{isSpeaking=false;};
+    window.speechSynthesis.speak(u);
+    isSpeaking=true;
+};
+window.stopSpeaking = function() { window.speechSynthesis.cancel(); isSpeaking=false; };
+
+// ═══ 데이터 초기화 ═══
+window.resetData = function() {
+    showConfirmModal('정말로 모든 데이터를 삭제하시겠습니까?<br>이 작업은 되돌릴 수 없습니다.', async()=>{
+        if(unsubscribe){ unsubscribe(); unsubscribe = null; }
+        await DB.deleteRoom(currentRoomCode);
+        dashboardData = {};
+        renderDashboard({});
+        showToast('🗑️ 데이터가 초기화되었습니다.','success');
+        showScreen('screen-start');
+    });
+};
+
+// ═══ 탭 전환 ═══
+window.switchTab = function(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    const target = document.getElementById(tabId);
+    if(target) target.classList.add('active');
+    const clicked = btn || (typeof event !== 'undefined' && event ? event.currentTarget || event.target : null);
+    if(clicked && clicked.classList) clicked.classList.add('active');
+};
+
+// ═══ 혼자 체험: 내 결과 텍스트로 저장 ═══
+let soloResult = null;
+window.downloadMyResult = function() {
+    const myBrakes = BRAKES.filter(b=>collectedBrakes.has(b.id)).map(b=>`  - ${b.icon} ${b.name} : ${b.desc}`).join('\n') || '  (아직 없어요)';
+    const cleared = SCENARIOS.filter(s=>clearedScenarios.has(s.id)).map(s=>`  - ${s.name}`).join('\n') || '  (아직 없어요)';
+    const r = soloResult || {};
+    const lines = [
+        '화가 날 때, 멈추는 연습 — 나의 기록',
+        '작성일: ' + new Date().toLocaleString('ko-KR'),
+        '',
+        '[ 내가 모은 브레이크 기술 ] ' + collectedBrakes.size + '/' + BRAKES.length,
+        myBrakes,
+        '',
+        '[ 완주한 이야기 ] ' + clearedScenarios.size + '/' + SCENARIOS.length,
+        cleared,
+        '',
+        '[ 시나리오 도전 ] ' + totalPlays + '회',
+        '',
+        '[ 마음 기록 ]',
+        '1. 나는 주로 이럴 때 화가 나요: ' + (r.refWhen || '-'),
+        '1-1. 상황 유형: ' + (r.angerLabel || '-'),
+        '2. 몸에서 나타나는 신호: ' + ((r.bodySignals||bodySignals||[]).join(', ') || '-'),
+        '3. 다음에 쓸 브레이크: ' + (r.refBrake || '-'),
+        '4. 기분이 나아진 순간: ' + (r.refBetter || '-'),
+        '',
+        '멈추기 → 브레이크 쓰기 → 다시 생각하기'
+    ];
+    try {
+        const blob = new Blob([lines.join('\n')], {type:'text/plain;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = '마음브레이크_나의기록.txt';
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a);
+        setTimeout(()=>URL.revokeObjectURL(url), 1000);
+        showToast('📄 결과가 저장되었어요!','success');
+    } catch(e) {
+        showToast('📄 저장이 어려운 환경이에요. 화면을 캡처해 보관해주세요.','info');
+    }
+};
+
+// ═══ goToMain을 전역에 ═══
+window.goToMain = goToMain;
+
+// ═══ 초기화 ═══
+renderAngerTypes();
+authReady.then(()=>{ console.log('[SEL-08] Ready. Firebase:', useFirebase); });
+
+</script>
+</body>
+</html>

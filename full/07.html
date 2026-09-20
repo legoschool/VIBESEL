@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>다른 사람의 감정 읽기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+:root{--p:#7C3AED;--pl:#A78BFA;--pd:#5B21B6;--pll:#EDE9FE;--grad:linear-gradient(135deg,#7C3AED 0%,#A78BFA 50%,#C4B5FD 100%);--gbg:linear-gradient(135deg,#EDE9FE 0%,#F5F3FF 50%,#FFF 100%);--ok:#10B981;--err:#EF4444;--warn:#F59E0B;--txt:#1E1B4B;--sub:#6B7280;--r:16px}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Noto Sans KR',sans-serif}
+body{background:var(--gbg);min-height:100vh;color:var(--txt);font-weight:700;font-size:18px;line-height:1.6}
+.screen{display:none;max-width:720px;margin:0 auto;padding:16px;animation:fadeIn .4s}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.card{background:#fff;border-radius:var(--r);padding:28px;margin-bottom:16px;box-shadow:0 4px 24px rgba(124,58,237,.1)}
+.page-icon{font-size:3rem;text-align:center;margin-bottom:8px}
+.page-title{font-size:1.6rem;font-weight:900;text-align:center;color:var(--pd);margin-bottom:6px}
+.page-sub{text-align:center;color:var(--sub);font-size:.95rem;font-weight:400;margin-bottom:16px}
+.badge{display:inline-block;background:var(--pll);color:var(--pd);padding:4px 14px;border-radius:20px;font-size:.8rem;font-weight:700}
+.info-box{background:var(--pll);border-radius:12px;padding:16px;margin:14px 0;font-size:.92rem;font-weight:400;line-height:1.8;color:var(--pd)}
+.info-box b{font-weight:900}
+.privacy{background:#F0FDF4;border-radius:12px;padding:14px;margin:14px 0;font-size:.82rem;font-weight:400;line-height:1.7;color:#065F46}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:14px 24px;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;width:100%;min-height:52px;font-family:'Noto Sans KR',sans-serif}
+.btn-p{background:var(--grad);color:#fff;box-shadow:0 4px 16px rgba(124,58,237,.3)}
+.btn-p:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(124,58,237,.4)}
+.btn-w{background:#fff;color:var(--pd);border:2px solid var(--pl)}
+.btn-w:hover{background:var(--pll)}
+.btn-o{background:var(--pll);color:var(--pd)}
+.btn-sm{padding:10px 16px;font-size:.88rem;min-height:40px;width:auto}
+.btn-d{background:#EF4444;color:#fff}
+.btn-row{display:flex;gap:10px;margin-top:12px}
+.btn-row .btn{flex:1}
+label{display:block;font-size:.9rem;font-weight:700;color:var(--pd);margin-bottom:6px}
+input,textarea{width:100%;padding:14px;border:2px solid #E5E7EB;border-radius:12px;font-size:1rem;font-weight:700;font-family:'Noto Sans KR',sans-serif;transition:border .2s}
+input:focus,textarea:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px rgba(124,58,237,.1)}
+textarea{resize:vertical;min-height:80px}
+.nav-btns{display:flex;gap:8px;margin-bottom:12px}
+.nav-btn{background:rgba(124,58,237,.08);border:none;padding:8px 14px;border-radius:10px;font-size:.82rem;font-weight:700;color:var(--pd);cursor:pointer;font-family:'Noto Sans KR',sans-serif}
+.nav-btn:hover{background:rgba(124,58,237,.15)}
+
+/* Toast */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:#1E1B4B;color:#fff;padding:14px 24px;border-radius:14px;font-size:.9rem;font-weight:700;z-index:9999;transition:transform .4s;max-width:90%}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:20px;padding:28px;max-width:400px;width:100%;text-align:center}
+.modal h3{font-size:1.15rem;color:var(--pd);margin-bottom:10px}
+.modal p{font-size:.92rem;font-weight:400;color:var(--sub);margin-bottom:16px;line-height:1.6;white-space:pre-line;text-align:left}
+
+/* Story */
+.story-box{background:linear-gradient(135deg,#1E1B4B,#312E81);border-radius:20px;padding:28px;color:#fff;margin-bottom:16px}
+.story-text{font-size:1.05rem;line-height:2;font-weight:400}
+.story-hl{color:#FCD34D;font-weight:900}
+.story-check{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:.88rem;font-weight:400;color:rgba(255,255,255,.8)}
+.story-check input{width:20px;height:20px;accent-color:var(--pl)}
+
+/* Emotion Grid */
+.emo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.emo-card{background:var(--pll);border:2px solid transparent;border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.emo-card:hover{transform:scale(1.03)}
+.emo-card.selected{background:#DDD6FE;border-color:var(--p);transform:scale(1.05);box-shadow:0 4px 16px rgba(124,58,237,.2)}
+.emo-card.selected::after{content:'✓';position:absolute;top:4px;right:6px;background:var(--p);color:#fff;width:20px;height:20px;border-radius:50%;font-size:.7rem;display:flex;align-items:center;justify-content:center}
+.emo-icon{font-size:1.6rem}
+.emo-name{font-size:.82rem;font-weight:700;color:var(--pd);margin-top:4px}
+
+/* Progress */
+.progress-bar{background:#E5E7EB;border-radius:20px;height:10px;margin:12px 0;overflow:hidden}
+.progress-fill{background:var(--grad);height:100%;border-radius:20px;transition:width .5s}
+.progress-text{font-size:.82rem;color:var(--sub);text-align:center;font-weight:400}
+
+/* Episode Card */
+.ep-scene{background:var(--pll);border-radius:14px;padding:20px;margin:12px 0;font-size:.95rem;font-weight:400;line-height:1.8;color:var(--txt)}
+.ep-title{font-weight:900;color:var(--pd);font-size:1rem;margin-bottom:8px}
+.ep-clue{display:inline-block;background:#fff;border-radius:8px;padding:4px 10px;margin:3px;font-size:.82rem;color:var(--pd);font-weight:700}
+
+/* 단서 풀이 / 피드백 (에피소드 응답 제출 후에만 표시) */
+.fb-box{background:#F5F3FF;border:2px solid #DDD6FE;border-radius:14px;padding:16px;margin:12px 0}
+.fb-box.fb-alt{background:#F0FDF4;border-color:#A7F3D0}
+.fb-box.fb-quiz{background:#FFFBEB;border-color:#FDE68A}
+.fb-h{font-weight:900;color:var(--pd);font-size:.95rem;margin-bottom:8px}
+.fb-alt .fb-h{color:#065F46}
+.fb-quiz .fb-h{color:#92400E}
+.fb-row{font-size:.9rem;font-weight:400;line-height:1.75;margin-bottom:6px}
+.fb-row b{font-weight:900;color:var(--pd);display:inline-block;min-width:44px}
+.fb-alt .fb-row b{color:#065F46;min-width:0}
+.fb-note{margin-top:10px;padding-top:10px;border-top:1px dashed #A7F3D0;font-size:.86rem;font-weight:400;line-height:1.7;color:#065F46}
+.fb-mine{background:#fff;border-radius:10px;padding:10px 12px;margin:10px 0 0;font-size:.88rem;font-weight:400;line-height:1.7}
+.quiz-q{font-size:.92rem;font-weight:700;color:var(--txt);margin-bottom:8px}
+.quiz-opt{display:block;width:100%;text-align:left;background:#fff;border:2px solid #FDE68A;border-radius:12px;padding:12px 14px;margin-bottom:8px;font-size:.88rem;font-weight:700;color:var(--txt);cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .2s;line-height:1.6}
+.quiz-opt:hover{background:#FFFBEB}
+.quiz-opt.picked{border-color:#F59E0B;background:#FEF3C7;box-shadow:0 0 0 3px rgba(245,158,11,.15)}
+.quiz-fb{font-size:.86rem;font-weight:400;line-height:1.75;background:#fff;border-radius:10px;padding:12px;margin-top:6px}
+.skip-note{font-size:.78rem;font-weight:400;color:var(--sub);margin-top:6px}
+
+/* Dashboard */
+.dash-tabs{display:flex;gap:4px;margin-bottom:12px;overflow-x:auto}
+.dash-tab{padding:10px 16px;border-radius:10px;border:none;background:var(--pll);color:var(--pd);font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap;font-family:'Noto Sans KR',sans-serif}
+.dash-tab.active{background:var(--p);color:#fff}
+.dash-panel{display:none}
+.dash-panel.active{display:block}
+.stat-row{display:flex;gap:10px;margin-bottom:12px}
+.stat-box{flex:1;background:var(--pll);border-radius:12px;padding:14px;text-align:center}
+.stat-num{font-size:1.6rem;font-weight:900;color:var(--pd)}
+.stat-label{font-size:.78rem;color:var(--sub);font-weight:400}
+.chart-area{background:#fff;border-radius:12px;border:2px solid #E5E7EB;padding:12px;margin:12px 0}
+table.dash-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.dash-table th{background:var(--pll);padding:10px 8px;text-align:left;font-weight:900;color:var(--pd);border-bottom:2px solid var(--pl)}
+.dash-table td{padding:10px 8px;border-bottom:1px solid #E5E7EB;font-weight:400}
+
+/* TTS */
+.tts-section{background:var(--pll);border-radius:12px;padding:14px;margin-bottom:10px}
+.tts-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+
+/* Word Cloud */
+.wc-container{min-height:120px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;padding:12px}
+.wc-word{display:inline-block;padding:4px 10px;border-radius:8px;font-weight:700}
+
+/* Result summary */
+.result-card{background:var(--pll);border-radius:12px;padding:14px;margin-bottom:10px}
+.result-card .r-title{font-weight:900;color:var(--pd);font-size:.9rem;margin-bottom:6px}
+.result-card .r-body{font-weight:400;font-size:.85rem;line-height:1.6}
+
+@media(max-width:480px){
+body{font-size:16px}
+.card{padding:20px}
+.page-title{font-size:1.3rem}
+.emo-grid{grid-template-columns:repeat(3,1fr);gap:6px}
+.emo-icon{font-size:1.3rem}
+.stat-row{flex-wrap:wrap}
+.stat-box{min-width:calc(50% - 6px)}
+.btn{min-height:48px;font-size:.95rem}
+input,textarea{font-size:.95rem;padding:12px}
+}
+
+/* 인쇄용 (PDF fallback) - 화면 표시에는 영향 없음 */
+@media print{
+body *{visibility:hidden}
+#dashScreen,#dashScreen *{visibility:visible}
+#dashScreen{position:absolute;left:0;top:0;width:100%}
+.dash-panel{display:block!important}
+.btn,.nav-btns,.dash-tabs,.toast,.modal-bg{display:none!important}
+.card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast"></div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-bg" id="modalBg">
+<div class="modal">
+<h3 id="modalTitle"></h3>
+<p id="modalMsg"></p>
+<div class="btn-row" id="modalBtns"></div>
+</div>
+</div>
+
+<!-- ============ 시작 화면 ============ -->
+<div class="screen active" id="mainScreen">
+<div class="card">
+<div class="page-icon">🔍</div>
+<h1 class="page-title">다른 사람의 감정 읽기</h1>
+<p class="page-sub">마음 읽기 탐정단 — 친구의 마음을 바라보는 연습</p>
+<div style="text-align:center"><span class="badge">⏱ 약 15~20분</span></div>
+<div class="info-box">
+<b>💡 오늘의 활동</b><br>
+마음은 말로만 표현되지 않아요.<br>
+표정, 몸짓, 침묵 속에도 마음이 숨어 있답니다.<br>
+오늘은 작은 신호들을 찾아보는 <b>마음 읽기 탐정</b>이 되어볼 거예요!
+</div>
+<button class="btn btn-p" onclick="showScreen('joinScreen')">🏫 함께 참여하기</button>
+<div style="height:10px"></div>
+<button class="btn btn-w" onclick="startSolo()">🌟 혼자 체험하기</button>
+<div class="privacy">🔐 안심하세요! 이 활동은 이름 대신 <b>닉네임</b>과 숫자로만 된 방 코드를 사용해요. 방 코드는 입장할 때만 필요한 숫자일 뿐, 여러분이 누구인지 알려주는 이름표가 아니랍니다. 닉네임을 만들 때 개인정보를 포함하지 않도록 만들어 주세요. 여러분의 익명성은 소중히 보호됩니다.</div>
+</div>
+</div>
+
+<!-- ============ 입장 화면 ============ -->
+<div class="screen" id="joinScreen">
+<div class="nav-btns"><button class="nav-btn" onclick="showScreen('mainScreen')">← 처음으로</button></div>
+<div class="card">
+<h2 class="page-title" style="font-size:1.3rem">🏫 함께 참여하기</h2>
+<div class="privacy">🔐 안심하세요! 우리가 사용하는 방 코드는 오직 입장할 때만 필요한 숫자일 뿐, 여러분이 누구인지 알려주는 이름표가 아니랍니다. 입장 코드는 숫자로만 구성되어 있어 개인정보를 포함하지 않습니다. 닉네임을 만들 때 개인정보를 포함하지 않도록 만들어 주세요. 여러분의 익명성은 소중히 보호됩니다.</div>
+<div style="margin-bottom:14px">
+<label>방 코드 (숫자 6자리)</label>
+<input type="text" id="inCode" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]*">
+</div>
+<div style="margin-bottom:14px">
+<label>닉네임</label>
+<input type="text" id="inNick" placeholder="닉네임 입력" maxlength="8">
+</div>
+<button class="btn btn-p" onclick="joinRoom()">🚀 입장하기</button>
+<div style="height:10px"></div>
+<button class="btn btn-o" onclick="showScreen('createScreen')">➕ 새 방 만들기 (교사용)</button>
+<div style="height:10px"></div>
+<button class="btn btn-w" onclick="showTeacherLogin()">🔑 교사로 입장</button>
+</div>
+</div>
+
+<!-- ============ 방 만들기 ============ -->
+<div class="screen" id="createScreen">
+<div class="nav-btns"><button class="nav-btn" onclick="showScreen('joinScreen')">← 뒤로</button><button class="nav-btn" onclick="showScreen('mainScreen')">🏠 처음으로</button></div>
+<div class="card">
+<h2 class="page-title" style="font-size:1.3rem">➕ 새 방 만들기</h2>
+<div style="margin-bottom:14px">
+<label>교사 닉네임</label>
+<input type="text" id="crName" placeholder="닉네임 입력" maxlength="8">
+</div>
+<div style="margin-bottom:14px">
+<label>관리자 비밀번호 (숫자 4자리)</label>
+<input type="password" id="crPw" placeholder="••••" maxlength="4" inputmode="numeric" pattern="[0-9]*">
+</div>
+<button class="btn btn-p" onclick="createRoom()">🎉 방 만들기</button>
+</div>
+</div>
+
+<!-- ============ 방 생성 완료 ============ -->
+<div class="screen" id="createdScreen">
+<div class="nav-btns"><button class="nav-btn" onclick="showScreen('mainScreen')">🏠 처음으로</button></div>
+<div class="card" style="text-align:center">
+<div class="page-icon">🎉</div>
+<h2 class="page-title" style="font-size:1.3rem">방이 만들어졌어요!</h2>
+<p class="page-sub">아래 코드를 학생들에게 알려주세요</p>
+<div style="background:var(--grad);border-radius:16px;padding:20px;margin:16px 0">
+<div style="color:rgba(255,255,255,.8);font-size:.85rem;font-weight:400">방 코드</div>
+<div id="showCode" style="color:#fff;font-size:2.4rem;font-weight:900;letter-spacing:8px;margin:8px 0"></div>
+<button class="btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:700;font-family:'Noto Sans KR',sans-serif" onclick="copyCode()">📋 코드 복사</button>
+</div>
+<p style="font-size:.82rem;color:var(--sub);font-weight:400">⏰ 이 방은 30일 후 자동 삭제됩니다.</p>
+<button class="btn btn-p" onclick="enterTeacherDashboard()" style="margin-top:12px">👨‍🏫 교사 대시보드 열기</button>
+</div>
+</div>
+
+<!-- ============ 교사 로그인 ============ -->
+<div class="screen" id="teacherLoginScreen">
+<div class="nav-btns"><button class="nav-btn" onclick="showScreen('joinScreen')">← 뒤로</button><button class="nav-btn" onclick="showScreen('mainScreen')">🏠 처음으로</button></div>
+<div class="card">
+<h2 class="page-title" style="font-size:1.3rem">🔑 교사로 입장</h2>
+<div style="margin-bottom:14px">
+<label>방 코드 (숫자 6자리)</label>
+<input type="text" id="tCode" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]*">
+</div>
+<div style="margin-bottom:14px">
+<label>관리자 비밀번호</label>
+<input type="password" id="tPw" placeholder="••••" maxlength="4" inputmode="numeric" pattern="[0-9]*">
+</div>
+<button class="btn btn-p" onclick="teacherLogin()">🔓 입장하기</button>
+</div>
+</div>
+
+<!-- ============ 학생 활동 - 인트로 스토리 ============ -->
+<div class="screen" id="storyScreen">
+<div class="nav-btns"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div class="card">
+<div id="storyContent"></div>
+<button class="btn btn-p" id="storyNextBtn" onclick="nextStory()" disabled>다음으로 ➜</button>
+</div>
+</div>
+
+<!-- ============ 학생 활동 - 에피소드 ============ -->
+<div class="screen" id="episodeScreen">
+<div class="nav-btns"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div class="card">
+<div class="progress-bar"><div class="progress-fill" id="epProgress"></div></div>
+<div class="progress-text" id="epProgressText"></div>
+<div id="epContent"></div>
+</div>
+</div>
+
+<!-- ============ 학생 활동 - 성찰 ============ -->
+<div class="screen" id="reflectScreen">
+<div class="nav-btns"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div class="card">
+<div class="page-icon">🌟</div>
+<h2 class="page-title" style="font-size:1.2rem">마음 읽기 탐정의 성찰 시간</h2>
+<div style="margin:14px 0">
+<label>오늘 가장 마음이 쓰인 친구(에피소드)는 누구인가요?</label>
+<textarea id="refQ1" placeholder="가장 기억에 남는 장면과 그 이유를 적어주세요"></textarea>
+</div>
+<div style="margin:14px 0">
+<label>감정을 읽는 데 어떤 단서가 도움이 되었나요? (복수 선택)</label>
+<div class="emo-grid" id="clueGrid" style="grid-template-columns:repeat(2,1fr)"></div>
+</div>
+<div style="margin:14px 0">
+<label>마음이 쓰인 친구에게 해주고 싶은 말이 있다면?</label>
+<textarea id="refQ3" placeholder="한마디 적어주세요"></textarea>
+</div>
+<div style="margin:14px 0">
+<label>오늘 활동을 통해 느낀 점</label>
+<textarea id="refQ4" placeholder="자유롭게 적어주세요"></textarea>
+</div>
+<button class="btn btn-p" onclick="submitReflection()">✨ 성찰 제출하기</button>
+</div>
+</div>
+
+<!-- ============ 학생 완료 ============ -->
+<div class="screen" id="completeScreen">
+<div class="nav-btns"><button class="nav-btn" onclick="backToMain()">← 다시 탐험하기</button><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div class="card" style="text-align:center">
+<div class="page-icon">🎊</div>
+<h2 class="page-title" style="font-size:1.3rem">훌륭한 마음 읽기 탐정이에요!</h2>
+<p class="page-sub">감정을 정확히 맞히지 않아도 괜찮아요.<br>중요한 것은 <b>"관심을 가지고 바라보았다"</b>는 것이에요.</p>
+<div class="info-box" style="text-align:left">
+💡 <b>기억해요!</b><br>
+• "왜 저래?" 대신 "무슨 일이 있었을까?"<br>
+• 추측만 하지 말고, 조심스럽게 물어보기<br>
+• 같은 상황도 다르게 느낄 수 있어요
+</div>
+<div id="myResultArea"></div>
+<button class="btn btn-p" onclick="backToMain()" style="margin-top:14px">🔄 장면 다시 살펴보기</button>
+<div style="height:10px"></div>
+<button class="btn btn-w" onclick="editReflection()">✏️ 성찰 다시 쓰기</button>
+<div style="height:10px"></div>
+<button class="btn btn-o" onclick="downloadMyResult()">📄 내 활동 결과 저장하기</button>
+</div>
+</div>
+
+<!-- ============ 교사 대시보드 ============ -->
+<div class="screen" id="dashScreen">
+<div class="nav-btns"><button class="nav-btn" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div class="card">
+<h2 class="page-title" style="font-size:1.2rem">👨‍🏫 교사 대시보드</h2>
+<p class="page-sub">방 코드: <b id="dashCode"></b></p>
+<div class="dash-tabs">
+<button class="dash-tab active" onclick="switchTab(this,0)">📊 현황</button>
+<button class="dash-tab" onclick="switchTab(this,1)">📋 참여결과</button>
+<button class="dash-tab" onclick="switchTab(this,2)">📈 시각화</button>
+<button class="dash-tab" onclick="switchTab(this,3)">🔊 TTS</button>
+</div>
+
+<!-- Tab 0: 현황 -->
+<div class="dash-panel active" id="tab0">
+<div class="stat-row">
+<div class="stat-box"><div class="stat-num" id="dTotal">0</div><div class="stat-label">총 참여</div></div>
+<div class="stat-box"><div class="stat-num" id="dDone">0</div><div class="stat-label">완료</div></div>
+<div class="stat-box"><div class="stat-num" id="dProg">0</div><div class="stat-label">진행 중</div></div>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="dBar"></div></div>
+<div class="progress-text" id="dBarText">완료율 0%</div>
+<button class="btn btn-o btn-sm" onclick="refreshDash()" style="margin-top:8px">🔄 새로고침</button>
+</div>
+
+<!-- Tab 1: 참여결과 -->
+<div class="dash-panel" id="tab1">
+<div id="resultTableArea"><p style="color:var(--sub);font-size:.88rem;font-weight:400">데이터를 불러오는 중...</p></div>
+<div class="btn-row" style="margin-top:12px">
+<button class="btn btn-p btn-sm" onclick="downloadExcel()">📥 엑셀 다운로드</button>
+</div>
+<div class="btn-row" style="margin-top:8px">
+<button class="btn btn-o btn-sm" onclick="downloadPDF()">📄 PDF로 저장 (인쇄)</button>
+</div>
+</div>
+
+<!-- Tab 2: 시각화 -->
+<div class="dash-panel" id="tab2">
+<h3 style="font-size:.95rem;color:var(--pd);margin-bottom:8px">😊 감정 분포</h3>
+<div class="chart-area"><canvas id="emoChart" height="200"></canvas></div>
+<h3 style="font-size:.95rem;color:var(--pd);margin:14px 0 8px">💬 이유 워드클라우드</h3>
+<div class="chart-area"><div class="wc-container" id="wordCloud"><span style="color:var(--sub);font-size:.85rem;font-weight:400">데이터 수집 중...</span></div></div>
+</div>
+
+<!-- Tab 3: TTS -->
+<div class="dash-panel" id="tab3">
+<p style="font-size:.88rem;color:var(--sub);font-weight:400;margin-bottom:10px">읽고 싶은 영역을 선택하세요. 스크립트를 미리 확인할 수 있어요.</p>
+<div id="ttsList"></div>
+<div class="btn-row" style="margin-top:10px">
+<button class="btn btn-d btn-sm" onclick="stopTTS()">⏹ 정지</button>
+</div>
+</div>
+
+<!-- 공통 -->
+<div style="margin-top:16px;border-top:2px solid #E5E7EB;padding-top:14px">
+<button class="btn btn-d" onclick="confirmReset()">🗑️ 데이터 초기화</button>
+<p style="font-size:.78rem;color:var(--sub);font-weight:400;margin-top:8px;text-align:center">수업이 끝나면 데이터 초기화 버튼을 눌러주세요.<br>또는 30일 후 자동 삭제됩니다.</p>
+</div>
+</div>
+</div>
+
+<!-- ============ SCRIPT ============ -->
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import{getAuth,signInAnonymously,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import{getFirestore,doc,setDoc,getDoc,deleteDoc,onSnapshot,collection,getDocs}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+// ═══════════════════════════════════════════════════════
+// 🔥 Firebase 초기화 - emo-dex 프로젝트 고정
+// Canvas든 Google Sites든 항상 같은 DB 사용 (교실 협업용)
+// ═══════════════════════════════════════════════════════
+const firebaseConfig={
+    apiKey:"AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s",
+    authDomain:"emo-dex.firebaseapp.com",
+    projectId:"emo-dex",
+    storageBucket:"emo-dex.firebasestorage.app",
+    messagingSenderId:"994736049700",
+    appId:"1:994736049700:web:8233fa7b68cd6e0cccd2b1",
+    measurementId:"G-6YLB5C6VNR"
+};
+const APP_ID='sel-lesson-13';
+
+let app,auth,db,useFirebase=false;
+try{
+    app=initializeApp(firebaseConfig);
+    auth=getAuth(app);
+    db=getFirestore(app);
+}catch(e){console.error('Firebase init error:',e)}
+
+async function initAuth(){
+    return new Promise((resolve)=>{
+        if(!auth){resolve(false);return}
+        const timeout=setTimeout(()=>resolve(false),6000);
+        onAuthStateChanged(auth,u=>{if(u){clearTimeout(timeout);useFirebase=true;resolve(true)}});
+        signInAnonymously(auth).catch(()=>{clearTimeout(timeout);resolve(false)});
+    });
+}
+// ⚠️ 방 만들기/입장 진입부에서 반드시 `await authReady` 할 것.
+// 기다리지 않으면 useFirebase=false 상태로 저장이 조용히 스킵된다.
+const authReady=initAuth();
+authReady.then(ok=>console.log(ok?'☁️ Firebase 온라인':'💾 로컬 모드'));
+
+// Firestore helpers
+function roomRef(code){return doc(db,'artifacts',APP_ID,'public','data','rooms',code)}
+function studentRef(code,nick){return doc(db,'artifacts',APP_ID,'public','data','rooms',code,'students',nick)}
+function studentsCol(code){return collection(db,'artifacts',APP_ID,'public','data','rooms',code,'students')}
+
+// Local fallback
+const localDB={};
+const DB={
+    async saveRoom(code,data){
+        if(useFirebase){await setDoc(roomRef(code),data,{merge:true})}
+        else{localDB['r_'+code]={...localDB['r_'+code],...data}}
+    },
+    async getRoom(code){
+        if(useFirebase){const s=await getDoc(roomRef(code));return s.exists()?s.data():null}
+        return localDB['r_'+code]||null
+    },
+    async saveStudent(code,nick,data){
+        if(useFirebase){await setDoc(studentRef(code,nick),data,{merge:true})}
+        else{if(!localDB['s_'+code])localDB['s_'+code]={};localDB['s_'+code][nick]={...localDB['s_'+code]?.[nick],...data}}
+    },
+    async getStudent(code,nick){
+        if(useFirebase){const s=await getDoc(studentRef(code,nick));return s.exists()?s.data():null}
+        return localDB['s_'+code]?.[nick]||null
+    },
+    async getAllStudents(code){
+        if(useFirebase){const snap=await getDocs(studentsCol(code));const r={};snap.forEach(d=>{r[d.id]=d.data()});return r}
+        return localDB['s_'+code]||{}
+    },
+    // ⚠️ 학생 응답만 삭제한다. 방 문서(교사 비밀번호·만료일)는 절대 건드리지 않는다.
+    async clearStudents(code){
+        if(useFirebase){
+            const snap=await getDocs(studentsCol(code));
+            const ps=[];snap.forEach(d=>ps.push(deleteDoc(d.ref)));await Promise.all(ps);
+        }else{delete localDB['s_'+code]}
+    },
+    // 방 자체를 없앨 때만 사용 (만료된 방 정리 전용)
+    async deleteRoom(code){
+        if(useFirebase){
+            const snap=await getDocs(studentsCol(code));
+            const ps=[];snap.forEach(d=>ps.push(deleteDoc(d.ref)));await Promise.all(ps);
+            await deleteDoc(roomRef(code));
+        }else{delete localDB['r_'+code];delete localDB['s_'+code]}
+    },
+    onStudents(code,cb){
+        if(useFirebase){return onSnapshot(studentsCol(code),snap=>{const r={};snap.forEach(d=>{r[d.id]=d.data()});cb(r)})}
+        const iv=setInterval(()=>cb(localDB['s_'+code]||{}),2500);
+        return()=>clearInterval(iv);
+    }
+};
+
+// ═══════════════════════════════════════════════════════
+// 📚 콘텐츠 데이터
+// ═══════════════════════════════════════════════════════
+const STORIES=[
+    {emoji:'📖',text:'오늘은 특별한 탐정 임무가 기다리고 있어요!<br><br>1차시부터 12차시까지 <span class="story-hl">"나"의 마음</span>을 들여다봤다면,<br>이제는 <span class="story-hl">"너"의 마음</span>을 바라볼 차례예요.',check:false},
+    {emoji:'🔍',text:'모둠 활동 시간, 친구들이 떠들고 있는데<br>한 아이만 <span class="story-hl">책상에 그대로 앉아</span> 있어요.<br><br>눈을 피하고, 공책 가장자리를 긁고 있어요.<br>이 친구에게 무슨 일이 있는 걸까요?',check:true},
+    {emoji:'💡',text:'감정은 말로만 드러나지 않아요.<br><span class="story-hl">표정, 몸짓, 침묵</span> 속에도<br>마음은 숨어 있답니다.<br><br>"왜 저래?"라고 판단하기보다<br><span class="story-hl">"무슨 일이 있었을까?"</span>라고<br>생각해 보는 순간, 관계는 달라져요.',check:true},
+    {emoji:'🎯',text:'오늘의 임무!<br><br>7개의 <span class="story-hl">교실 장면</span>을 만나게 될 거예요.<br>각 장면에서 친구의 마음을 읽어보세요.<br><br>정답은 없어요. 중요한 것은<br><span class="story-hl">"관심을 가지고 바라보았다"</span>는 것이에요!',check:false}
+];
+
+const EMOTIONS=[
+    {icon:'😢',name:'슬픔'},{icon:'😠',name:'화남'},{icon:'😰',name:'불안'},
+    {icon:'😔',name:'외로움'},{icon:'😳',name:'당황'},{icon:'😤',name:'억울함'},
+    {icon:'😊',name:'기쁨'},{icon:'🥺',name:'서운함'},{icon:'😶',name:'무기력'},
+    {icon:'😨',name:'두려움'},{icon:'🤔',name:'걱정'},{icon:'😌',name:'안도'}
+];
+
+const EPISODES=[
+    {title:'장면 1. 모둠 활동에서 움직이지 않는 친구',
+     scene:'모둠 활동이 시작되었어요. 다른 친구들은 자리를 옮기며 의견을 나누고 있지만, 지우는 책상에 그대로 앉아 있어요. 다가오는 친구의 눈을 피하고, 공책 가장자리를 손톱으로 긁으며 아무 말도 하지 않아요.',
+     clues:['🪑 자리에서 움직이지 않음','👀 눈을 피함','✋ 공책을 긁는 행동','🤐 아무 말도 안 함'],
+     read:{
+        face:'시선이 계속 아래를 향해요. 눈을 피하는 건 "지금 나를 보지 말아줘"라는 몸의 말일 때가 많아요.',
+        act:'공책 가장자리를 손톱으로 긁고 있어요. 손을 계속 꼼지락거리는 건 불편한 마음을 스스로 달래려는 행동이에요.',
+        tone:'아무 말도 하지 않아요. 침묵도 하나의 말이에요. 할 말이 없는 게 아니라, 꺼내기 어려운 걸 수도 있어요.'},
+     maybe:[
+        {e:'불안',w:'"내가 끼어도 될까?" 하는 걱정이 마음을 붙잡고 있을 수 있어요.'},
+        {e:'외로움',w:'먼저 이름을 불러주는 사람이 없으면 같은 교실에서도 혼자라고 느껴져요.'},
+        {e:'당황',w:'어떻게 들어가야 할지 몰라 그대로 얼어붙었을 수도 있어요.'}],
+     quiz:{q:'지금 지우에게 해주면 좋을 행동은 무엇일까요?',opts:[
+        {t:'조용히 다가가 "지우야, 우리 모둠 같이 하자" 하고 이름을 불러주기',ok:true,fb:'좋아요. 이름을 불러주는 건 "너를 보고 있어"라는 가장 짧은 신호예요. 먼저 자리를 만들어 주면 들어오기가 훨씬 쉬워져요.'},
+        {t:'"야, 너 왜 안 와?" 하고 교실 전체가 듣게 크게 물어보기',ok:false,fb:'궁금해서 물어본 마음은 알아요. 다만 여러 사람 앞에서 물으면 지우는 더 얼어붙을 수 있어요. 옆으로 가서 작은 목소리로 물어보면 어떨까요?'},
+        {t:'혼자 있고 싶은가 보다 하고 그냥 두기',ok:false,fb:'배려하려는 마음이네요. 다만 한 번은 다가가 물어봐 주면 좋아요. "같이 할래? 아니면 조금 있다가 부를까?"처럼 선택을 주는 방법도 있어요.'}]}},
+    {title:'장면 2. 쉬는 시간에 혼자 남은 친구',
+     scene:'쉬는 시간이 되자 모두 운동장으로 뛰어나갔어요. 하지만 민수는 자리에 앉아 가방만 천천히 정리하고 있어요. 친구가 "같이 놀자"고 했지만 고개를 작게 흔들었어요. 평소에는 제일 먼저 나가던 아이인데, 오늘은 달라요.',
+     clues:['🎒 가방 정리가 느림','🚫 놀자는 말 거절','😶 평소와 다른 행동','🪑 혼자 남아있음'],
+     read:{
+        face:'고개를 흔들 때 표정에 힘이 없어요. 눈썹과 입꼬리가 함께 내려가 있으면 마음이 무거운 신호예요.',
+        act:'가방을 아주 천천히 정리해요. <b>평소와 달라진 속도</b>는 가장 크고 확실한 단서예요.',
+        tone:'말 대신 고갯짓으로만 대답했어요. 말수가 갑자기 줄어드는 것도 마음의 신호랍니다.'},
+     maybe:[
+        {e:'무기력',w:'뛰어놀 힘조차 나지 않는 날이 누구에게나 있어요.'},
+        {e:'서운함',w:'조금 전 누군가와 있었던 일이 아직 마음에 남아 있을 수 있어요.'},
+        {e:'걱정',w:'교실 밖의 일(집, 학원, 시험 등)이 머릿속을 채우고 있을 수도 있어요.'}],
+     quiz:{q:'민수의 마음을 알아보려면 어떻게 하는 게 좋을까요?',opts:[
+        {t:'옆자리에 앉아 조용히 같이 있어 주기',ok:true,fb:'멋져요. 말이 준비되지 않은 친구에게는 "옆에 있어 주기"가 가장 편한 위로예요. 준비가 되면 먼저 말을 꺼낼 거예요.'},
+        {t:'손을 잡아끌고 억지로 운동장으로 데려가기',ok:false,fb:'같이 놀고 싶은 마음은 정말 좋아요. 다만 마음이 준비되지 않았을 땐 끌려가는 느낌이 들 수 있어요. "나갈래? 아니면 여기 있을까?" 하고 물어봐 주세요.'},
+        {t:'"오늘 왜 이렇게 재미없냐" 하고 말하기',ok:false,fb:'농담이었을 수 있지만, 힘든 날엔 이런 말이 콕 박혀요. 대신 "오늘 좀 조용하네, 무슨 일 있었어?"라고 물어보면 마음이 열리기 쉬워요.'}]}},
+    {title:'장면 3. 웃고 있지만 눈빛이 다른 친구',
+     scene:'수진이는 친구들과 웃으며 이야기하고 있어요. 그런데 자세히 보면, 웃음이 입에만 머물러 있어요. 눈은 웃지 않고, 잠깐씩 창밖을 바라봐요. 친구가 농담을 해도 웃음이 조금 늦게 나오는 것 같아요.',
+     clues:['😄 입만 웃음','👁️ 눈이 안 웃음','🪟 창밖을 자꾸 봄','⏱️ 반응이 느림'],
+     read:{
+        face:'입은 웃는데 눈가에 주름이 생기지 않아요. <b>진짜 웃음은 눈에서 먼저 시작돼요.</b> 입만 웃는 웃음은 "괜찮은 척"일 수 있어요.',
+        act:'잠깐씩 창밖을 봐요. 시선이 자꾸 대화 밖으로 빠져나가는 건 마음이 다른 곳에 가 있다는 뜻일 수 있어요.',
+        tone:'웃음이 한 박자 늦게 나와요. 반응이 느려지는 것도 마음이 무거울 때 나타나는 신호예요.'},
+     maybe:[
+        {e:'슬픔',w:'속상한 일을 감추려고 웃는 얼굴을 먼저 꺼냈을 수 있어요.'},
+        {e:'걱정',w:'대화에 있으면서도 머릿속으로는 다른 일을 계속 생각하고 있을 수 있어요.'},
+        {e:'외로움',w:'사람들 사이에 있어도 마음은 혼자일 수 있답니다.'}],
+     quiz:{q:'수진이에게 물어본다면 어떤 방법이 좋을까요?',opts:[
+        {t:'둘만 있을 때 "요즘 어때? 나 시간 많아" 하고 물어보기',ok:true,fb:'훌륭해요. 조용한 자리와 여유 있는 말투는 마음의 문을 여는 열쇠예요. 대답을 재촉하지 않는 것도 좋았어요.'},
+        {t:'친구들 앞에서 "너 지금 억지로 웃는 거지?" 하고 짚어주기',ok:false,fb:'잘 알아본 건 대단해요! 다만 여러 사람 앞에서 들키면 더 감추게 돼요. 알아차린 건 마음에만 담아두고, 나중에 둘만 있을 때 물어봐 주세요.'},
+        {t:'웃고 있으니 괜찮은 거라고 생각하고 넘어가기',ok:false,fb:'웃음은 가장 흔한 "괜찮은 척"이에요. 확신이 없어도 "혹시 무슨 일 있어?" 한마디는 건네볼 수 있어요.'}]}},
+    {title:'장면 4. 팀 나누기에서 마지막까지 남은 친구',
+     scene:'체육 시간, 팀을 나눌 때 한 명씩 이름이 불려요. 하나, 둘, 셋... 아이들이 하나씩 팀에 들어가는데, 하늘이는 마지막까지 남아 있어요. 고개를 숙이고 운동화 끈을 만지작거리고 있어요.',
+     clues:['👟 운동화 끈을 만짐','😔 고개를 숙임','⏳ 마지막까지 남음','🤫 아무 말 안 함'],
+     read:{
+        face:'고개를 숙여 표정을 감췄어요. 얼굴을 감추는 건 <b>지금 표정을 보이고 싶지 않다</b>는 마음일 수 있어요.',
+        act:'운동화 끈을 계속 만지작거려요. 손으로 무언가를 만지는 건 마음을 진정시키려는 행동이에요.',
+        tone:'아무 말도 하지 않아요. 이런 순간엔 말보다 시간이 더 느리게 흘러가요.'},
+     maybe:[
+        {e:'서운함',w:'"왜 아무도 나를 안 부르지?" 하는 마음이 들 수 있어요.'},
+        {e:'당황',w:'예상하지 못한 상황에 어떻게 해야 할지 몰라 굳어버렸을 수 있어요.'},
+        {e:'슬픔',w:'선택받지 못하는 경험은 어른에게도 아픈 일이에요.'}],
+     quiz:{q:'다음에 팀을 나눌 때 우리 반이 해볼 수 있는 방법은?',opts:[
+        {t:'제비뽑기나 번호로 팀을 정하기',ok:true,fb:'좋은 생각이에요. 규칙을 바꾸면 누구도 마지막까지 남지 않아요. 마음을 지키는 데는 위로보다 <b>구조를 바꾸는 것</b>이 더 확실할 때가 많아요.'},
+        {t:'잘하는 사람이 먼저 원하는 친구를 고르기',ok:false,fb:'빠르게 정해지긴 해요. 다만 이 방식에서는 늘 마지막에 남는 사람이 생겨요. 하늘이가 오늘 겪은 게 바로 그 자리랍니다.'},
+        {t:'남은 사람은 아무 팀에나 빨리 넣어버리기',ok:false,fb:'시간은 아끼겠지만, "아무 데나"라는 말은 마음에 오래 남아요. 이름을 불러 초대하는 한마디가 큰 차이를 만들어요.'}]}},
+    {title:'장면 5. "괜찮아"라고 말하는데 목소리가 작은 친구',
+     scene:'"야, 너 괜찮아?" 친구가 물었어요. 서연이는 "응, 괜찮아"라고 대답했어요. 그런데 목소리가 평소보다 훨씬 작고, 눈을 마주치지 않아요. 대답은 "괜찮다"인데, 분위기는 괜찮아 보이지 않아요.',
+     clues:['🔊 평소보다 작은 목소리','👀 눈을 마주치지 않음','💬 "괜찮아"라는 말','😐 표정과 말이 다름'],
+     read:{
+        face:'눈을 마주치지 않아요. 눈이 말을 피할 때는, 마음도 아직 준비가 안 된 거예요.',
+        act:'몸이 살짝 돌아가 있거나 움츠러들어 있어요. 몸이 향한 방향은 마음이 향한 방향과 닮아 있어요.',
+        tone:'목소리가 평소보다 훨씬 작아요. <b>말과 목소리가 다를 때는 목소리 쪽이 진짜 마음일 때가 많아요.</b>'},
+     maybe:[
+        {e:'슬픔',w:'울음이 터질까 봐 짧게만 대답했을 수 있어요.'},
+        {e:'억울함',w:'설명하고 싶지만 어디서부터 말해야 할지 몰라 "괜찮아"로 덮었을 수 있어요.'},
+        {e:'불안',w:'말하면 일이 더 커질까 봐 조심하고 있는 걸 수도 있어요.'}],
+     quiz:{q:'"괜찮아"라고 했지만 괜찮아 보이지 않을 때, 어떻게 할까요?',opts:[
+        {t:'"괜찮아 보이지 않아서 그래. 말하고 싶어지면 언제든 얘기해" 하고 여지를 남기기',ok:true,fb:'아주 좋아요. 지금 답하지 않아도 된다는 <b>여지</b>를 주면, 나중에라도 마음을 꺼내기가 훨씬 쉬워져요.'},
+        {t:'괜찮다고 했으니 더 묻지 않고 넘어가기',ok:false,fb:'말을 존중한 건 좋아요. 다만 "언제든 말해도 돼"라는 한마디만 덧붙여도 서연이는 혼자가 아니라고 느낄 거예요.'},
+        {t:'"거짓말하지 마, 딱 봐도 아니잖아" 하고 계속 캐묻기',ok:false,fb:'걱정이 커서 나온 말이겠죠. 하지만 캐묻기는 문을 더 닫게 만들어요. 기다려 주는 것도 도와주는 방법이에요.'}]}},
+    {title:'장면 6. 준비물을 잊어버린 친구',
+     scene:'미술 시간이에요. 선생님이 "준비물 꺼내세요"라고 하셨어요. 다른 친구들은 신나게 꺼내는데, 현우는 가방을 뒤지다가 멈춰 버렸어요. 얼굴이 빨개지면서 책상 밑에 손을 숨기고 있어요.',
+     clues:['😳 얼굴이 빨개짐','🎒 가방 뒤지다 멈춤','✋ 손을 숨김','📦 준비물이 없음'],
+     read:{
+        face:'얼굴이 빨개졌어요. 얼굴이 붉어지는 건 <b>내 마음대로 조절할 수 없는 몸의 신호</b>예요. 그만큼 진짜 마음에 가까워요.',
+        act:'가방을 뒤지다 멈추고 손을 책상 밑에 숨겨요. 숨기는 행동은 "들키고 싶지 않아"라는 마음이에요.',
+        tone:'평소보다 조용해요. 소리를 내지 않으면 아무도 나를 보지 않을 거라고 생각했을 수 있어요.'},
+     maybe:[
+        {e:'당황',w:'준비했다고 생각했는데 없을 때, 머릿속이 하얘져요.'},
+        {e:'불안',w:'혼나거나 친구들이 알게 될까 봐 조마조마할 수 있어요.'},
+        {e:'슬픔',w:'챙기지 못한 사정이 따로 있었을 수도 있어요. 이유를 모른 채 판단하지 않는 게 중요해요.'}],
+     quiz:{q:'현우를 도와주는 가장 좋은 방법은 무엇일까요?',opts:[
+        {t:'조용히 다가가 "내 거 같이 쓸래?" 하고 말하기',ok:true,fb:'최고예요. <b>조용히</b> 도와주는 것이 핵심이에요. 도움을 받는 사람이 부끄럽지 않아야 진짜 도움이랍니다.'},
+        {t:'"선생님, 현우 준비물 안 가져왔어요!" 하고 알리기',ok:false,fb:'선생님께 알려서 도와주려던 마음이었죠. 그런데 큰 소리로 알리면 현우는 반 전체 앞에서 드러나게 돼요. 먼저 현우에게 물어보고, 필요하면 같이 가면 좋아요.'},
+        {t:'준비물 안 가져온 걸 가지고 장난치기',ok:false,fb:'장난이라도 이미 부끄러운 사람에게는 크게 아파요. 웃음 대신 손을 내밀어 주세요.'}]}},
+    {title:'장면 7. 조용히 그림만 그리고 있는 친구',
+     scene:'자유 시간이에요. 다른 아이들은 떠들며 놀고 있어요. 유나는 구석 자리에서 조용히 그림만 그리고 있어요. 가끔 지우개로 열심히 지웠다가 다시 그려요. 누가 말을 걸면 "아, 응..." 하고 짧게 대답하고 다시 그림에 집중해요.',
+     clues:['🎨 혼자 그림을 그림','🧽 자주 지우고 다시 그림','💬 짧은 대답','🪑 구석에 앉아있음'],
+     read:{
+        face:'그림에 푹 빠진 차분한 표정이에요. 찡그림도, 슬픔도 특별히 보이지 않아요.',
+        act:'지웠다가 다시 그려요. 마음에 들 때까지 하는 <b>몰입</b>일 수도 있고, 마음이 복잡해서일 수도 있어요.',
+        tone:'"아, 응…" 하고 짧게 대답해요. 짧은 대답이 늘 나쁜 신호인 건 아니에요. 지금 다른 일에 집중하고 있다는 뜻일 수도 있답니다.'},
+     maybe:[
+        {e:'안도',w:'조용한 시간이 편안해서 스스로 고른 자리일 수 있어요. 혼자 있는 것이 곧 외로움은 아니에요.'},
+        {e:'기쁨',w:'좋아하는 일에 빠져 있을 때도 말수가 줄어들어요.'},
+        {e:'외로움',w:'물론, 다가가고 싶은데 방법을 몰라 그림 뒤에 숨은 걸 수도 있어요.'}],
+     quiz:{q:'유나에게는 어떻게 하는 게 좋을까요?',opts:[
+        {t:'"멋지다! 다 그리면 보여줄래?" 하고 한마디 건넨 뒤 기다리기',ok:true,fb:'딱 좋아요. 문을 두드리되 밀고 들어가지 않는 방법이에요. 유나가 원하면 답할 거고, 아니어도 "관심받았다"는 느낌은 남아요.'},
+        {t:'그림을 가져가서 친구들에게 보여주기',ok:false,fb:'멋지다고 생각해서 그랬겠지만, 아직 보여줄 준비가 안 된 그림도 있어요. 먼저 물어봐 주세요.'},
+        {t:'"왜 혼자 있어? 이리 와" 하고 계속 부르기',ok:false,fb:'같이 놀고 싶은 마음이 예쁘네요. 다만 <b>혼자 있는 게 늘 외로운 건 아니에요.</b> 지금이 편한 시간일 수도 있으니 선택할 여지를 주면 좋아요.'}]}}
+];
+
+const CLUES=['표정','몸짓(자세)','목소리 톤','말의 내용','침묵(말 안 함)','주변 상황'];
+
+// ═══════════════════════════════════════════════════════
+// 📱 앱 상태
+// ═══════════════════════════════════════════════════════
+function newST(o){return Object.assign({room:'',nick:'',isTeacher:false,isSolo:false,storyIdx:0,epIdx:0,answers:[],care:{},reflection:null,draft:null,reflectDraft:null,review:false},o||{})}
+let ST=newST();
+let dashStudents={},unsubDash=null,createdCode='';
+
+// HTML 이스케이프 (닉네임·자유입력을 innerHTML에 넣을 때 반드시 사용)
+function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// ═══════════════════════════════════════════════════════
+// 🖥️ 화면 전환
+// ═══════════════════════════════════════════════════════
+window.showScreen=function(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+};
+
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000)}
+
+function showModal(title,msg,btns,isHtml){
+    document.getElementById('modalTitle').textContent=title;
+    const msgEl=document.getElementById('modalMsg');
+    if(isHtml){msgEl.innerHTML=msg}else{msgEl.textContent=msg}
+    const area=document.getElementById('modalBtns');area.innerHTML='';
+    btns.forEach(b=>{
+        const btn=document.createElement('button');
+        btn.className='btn '+(b.cls||'btn-p')+' btn-sm';
+        btn.textContent=b.text;
+        btn.onclick=()=>{document.getElementById('modalBg').classList.remove('show');if(b.fn)b.fn()};
+        area.appendChild(btn);
+    });
+    document.getElementById('modalBg').classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════════
+// 🏠 방 만들기 / 입장
+// ═══════════════════════════════════════════════════════
+window.createRoom=async function(){
+    await authReady;
+    const name=document.getElementById('crName').value.trim();
+    const pw=document.getElementById('crPw').value.trim();
+    if(!name){toast('⚠️ 닉네임을 입력하세요');return}
+    if(!/^\d{4}$/.test(pw)){toast('⚠️ 비밀번호는 숫자 4자리');return}
+    const code=String(Math.floor(100000+Math.random()*900000));
+    const exp=new Date();exp.setDate(exp.getDate()+30);
+    try{
+        await DB.saveRoom(code,{teacherName:name,password:await hashPassword(pw),createdAt:new Date().toISOString(),expiresAt:exp.toISOString()});
+        createdCode=code;
+        ST.room=code;ST.nick=name;ST.isTeacher=true;
+        document.getElementById('showCode').textContent=code;
+        showScreen('createdScreen');
+    }catch(e){toast('❌ 방 생성 실패: '+e.message)}
+};
+
+window.copyCode=async function(){
+    const code=createdCode||ST.room;
+    try{await navigator.clipboard.writeText(code);toast('✅ 코드가 복사되었습니다!')}
+    catch(e){
+        const ta=document.createElement('textarea');ta.value=code;ta.style.cssText='position:fixed;opacity:0';
+        document.body.appendChild(ta);ta.select();
+        try{document.execCommand('copy');toast('✅ 코드가 복사되었습니다!')}
+        catch(e2){toast('📋 코드: '+code+' (직접 복사해주세요)')}
+        document.body.removeChild(ta);
+    }
+};
+
+window.joinRoom=async function(){
+    await authReady;
+    const code=document.getElementById('inCode').value.trim();
+    const nick=document.getElementById('inNick').value.trim();
+    if(!/^\d{6}$/.test(code)){toast('⚠️ 방 코드는 숫자 6자리');return}
+    if(!nick){toast('⚠️ 닉네임을 입력하세요');return}
+    try{
+        const room=await DB.getRoom(code);
+        if(!room){toast('❌ 존재하지 않는 방입니다');return}
+        if(room.expiresAt&&new Date(room.expiresAt)<new Date()){
+            await DB.deleteRoom(code);toast('⏰ 만료된 방입니다');return;
+        }
+        const existing=await DB.getStudent(code,nick);
+        if(existing){
+            // 재입장: 차단하지 않고 이어하기 모달 표시
+            const doneEp=(existing.answers||[]).filter(Boolean).length;
+            showModal('🔍 다시 오셨군요!',
+                `<b>${esc(nick)}</b>님, 이전에 참여한 기록이 있어요!<br><br>`+
+                `🎭 마친 장면: ${doneEp} / ${EPISODES.length}개<br>`+
+                `🌟 성찰: ${existing.reflection?'완료':'아직'}<br><br>`+
+                `이어서 할까요?`,
+                [{text:'취소',cls:'btn-w'},{text:'이어하기',fn:async()=>{
+                    ST=newST({room:code,nick:nick});
+                    restoreStudentData(existing);
+                    try{await DB.saveStudent(code,nick,{lastVisit:new Date().toISOString()})}catch(err){console.error(err)}
+                    toast('🎉 '+nick+'님, 다시 오셨군요!');
+                    resumeActivity();
+                }}],true);
+            return;
+        }
+        ST=newST({room:code,nick:nick});
+        await DB.saveStudent(code,nick,{joinedAt:new Date().toISOString(),status:'진행중',answers:[],care:{},reflection:null});
+        startActivity();
+    }catch(e){toast('❌ 입장 실패: '+e.message)}
+};
+
+// ═══════════════════════════════════════════════════════
+// 비밀번호 단방향 해시 (구 버전 평문 방도 계속 열리도록 fallback 유지)
+// ═══════════════════════════════════════════════════════
+async function hashPassword(pw){
+    try{
+        const enc=new TextEncoder().encode(pw+'sel-salt-13');
+        const buf=await crypto.subtle.digest('SHA-256',enc);
+        return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }catch(e){return fallbackHash(pw)}                 // crypto.subtle 미지원 환경 (평문은 절대 저장하지 않는다)
+}
+function fallbackHash(pw){
+    const s=pw+'sel-salt-13';let h=0;
+    for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0}
+    return 'h'+Math.abs(h).toString(36);
+}
+async function passwordMatches(room,pw,code){
+    if(!room)return false;
+    const stored=room.password;
+    if(stored===await hashPassword(pw))return true;       // 신규(해시) 방
+    if(stored===fallbackHash(pw))return true;              // crypto 미지원 환경에서 만든 방
+    if(stored===pw){                                       // 구 버전 평문 방 호환
+        if(code){
+            try{await DB.saveRoom(code,{password:await hashPassword(pw)})}
+            catch(e){console.warn('pw upgrade fail:',e)}   // 업그레이드 실패해도 로그인은 통과
+        }
+        return true;
+    }
+    return false;
+}
+
+window.showTeacherLogin=function(){showScreen('teacherLoginScreen')};
+
+window.teacherLogin=async function(){
+    await authReady;
+    const code=document.getElementById('tCode').value.trim();
+    const pw=document.getElementById('tPw').value.trim();
+    if(!/^\d{6}$/.test(code)){toast('⚠️ 방 코드는 숫자 6자리');return}
+    if(!pw){toast('⚠️ 비밀번호를 입력하세요');return}
+    try{
+        const room=await DB.getRoom(code);
+        if(!room){toast('❌ 존재하지 않는 방입니다');return}
+        if(room.expiresAt&&new Date(room.expiresAt)<new Date()){
+            await DB.deleteRoom(code);toast('⏰ 만료된 방입니다');return;
+        }
+        if(!(await passwordMatches(room,pw,code))){toast('❌ 비밀번호가 틀렸습니다');return}
+        ST.room=code;ST.nick=room.teacherName;ST.isTeacher=true;
+        enterTeacherDashboard();
+    }catch(e){toast('❌ 로그인 실패: '+e.message)}
+};
+
+window.enterTeacherDashboard=function(){
+    document.getElementById('dashCode').textContent=ST.room;
+    showScreen('dashScreen');
+    loadDashboard();
+};
+
+window.startSolo=function(){
+    ST=newST({room:'solo',nick:'탐정',isSolo:true});
+    startActivity();
+};
+
+window.confirmGoHome=function(){
+    showModal('처음으로','처음 화면으로 돌아갈까요? 진행 중인 내용은 유지됩니다.',[
+        {text:'취소',cls:'btn-w'},{text:'돌아가기',fn:()=>{if(unsubDash){unsubDash();unsubDash=null}stopTTS();showScreen('mainScreen')}}
+    ]);
+};
+
+// ═══════════════════════════════════════════════════════
+// 📖 학생 활동 흐름
+// ═══════════════════════════════════════════════════════
+function startActivity(){
+    ST.storyIdx=0;ST.epIdx=0;ST.answers=[];ST.care={};ST.reflection=null;ST.draft=null;ST.reflectDraft=null;ST.review=false;
+    renderStory();
+    showScreen('storyScreen');
+}
+
+// ── 즉시 저장 (제출 시점이 아니라 입력·선택 즉시) ──
+let saveTimer=null;
+function saveNow(patch){
+    if(ST.isSolo||!ST.room||ST.isTeacher)return;
+    DB.saveStudent(ST.room,ST.nick,patch).catch(e=>console.error(e));
+}
+function saveSoon(patch){
+    if(ST.isSolo||!ST.room||ST.isTeacher)return;
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>saveNow(patch),700);
+}
+
+// 재입장 시 기존 데이터를 메모리에 복원
+function restoreStudentData(data){
+    const raw=Array.isArray(data.answers)?data.answers.slice(0,EPISODES.length):[];
+    ST.answers=raw;
+    ST.care=(data.care&&typeof data.care==='object')?data.care:{};
+    ST.reflection=data.reflection||null;
+    ST.reflectDraft=data.reflectDraft||null;
+    ST.draft=data.draft||null;
+    // 답한 장면 개수 = 실제로 채워진 칸 수
+    let n=0;while(n<EPISODES.length&&raw[n])n++;
+    ST.epIdx=Math.min(n,EPISODES.length);
+    ST.storyIdx=0;
+    ST.review=false;
+    selectedEmo=null;
+}
+
+// 성찰 화면 입력값 복원 (제출본 우선, 없으면 임시 저장분)
+function restoreReflectionInputs(){
+    renderClueGrid();
+    const src=ST.reflection||ST.reflectDraft;
+    const q1=document.getElementById('refQ1'),q3=document.getElementById('refQ3'),q4=document.getElementById('refQ4');
+    if(q1)q1.value=(src&&src.q1)||'';
+    if(q3)q3.value=(src&&src.q3)||'';
+    if(q4)q4.value=(src&&src.q4)||'';
+    const sel=(src&&src.clues)||[];
+    document.querySelectorAll('#clueGrid .emo-card').forEach(d=>{
+        if(sel.indexOf(d.textContent.trim())>=0)d.classList.add('selected');
+    });
+}
+
+function openReflectScreen(){
+    restoreReflectionInputs();
+    bindReflectDraft();
+    showScreen('reflectScreen');
+}
+
+// 이어하기: 중단된 지점으로 이동 (스토리는 건너뜀)
+function resumeActivity(){
+    if(ST.reflection){
+        restoreReflectionInputs();
+        renderMyResult();
+        showScreen('completeScreen');
+    }else if(ST.epIdx>=EPISODES.length){
+        openReflectScreen();
+    }else{
+        renderEpisode();
+        showScreen('episodeScreen');
+    }
+}
+
+// 완료 화면 → 장면 다시 살펴보기 (기록은 그대로 유지)
+window.backToMain=function(){
+    ST.review=true;ST.epIdx=0;
+    renderEpisode();
+    showScreen('episodeScreen');
+    toast('🔍 장면을 다시 살펴보고 답을 바꿔도 괜찮아요');
+};
+
+// 완료 화면 → 성찰 다시 쓰기
+window.editReflection=function(){
+    openReflectScreen();
+};
+
+function renderStory(){
+    const s=STORIES[ST.storyIdx];
+    const isLast=ST.storyIdx===STORIES.length-1;
+    let html=`<div class="story-box"><div style="font-size:2.4rem;text-align:center;margin-bottom:12px">${s.emoji}</div><div class="story-text">${s.text}</div>`;
+    if(s.check){html+=`<div class="story-check"><input type="checkbox" id="storyChk" onchange="storyCheckChanged()"><span>읽었어요 ✓</span></div>`}
+    html+=`</div>`;
+    document.getElementById('storyContent').innerHTML=html;
+    const btn=document.getElementById('storyNextBtn');
+    btn.textContent=isLast?'🔍 탐정 임무 시작!':'다음으로 ➜';
+    btn.disabled=s.check;
+}
+
+window.storyCheckChanged=function(){
+    document.getElementById('storyNextBtn').disabled=!document.getElementById('storyChk').checked;
+};
+
+window.nextStory=function(){
+    ST.storyIdx++;
+    if(ST.storyIdx>=STORIES.length){renderEpisode();showScreen('episodeScreen')}
+    else{renderStory()}
+};
+
+// ═══════════════════════════════════════════════════════
+// 🎭 에피소드
+// ═══════════════════════════════════════════════════════
+let selectedEmo=null;
+
+function renderEpisode(){
+    const ep=EPISODES[ST.epIdx];
+    const pct=Math.round(((ST.epIdx)/EPISODES.length)*100);
+    document.getElementById('epProgress').style.width=pct+'%';
+    document.getElementById('epProgressText').textContent=`${ST.epIdx+1} / ${EPISODES.length}`;
+
+    // 이전에 쓴 답 또는 임시 저장분 복원 (DOM까지 복원)
+    const saved=ST.answers[ST.epIdx]||null;
+    const dr=(ST.draft&&ST.draft.epIdx===ST.epIdx)?ST.draft:null;
+    const preName=saved?saved.emotion:(dr?dr.emotion:null);
+    const preReason=(saved?saved.reason:(dr?dr.reason:''))||'';
+    selectedEmo=null;
+    if(preName){const k=EMOTIONS.findIndex(e=>e.name===preName);if(k>=0)selectedEmo=k}
+
+    let html=`<div class="ep-title">${ep.title}</div>`;
+    html+=`<div class="ep-scene">${ep.scene}</div>`;
+    html+=`<div style="margin:10px 0"><span style="font-size:.85rem;font-weight:700;color:var(--pd)">🔍 단서들</span><br>`;
+    ep.clues.forEach(c=>{html+=`<span class="ep-clue">${c}</span>`});
+    html+=`</div>`;
+    html+=`<label style="margin-top:14px">이 친구의 감정은 어떨까요? (하나 선택)</label>`;
+    html+=`<div class="emo-grid">`;
+    EMOTIONS.forEach((e,i)=>{
+        html+=`<div class="emo-card${i===selectedEmo?' selected':''}" id="emo${i}" onclick="selectEmo(${i})"><div class="emo-icon">${e.icon}</div><div class="emo-name">${e.name}</div></div>`;
+    });
+    html+=`</div>`;
+    html+=`<div style="margin-top:14px"><label>왜 그렇게 생각했나요? (단서를 바탕으로 적어주세요)</label>`;
+    html+=`<textarea id="epReason" placeholder="예: 눈을 피하고 말이 없어서 외로워 보였어요" oninput="checkEpReady()">${esc(preReason)}</textarea></div>`;
+    html+=`<button class="btn btn-p" id="epNextBtn" onclick="submitEpisode()" disabled style="margin-top:12px">다음 장면으로 ➜</button>`;
+    document.getElementById('epContent').innerHTML=html;
+    checkEpReady(true);
+}
+
+window.selectEmo=function(i){
+    selectedEmo=i;
+    // ⚠️ 반드시 에피소드 영역으로 한정 (성찰 화면의 단서 카드까지 건드리지 않도록)
+    document.querySelectorAll('#epContent .emo-card').forEach((c,j)=>{c.classList.toggle('selected',j===i)});
+    checkEpReady();
+};
+
+window.checkEpReady=function(skipSave){
+    const ta=document.getElementById('epReason');
+    const reason=ta?ta.value.trim():'';
+    const btn=document.getElementById('epNextBtn');
+    if(btn)btn.disabled=!(selectedEmo!==null&&reason&&reason.length>=2);
+    if(skipSave===true)return;
+    // 제출 전이라도 선택·입력 즉시(디바운스) 저장 → 중간 이탈해도 유실 없음
+    ST.draft={epIdx:ST.epIdx,emotion:selectedEmo!==null?EMOTIONS[selectedEmo].name:'',reason:reason};
+    saveSoon({draft:ST.draft});
+};
+
+window.submitEpisode=async function(){
+    const reason=document.getElementById('epReason').value.trim();
+    const emo=EMOTIONS[selectedEmo];
+    ST.answers[ST.epIdx]={episode:ST.epIdx,emotion:emo.name,emotionIcon:emo.icon,reason,timestamp:new Date().toISOString()};
+    ST.draft=null;
+    clearTimeout(saveTimer);
+
+    const answered=ST.answers.filter(Boolean).length;
+    if(!ST.isSolo){
+        try{await DB.saveStudent(ST.room,ST.nick,{answers:ST.answers,draft:null,status:ST.reflection?'완료':(answered>=EPISODES.length?'성찰중':'진행중')})}catch(e){console.error(e)}
+    }
+    renderEpisodeFeedback();
+    window.scrollTo(0,0);
+};
+
+// ═══════════════════════════════════════════════════════
+// 🔎 단서 풀이 + 피드백 + 선택형 보조 활동 (응답 제출 후에만 표시)
+// ═══════════════════════════════════════════════════════
+function renderEpisodeFeedback(){
+    const ep=EPISODES[ST.epIdx];
+    const mine=ST.answers[ST.epIdx];
+    const isLast=ST.epIdx>=EPISODES.length-1;
+    const matched=(ep.maybe||[]).some(m=>m.e===mine.emotion);
+
+    let html=`<div class="ep-title">${ep.title}</div>`;
+    html+=`<div class="fb-mine">🕵️ 내가 읽은 마음: <b>${esc(mine.emotionIcon)} ${esc(mine.emotion)}</b><br><span style="color:var(--sub)">내가 쓴 이유: ${esc(mine.reason)}</span></div>`;
+
+    // 1) 표정·행동·말투 단서 풀이
+    html+=`<div class="fb-box"><div class="fb-h">🔎 감정 읽기 단서 풀이</div>`;
+    html+=`<div class="fb-row"><b>표정</b> ${ep.read.face}</div>`;
+    html+=`<div class="fb-row"><b>행동</b> ${ep.read.act}</div>`;
+    html+=`<div class="fb-row"><b>말투</b> ${ep.read.tone}</div></div>`;
+
+    // 2) 가능한 감정들 (정답이 아니라 '가능성')
+    html+=`<div class="fb-box fb-alt"><div class="fb-h">💭 이런 마음일 수도 있어요</div>`;
+    (ep.maybe||[]).forEach(m=>{html+=`<div class="fb-row"><b>${m.e}</b> — ${m.w}</div>`});
+    html+=`<div class="fb-note">`;
+    html+=matched
+        ? `여러분이 고른 <b>${esc(mine.emotion)}</b>, 많은 친구들도 이 장면에서 같은 마음을 떠올려요. 단서를 잘 읽었네요!`
+        : `여러분은 <b>${esc(mine.emotion)}</b>이라고 읽었네요. 여기 적힌 것 말고도 마음은 얼마든지 다를 수 있어요. 다른 친구들이 놓친 것을 본 걸지도 몰라요.`;
+    html+=`<br><br>감정에는 <b>정답이 없어요.</b> 우리가 하는 건 맞히기가 아니라 <b>궁금해하기</b>랍니다. 진짜 마음은 그 친구에게 조심스럽게 물어봐야 알 수 있어요.</div></div>`;
+
+    // 3) 선택형 보조 활동 (쓰기 없음, 건너뛰어도 됨)
+    if(ep.quiz){
+        html+=`<div class="fb-box fb-quiz" id="quizBox"><div class="fb-h">🎯 한 걸음 더 (선택)</div>`;
+        html+=`<div class="quiz-q">${ep.quiz.q}</div>`;
+        const picked=ST.care[ST.epIdx];
+        ep.quiz.opts.forEach((o,i)=>{
+            html+=`<button class="quiz-opt${picked&&picked.idx===i?' picked':''}" data-qi="${i}" onclick="answerQuiz(${i})">${o.t}</button>`;
+        });
+        html+=`<div id="quizFb"></div>`;
+        html+=`<div class="skip-note">답을 바꿔가며 눌러봐도 좋아요. 건너뛰어도 괜찮아요.</div></div>`;
+    }
+
+    html+=`<button class="btn btn-p" onclick="nextEpisode()" style="margin-top:12px">${isLast?'🌟 성찰하러 가기':'다음 장면으로 ➜'}</button>`;
+    html+=`<div style="height:10px"></div>`;
+    html+=`<button class="btn btn-w" onclick="reopenEpisode()">✏️ 내 답 다시 고르기</button>`;
+    document.getElementById('epContent').innerHTML=html;
+
+    if(ep.quiz&&ST.care[ST.epIdx])showQuizFeedback(ST.care[ST.epIdx].idx);
+}
+
+function showQuizFeedback(i){
+    const ep=EPISODES[ST.epIdx];
+    const o=ep.quiz.opts[i];if(!o)return;
+    const area=document.getElementById('quizFb');if(!area)return;
+    area.innerHTML=`<div class="quiz-fb">${o.ok?'💛 ':'🤔 '}${o.fb}</div>`;
+}
+
+window.answerQuiz=function(i){
+    const ep=EPISODES[ST.epIdx];if(!ep.quiz)return;
+    const o=ep.quiz.opts[i];if(!o)return;
+    ST.care[ST.epIdx]={idx:i,text:o.t,ok:!!o.ok};
+    document.querySelectorAll('#quizBox .quiz-opt').forEach(b=>{
+        b.classList.toggle('picked',Number(b.getAttribute('data-qi'))===i);
+    });
+    showQuizFeedback(i);
+    saveSoon({care:ST.care});
+};
+
+window.reopenEpisode=function(){
+    renderEpisode();
+    window.scrollTo(0,0);
+};
+
+window.nextEpisode=function(){
+    const answered=ST.answers.filter(Boolean).length;
+    if(ST.epIdx>=EPISODES.length-1){
+        if(ST.reflection||(ST.review&&answered>=EPISODES.length)){
+            renderMyResult();
+            showScreen('completeScreen');
+        }else{
+            openReflectScreen();
+        }
+        return;
+    }
+    ST.epIdx++;
+    renderEpisode();
+    window.scrollTo(0,0);
+};
+
+function renderClueGrid(){
+    const grid=document.getElementById('clueGrid');
+    grid.innerHTML='';
+    CLUES.forEach((c,i)=>{
+        const d=document.createElement('div');
+        d.className='emo-card';d.id='clue'+i;
+        d.innerHTML=`<div class="emo-name">${esc(c)}</div>`;
+        d.onclick=()=>{d.classList.toggle('selected');collectReflectDraft()};
+        grid.appendChild(d);
+    });
+}
+
+// 성찰 입력값도 제출 전에 즉시(디바운스) 저장 → 중간 이탈해도 유실 없음
+let reflectBound=false;
+function bindReflectDraft(){
+    if(reflectBound)return;
+    ['refQ1','refQ3','refQ4'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el)el.addEventListener('input',collectReflectDraft);
+    });
+    reflectBound=true;
+}
+function readReflectInputs(){
+    const g=id=>{const e=document.getElementById(id);return e?e.value.trim():''};
+    const clues=[];document.querySelectorAll('#clueGrid .emo-card.selected').forEach(d=>{clues.push(d.textContent.trim())});
+    return {q1:g('refQ1'),clues,q3:g('refQ3'),q4:g('refQ4')};
+}
+function collectReflectDraft(){
+    ST.reflectDraft=readReflectInputs();
+    saveSoon({reflectDraft:ST.reflectDraft});
+}
+
+window.submitReflection=async function(){
+    const {q1,clues,q3,q4}=readReflectInputs();
+    if(!q1){toast('⚠️ 가장 마음이 쓰인 친구를 적어주세요');return}
+    if(!q4){toast('⚠️ 느낀 점을 적어주세요');return}
+    ST.reflection={q1,clues,q3,q4};
+    ST.reflectDraft=null;
+    clearTimeout(saveTimer);
+    if(!ST.isSolo){
+        try{await DB.saveStudent(ST.room,ST.nick,{reflection:ST.reflection,reflectDraft:null,care:ST.care,status:'완료',completedAt:new Date().toISOString()})}catch(e){console.error(e)}
+    }
+    renderMyResult();
+    showScreen('completeScreen');
+};
+
+// ═══════════════════════════════════════════════════════
+// 📋 내 결과 보기
+// ═══════════════════════════════════════════════════════
+function renderMyResult(){
+    let html=`<div style="text-align:left;margin-top:16px"><div style="font-weight:900;color:var(--pd);font-size:1.05rem;margin-bottom:14px">📋 나의 마음 읽기 기록</div>`;
+    ST.answers.forEach((a,i)=>{
+        if(!a)return;
+        const ep=EPISODES[i];
+        html+=`<div class="result-card"><div class="r-title">${esc(ep?ep.title:'장면 '+(i+1))}</div><div class="r-body">${esc(a.emotionIcon)} <b>${esc(a.emotion)}</b><br>이유: ${esc(a.reason)}`;
+        const c=ST.care[i];
+        if(c)html+=`<br>따뜻한 선택: ${esc(c.text)}`;
+        html+=`</div></div>`;
+    });
+    const careCnt=Object.values(ST.care||{}).filter(c=>c&&c.ok).length;
+    const careTried=Object.keys(ST.care||{}).length;
+    if(careTried){
+        html+=`<div class="result-card"><div class="r-title">🎯 한 걸음 더 (선택 활동)</div><div class="r-body">${careTried}개 장면에서 골라봤어요. 그중 ${careCnt}개는 친구의 마음을 지켜주는 선택이었어요. 정답을 맞히는 것보다, 이렇게 <b>한 번 더 생각해 본 것</b>이 더 중요해요.</div></div>`;
+    }
+    if(ST.reflection){
+        html+=`<div class="result-card"><div class="r-title">🌟 나의 성찰</div><div class="r-body">
+        마음 쓰인 친구: ${esc(ST.reflection.q1)}<br>
+        도움이 된 단서: ${esc((ST.reflection.clues||[]).join(', '))||'미선택'}<br>
+        친구에게 해줄 말: ${esc(ST.reflection.q3)||'(없음)'}<br>
+        느낀 점: ${esc(ST.reflection.q4)}</div></div>`;
+    }
+    html+=`</div>`;
+    document.getElementById('myResultArea').innerHTML=html;
+}
+
+window.downloadMyResult=function(){
+    let t=`🔍 마음 읽기 탐정단 - 나의 활동 기록\n닉네임: ${ST.nick}\n날짜: ${new Date().toLocaleString('ko-KR')}\n${'='.repeat(40)}\n\n`;
+    ST.answers.forEach((a,i)=>{
+        if(!a)return;
+        t+=`📌 ${EPISODES[i]?EPISODES[i].title:'장면 '+(i+1)}\n  감정: ${a.emotion}\n  이유: ${a.reason}\n`;
+        if(ST.care[i])t+=`  따뜻한 선택: ${ST.care[i].text}\n`;
+        t+=`\n`;
+    });
+    if(ST.reflection){
+        t+=`${'='.repeat(40)}\n🌟 나의 성찰\n  마음 쓰인 친구: ${ST.reflection.q1}\n  단서: ${(ST.reflection.clues||[]).join(', ')}\n  친구에게: ${ST.reflection.q3}\n  느낀 점: ${ST.reflection.q4}\n`;
+    }
+    t+=`\n${'='.repeat(40)}\n💡 기억해요\n  · "왜 저래?" 대신 "무슨 일이 있었을까?"\n  · 추측만 하지 말고, 조심스럽게 물어보기\n  · 감정에는 정답이 없어요\n`;
+    const blob=new Blob(['\ufeff'+t],{type:'text/plain;charset=utf-8'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download=`마음읽기탐정단_${ST.nick}_${new Date().toISOString().slice(0,10)}.txt`;a.click();
+    toast('📄 기록이 저장되었어요!');
+};
+
+// ═══════════════════════════════════════════════════════
+// 👨‍🏫 교사 대시보드
+// ═══════════════════════════════════════════════════════
+function loadDashboard(){
+    if(unsubDash){unsubDash();unsubDash=null}
+    unsubDash=DB.onStudents(ST.room,(students)=>{
+        dashStudents=students;
+        renderDashAll();
+    });
+}
+
+window.refreshDash=async function(){
+    // 새로고침은 팝업/토스트 없이 조용히 갱신
+    try{dashStudents=await DB.getAllStudents(ST.room);renderDashAll()}catch(e){console.error(e)}
+};
+
+function renderDashAll(){
+    const entries=Object.entries(dashStudents);
+    const total=entries.length;
+    const done=entries.filter(([,d])=>d.status==='완료').length;
+    const prog=total-done;
+    document.getElementById('dTotal').textContent=total;
+    document.getElementById('dDone').textContent=done;
+    document.getElementById('dProg').textContent=prog;
+    const pct=total?Math.round((done/total)*100):0;
+    document.getElementById('dBar').style.width=pct+'%';
+    document.getElementById('dBarText').textContent=`완료율 ${pct}%`;
+    renderResultTable(entries);
+    renderCharts(entries);
+    renderTTSList();
+}
+
+function renderResultTable(entries){
+    if(!entries.length){document.getElementById('resultTableArea').innerHTML='<p style="color:var(--sub);font-size:.88rem;font-weight:400">아직 참여한 학생이 없습니다.</p>';return}
+    let html=`<div style="overflow-x:auto"><table class="dash-table"><thead><tr><th>닉네임</th><th>상태</th><th>감정 응답</th><th>한걸음더</th><th>성찰</th></tr></thead><tbody>`;
+    entries.forEach(([nick,d])=>{
+        const emotions=(d.answers||[]).filter(Boolean).map(a=>`${a.emotionIcon||''} ${a.emotion}`).join(', ')||'-';
+        const refl=d.reflection?'✅':'⏳';
+        const care=d.care&&typeof d.care==='object'?Object.keys(d.care).length:0;
+        html+=`<tr><td>${esc(nick)}</td><td>${esc(d.status||'진행중')}</td><td style="font-size:.78rem;font-weight:400">${esc(emotions)}</td><td>${care}/${EPISODES.length}</td><td>${refl}</td></tr>`;
+    });
+    html+=`</tbody></table></div>`;
+
+    // 학생별 상세 펼치기
+    html+=`<div style="margin-top:14px">`;
+    entries.forEach(([nick,d])=>{
+        const ans=(d.answers||[]).filter(Boolean);
+        if(!ans.length)return;
+        html+=`<details style="margin-bottom:8px"><summary style="cursor:pointer;font-weight:700;color:var(--pd);font-size:.9rem">${esc(nick)} 상세보기</summary><div style="padding:8px;font-size:.82rem;font-weight:400;line-height:1.7">`;
+        (d.answers||[]).forEach((a,i)=>{
+            if(!a)return;
+            html+=`<div style="margin-bottom:6px"><b>${esc(EPISODES[i]?EPISODES[i].title:'장면'+(i+1))}</b>: ${esc(a.emotionIcon||'')} ${esc(a.emotion)} — ${esc(a.reason)}`;
+            const c=d.care&&d.care[i];
+            if(c&&c.text)html+=`<br><span style="color:var(--sub)">↳ 한 걸음 더: ${esc(c.text)}</span>`;
+            html+=`</div>`;
+        });
+        if(d.reflection){
+            html+=`<div style="border-top:1px solid #ddd;padding-top:6px;margin-top:6px"><b>🌟 성찰:</b> ${esc(d.reflection.q1)} / 단서: ${esc((d.reflection.clues||[]).join(', '))} / 친구에게: ${esc(d.reflection.q3)} / 느낀 점: ${esc(d.reflection.q4)}</div>`;
+        }
+        html+=`</div></details>`;
+    });
+    html+=`</div>`;
+    document.getElementById('resultTableArea').innerHTML=html;
+}
+
+function renderCharts(entries){
+    // 감정 분포 막대 차트
+    const emoCounts={};
+    entries.forEach(([,d])=>{
+        (d.answers||[]).forEach(a=>{if(a&&a.emotion)emoCounts[a.emotion]=(emoCounts[a.emotion]||0)+1});
+    });
+    const canvas=document.getElementById('emoChart');
+    const ctx=canvas.getContext('2d');
+    const cw=(canvas.parentElement&&canvas.parentElement.clientWidth)||0;
+    canvas.width=Math.max(280,cw-24);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    const sorted=Object.entries(emoCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    if(!sorted.length){ctx.fillStyle='#9CA3AF';ctx.font='14px Noto Sans KR';ctx.fillText('데이터 수집 중...',10,100);return}
+    const maxVal=Math.max(...sorted.map(s=>s[1]));
+    const gap=6;const leftPad=70;
+    const barH=Math.max(10,Math.min(18,Math.floor((canvas.height-20)/sorted.length)-gap));
+    const w=canvas.width-leftPad-20;
+
+    sorted.forEach(([name,cnt],i)=>{
+        const y=10+i*(barH+gap);
+        const barW=maxVal?(cnt/maxVal)*w:0;
+        ctx.fillStyle='#7C3AED';
+        ctx.fillRect(leftPad,y,barW,barH);
+        ctx.fillStyle='#1E1B4B';ctx.font='bold 13px Noto Sans KR';ctx.textAlign='right';
+        ctx.fillText(name,leftPad-8,y+14);
+        ctx.fillStyle='#fff';ctx.textAlign='left';
+        if(barW>30)ctx.fillText(cnt,leftPad+4,y+14);
+        else{ctx.fillStyle='#1E1B4B';ctx.fillText(cnt,leftPad+barW+4,y+14)}
+    });
+
+    // 워드클라우드
+    const words={};
+    entries.forEach(([,d])=>{
+        (d.answers||[]).forEach(a=>{
+            if(a&&a.reason){
+                a.reason.replace(/[.,!?]/g,' ').split(/\s+/).forEach(w=>{
+                    if(w.length>=2)words[w]=(words[w]||0)+1;
+                });
+            }
+        });
+        if(d.reflection){
+            [d.reflection.q1,d.reflection.q3,d.reflection.q4].forEach(t=>{
+                if(t)t.replace(/[.,!?]/g,' ').split(/\s+/).forEach(w=>{if(w.length>=2)words[w]=(words[w]||0)+1});
+            });
+        }
+    });
+    const wcArea=document.getElementById('wordCloud');
+    const wSorted=Object.entries(words).sort((a,b)=>b[1]-a[1]).slice(0,30);
+    if(!wSorted.length){wcArea.innerHTML='<span style="color:var(--sub);font-size:.85rem;font-weight:400">데이터 수집 중...</span>';return}
+    const wMax=wSorted[0][1];
+    const colors=['#7C3AED','#A78BFA','#5B21B6','#C4B5FD','#4C1D95','#8B5CF6','#6D28D9'];
+    wcArea.innerHTML=wSorted.map(([word,cnt])=>{
+        const size=Math.max(12,Math.min(28,12+(cnt/wMax)*16));
+        const color=colors[Math.floor(Math.random()*colors.length)];
+        const opacity=0.5+(cnt/wMax)*0.5;
+        return `<span class="wc-word" style="font-size:${size}px;color:${color};opacity:${opacity}">${esc(word)}</span>`;
+    }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// 📥 엑셀 다운로드
+// ═══════════════════════════════════════════════════════
+window.downloadExcel=function(){
+    const entries=Object.entries(dashStudents);
+    if(!entries.length){toast('⚠️ 데이터가 없습니다');return}
+    const header=['닉네임','상태','참여시간'];
+    EPISODES.forEach((_,i)=>{header.push(`장면${i+1}_감정`);header.push(`장면${i+1}_이유`)});
+    header.push('한걸음더_참여수','한걸음더_따뜻한선택수','성찰_마음쓰인친구','성찰_단서','성찰_친구에게','성찰_느낀점');
+
+    const rows=[header];
+    entries.forEach(([nick,d])=>{
+        const row=[nick,d.status||'진행중',d.joinedAt||''];
+        EPISODES.forEach((_,i)=>{
+            const a=(d.answers||[])[i];
+            row.push(a?a.emotion:'');row.push(a?a.reason:'');
+        });
+        const care=(d.care&&typeof d.care==='object')?d.care:{};
+        row.push(Object.keys(care).length,Object.values(care).filter(c=>c&&c.ok).length);
+        const r=d.reflection;
+        row.push(r?r.q1:'',r?(r.clues||[]).join(', '):'',r?r.q3:'',r?r.q4:'');
+        rows.push(row);
+    });
+
+    try{
+        const ws=XLSX.utils.aoa_to_sheet(rows);
+        const wb=XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb,ws,'참여결과');
+        XLSX.writeFile(wb,`마음읽기탐정단_${ST.room}_${new Date().toISOString().slice(0,10)}.xlsx`);
+        toast('📥 엑셀 파일이 다운로드됩니다!');
+    }catch(e){
+        // CSV fallback
+        const csv=rows.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\n');
+        const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+        const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+        a.download=`마음읽기탐정단_${ST.room}.csv`;a.click();
+        toast('📥 CSV 파일이 다운로드됩니다!');
+    }
+};
+
+// ═══════════════════════════════════════════════════════
+// 🔊 TTS (교사 전용)
+// ═══════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════
+// 📄 PDF 다운로드 - dashStudents에서 HTML 직접 빌드 -> 새 창 인쇄
+// (jsPDF/html2canvas 미사용, innerHTML 복사 안 함, 에러 메시지 미표시)
+// ═════════════════════════════════════════════════════
+window.downloadPDF=function(){
+    const entries=Object.entries(dashStudents);
+    if(!entries.length){toast('⚠️ 데이터가 없습니다');return}
+    const total=entries.length;
+    const done=entries.filter(([,d])=>d.status==='완료').length;
+    const pct=total?Math.round(done/total*100):0;
+    const emoCounts={};
+    entries.forEach(([,d])=>{(d.answers||[]).forEach(a=>{if(a&&a.emotion)emoCounts[a.emotion]=(emoCounts[a.emotion]||0)+1})});
+    const sortedEmo=Object.entries(emoCounts).sort((a,b)=>b[1]-a[1]);
+    const emoTotal=sortedEmo.reduce((t,x)=>t+x[1],0);
+
+    let body='';
+    body+='<div class="card"><h3>📊 참여 현황</h3><p>총 참여 '+total+'명 / 완료 '+done+'명 / 진행 중 '+(total-done)+'명 (완료율 '+pct+'%)</p></div>';
+
+    body+='<div class="card"><h3>😊 감정 분포</h3>';
+    if(sortedEmo.length){
+        body+='<table><tr><th>감정</th><th>선택 수</th><th>비율</th></tr>';
+        sortedEmo.forEach(([n,c])=>{body+='<tr><td>'+esc(n)+'</td><td>'+c+'</td><td>'+(emoTotal?Math.round(c/emoTotal*100):0)+'%</td></tr>'});
+        body+='</table>';
+    }else{body+='<p>아직 응답이 없습니다.</p>'}
+    body+='</div>';
+
+    // 선택형 보조 활동(한 걸음 더) 참여 현황
+    let careTried=0,careWarm=0,careMax=total*EPISODES.length;
+    entries.forEach(([,d])=>{
+        const c=(d.care&&typeof d.care==='object')?d.care:{};
+        careTried+=Object.keys(c).length;
+        careWarm+=Object.values(c).filter(x=>x&&x.ok).length;
+    });
+    body+='<div class="card"><h3>🎯 한 걸음 더 (선택 활동) 참여</h3>';
+    body+='<p>선택 활동 응답 '+careTried+'건 / 최대 '+careMax+'건, 그중 친구의 마음을 지켜주는 선택 '+careWarm+'건</p>';
+    body+='<p style="font-size:11px;color:#6B7280">※ 점수가 아니라 참여 지표입니다. 감정 읽기에는 정답이 없습니다.</p></div>';
+
+    body+='<div class="card"><h3>📋 학생별 상세 기록</h3><table><tr><th>닉네임</th><th>상태</th><th>참여시간</th>';
+    EPISODES.forEach((_,i)=>{body+='<th>장면'+(i+1)+' 감정</th><th>장면'+(i+1)+' 이유</th>'});
+    body+='<th>한걸음더</th><th>마음 쓰인 친구</th><th>도움된 단서</th><th>친구에게</th><th>느낀 점</th></tr>';
+    entries.forEach(([nick,d])=>{
+        body+='<tr><td>'+esc(nick)+'</td><td>'+esc(d.status||'진행중')+'</td><td>'+(d.joinedAt?esc(new Date(d.joinedAt).toLocaleString('ko-KR')):'-')+'</td>';
+        EPISODES.forEach((_,i)=>{const a=(d.answers||[])[i];body+='<td>'+(a?esc(a.emotion):'')+'</td><td>'+(a?esc(a.reason):'')+'</td>'});
+        const c=(d.care&&typeof d.care==='object')?d.care:{};
+        body+='<td>'+Object.keys(c).length+'/'+EPISODES.length+'</td>';
+        const r=d.reflection;
+        body+='<td>'+(r?esc(r.q1):'')+'</td><td>'+(r?esc((r.clues||[]).join(', ')):'')+'</td><td>'+(r?esc(r.q3):'')+'</td><td>'+(r?esc(r.q4):'')+'</td></tr>';
+    });
+    body+='</table></div>';
+
+    const head='<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">'+
+        '<meta name="viewport" content="width=device-width,initial-scale=1.0">'+
+        '<title>마음 읽기 탐정단 - 대시보드 출력</title>'+
+        '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">'+
+        '<style>'+
+        '@page{size:A4 landscape;margin:12mm}'+
+        '*{font-family:\'Noto Sans KR\',sans-serif;margin:0;padding:0;box-sizing:border-box}'+
+        'body{padding:20px;font-size:13px;color:#1F2937;line-height:1.6}'+
+        '.print-header{text-align:center;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #7C3AED}'+
+        '.print-header h2{color:#7C3AED;font-size:19px;margin-bottom:4px}'+
+        '.print-header p{color:#6B7280;font-size:12px;font-weight:400}'+
+        '.card{border:1px solid #E5E7EB;border-radius:10px;padding:14px;margin:10px 0;page-break-inside:avoid}'+
+        'table{width:100%;border-collapse:collapse;margin:8px 0}'+
+        'th,td{border:1px solid #E5E7EB;padding:6px 8px;text-align:left;font-size:11px;vertical-align:top;word-break:break-all}'+
+        'th{background:#F3F4F6;font-weight:700}'+
+        'h3{color:#7C3AED;font-size:15px;margin:4px 0 8px}'+
+        '.print-guide{background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:10px;margin-bottom:14px;font-size:12px;text-align:center}'+
+        '@media print{.print-guide{display:none}}'+
+        '</style></head><body>'+
+        '<div class="print-guide">💡 <b>PDF로 저장하려면:</b> 인쇄 대화상자에서 "대상"을 <b>"PDF로 저장"</b>으로 선택하세요.</div>'+
+        '<div class="print-header"><h2>📊 마음 읽기 탐정단 - 참여 결과</h2>'+
+        '<p>방 코드: '+esc(ST.room)+' | 출력: '+new Date().toLocaleString('ko-KR')+'</p></div>';
+    const tail='<scr'+'ipt>setTimeout(function(){window.print()},900);</scr'+'ipt></body></html>';
+
+    try{
+        const w=window.open('','_blank');
+        if(w){
+            w.document.write(head+body+tail);
+            w.document.close();
+            toast('📄 새 창에서 "PDF로 저장"을 선택하세요');
+            return;
+        }
+    }catch(e){console.log('[PDF] 새 창 방식 사용 불가')}
+
+    try{
+        toast('📄 인쇄 대화상자에서 "PDF로 저장"을 선택해주세요');
+        setTimeout(function(){window.print()},500);
+        return;
+    }catch(e){console.log('[PDF] window.print 사용 불가')}
+
+    toast('📄 Ctrl+P (Mac ⌘+P)를 눌러 PDF로 저장해주세요');
+};
+
+let ttsUtterance=null,ttsSpeaking=false;
+
+const stripTags=s=>String(s||'').replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,'');
+const TTS_SECTIONS={
+    'intro':{label:'📖 오프닝 스토리',text:STORIES.map(s=>stripTags(s.text)).join('\n\n')},
+    ...Object.fromEntries(EPISODES.map((ep,i)=>[
+        'ep'+i,{label:`🎭 ${ep.title}`,text:`${ep.title}\n${ep.scene}\n단서: ${ep.clues.join(', ')}`}
+    ])),
+    ...Object.fromEntries(EPISODES.map((ep,i)=>[
+        'clue'+i,{label:`🔎 단서 풀이 ${i+1}`,text:
+            `${ep.title} 단서 풀이\n`+
+            `표정: ${stripTags(ep.read.face)}\n`+
+            `행동: ${stripTags(ep.read.act)}\n`+
+            `말투: ${stripTags(ep.read.tone)}\n\n`+
+            `이런 마음일 수도 있어요.\n`+
+            (ep.maybe||[]).map(m=>`${m.e}: ${stripTags(m.w)}`).join('\n')+
+            `\n\n한 걸음 더. ${ep.quiz?ep.quiz.q:''}`}
+    ])),
+    'reflect':{label:'🌟 성찰 안내',text:
+        '이제 마음 읽기 탐정의 성찰 시간이에요.\n'+
+        '오늘 가장 마음이 쓰인 친구는 누구였나요? 그 장면과 이유를 적어보세요.\n'+
+        '감정을 읽는 데 어떤 단서가 도움이 되었나요? 표정, 몸짓, 목소리 톤, 말의 내용, 침묵, 주변 상황 중에서 골라보세요.\n'+
+        '마음이 쓰인 친구에게 해주고 싶은 말이 있다면 한마디 적어주세요.\n'+
+        '마지막으로 오늘 활동을 통해 느낀 점을 자유롭게 적어주세요.'},
+    'closing':{label:'💡 마무리 정리',text:
+        '훌륭한 마음 읽기 탐정이에요.\n'+
+        '감정을 정확히 맞히지 않아도 괜찮아요. 중요한 것은 관심을 가지고 바라보았다는 것이에요.\n'+
+        '기억해요. 왜 저래 대신 무슨 일이 있었을까라고 생각해 보기.\n'+
+        '추측만 하지 말고, 조심스럽게 물어보기.\n'+
+        '같은 상황도 사람마다 다르게 느낄 수 있어요.'}
+};
+
+function renderTTSList(){
+    const area=document.getElementById('ttsList');
+    area.innerHTML=Object.entries(TTS_SECTIONS).map(([key,sec])=>{
+        return `<div class="tts-section">
+            <div style="font-weight:700;font-size:.88rem;color:var(--pd)">${esc(sec.label)}</div>
+            <div class="tts-row">
+                <button class="btn btn-p btn-sm" onclick="playTTS('${key}')" style="padding:6px 12px;font-size:.78rem">▶ 읽기</button>
+                <button class="btn btn-o btn-sm" onclick="previewScript('${key}')" style="padding:6px 12px;font-size:.78rem">📝 스크립트</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+window.playTTS=function(key){
+    window.speechSynthesis.cancel();
+    const sec=TTS_SECTIONS[key];if(!sec)return;
+    ttsUtterance=new SpeechSynthesisUtterance(sec.text);
+    ttsUtterance.lang='ko-KR';ttsUtterance.rate=0.9;
+    ttsUtterance.onend=()=>{ttsSpeaking=false};
+    window.speechSynthesis.speak(ttsUtterance);
+    ttsSpeaking=true;
+    toast('🔊 '+sec.label+' 읽는 중...');
+};
+
+window.stopTTS=function(){
+    window.speechSynthesis.cancel();ttsSpeaking=false;
+    toast('⏹ 음성 정지');
+};
+
+window.previewScript=function(key){
+    const sec=TTS_SECTIONS[key];if(!sec)return;
+    showModal('📝 '+sec.label,sec.text,[{text:'닫기',cls:'btn-w'}]);
+};
+
+// ═══════════════════════════════════════════════════════
+// 🗑️ 데이터 초기화
+// ═══════════════════════════════════════════════════════
+window.confirmReset=function(){
+    showModal('🗑️ 데이터 초기화',
+        '이 방의 학생 응답 기록이 모두 삭제됩니다.\n이 작업은 되돌릴 수 없어요!\n\n'+
+        '✅ 방 코드와 교사 비밀번호는 그대로 유지되므로,\n같은 코드로 다음 수업을 이어서 진행할 수 있어요.',[
+        {text:'취소',cls:'btn-w'},{text:'삭제하기',cls:'btn-d',fn:async()=>{
+            try{
+                // ⚠️ 방 문서(비밀번호·만료일)는 보존하고 학생 subcollection만 삭제한다
+                await DB.clearStudents(ST.room);
+                dashStudents={};
+                renderDashAll();
+                toast('✅ 학생 기록이 초기화되었습니다 (방·비밀번호 유지)');
+            }catch(e){toast('❌ 초기화 실패: '+e.message)}
+        }}
+    ]);
+};
+
+// ═══════════════════════════════════════════════════════
+// 탭 전환
+// ═══════════════════════════════════════════════════════
+window.switchTab=function(btn,idx){
+    document.querySelectorAll('.dash-tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.dash-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
+    if(idx===2)renderCharts(Object.entries(dashStudents));
+};
+
+// 숫자만 입력
+document.addEventListener('DOMContentLoaded',()=>{
+    document.querySelectorAll('input[inputmode="numeric"]').forEach(inp=>{
+        inp.addEventListener('input',function(){this.value=this.value.replace(/[^0-9]/g,'')});
+    });
+});
+</script>
+</body>
+</html>

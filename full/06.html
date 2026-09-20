@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>나만의 스트레스 대처 방법</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--primary:#7C3AED;--primary-light:#A78BFA;--primary-dark:#5B21B6;--gradient:linear-gradient(135deg,#7C3AED 0%,#A78BFA 50%,#C4B5FD 100%);--gradient-bg:linear-gradient(135deg,#EDE9FE 0%,#F5F3FF 50%,#FFF 100%);--success:#10B981;--error:#EF4444;--warning:#F59E0B;--card-bg:#fff;--text:#1E1B4B;--text-light:#6B7280;--radius:16px;--shadow:0 4px 20px rgba(124,58,237,.12)}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Noto Sans KR',sans-serif}
+body{background:var(--gradient-bg);min-height:100vh;color:var(--text);font-weight:700;font-size:18px;overflow-x:hidden}
+.screen{display:none;max-width:520px;margin:0 auto;padding:20px 16px 100px;animation:fadeUp .4s ease}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+h1{font-size:1.6em;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;margin-bottom:8px}
+h2{font-size:1.25em;font-weight:900;color:var(--primary-dark);margin-bottom:12px;text-align:center}
+h3{font-size:1.1em;font-weight:900;color:var(--primary);margin-bottom:8px}
+.card{background:var(--card-bg);border-radius:var(--radius);padding:24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.emoji-big{font-size:3em;text-align:center;margin:16px 0}
+.btn{display:inline-flex;align-items:center;justify-content:center;width:100%;padding:14px 20px;border:none;border-radius:12px;font-size:1em;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Noto Sans KR',sans-serif;min-height:48px;margin-top:8px}
+.btn-primary{background:var(--gradient);color:#fff;box-shadow:0 4px 15px rgba(124,58,237,.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,.4)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-outline{background:transparent;color:var(--primary);border:2px solid var(--primary-light)}
+.btn-outline:hover{background:rgba(124,58,237,.05)}
+.btn-danger{background:linear-gradient(135deg,#EF4444,#DC2626);color:#fff}
+.btn-small{width:auto;padding:8px 16px;font-size:.85em;min-height:36px;margin:4px}
+.btn-success{background:var(--success);color:#fff}
+.input-group{margin-bottom:14px}
+.input-group label{display:block;font-size:.9em;color:var(--primary-dark);margin-bottom:6px}
+.input-group input,.input-group textarea{width:100%;padding:12px 16px;border:2px solid #E5E7EB;border-radius:12px;font-size:1em;font-weight:700;font-family:'Noto Sans KR',sans-serif;transition:border .2s;background:#fff;min-height:44px}
+.input-group input:focus,.input-group textarea:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(124,58,237,.1)}
+.input-group textarea{min-height:80px;resize:vertical}
+.nav-btns{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.privacy-notice{background:linear-gradient(135deg,#EDE9FE,#F5F3FF);border:1px solid var(--primary-light);border-radius:12px;padding:14px;font-size:.8em;color:#5B21B6;line-height:1.7;margin:16px 0;font-weight:400}
+.story-box{background:linear-gradient(135deg,#F5F3FF,#EDE9FE);border-left:4px solid var(--primary);border-radius:0 12px 12px 0;padding:16px;margin:12px 0;font-size:1em;line-height:1.8}
+.story-highlight{color:var(--primary);font-weight:900}
+.thought-box{background:#FEF3C7;border-left:4px solid #F59E0B;border-radius:0 12px 12px 0;padding:14px;margin:12px 0;font-style:italic;font-size:.95em;line-height:1.7}
+.check-label{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#F5F3FF;border-radius:12px;cursor:pointer;margin:12px 0;font-size:.95em}
+.check-label input{width:20px;height:20px;accent-color:var(--primary)}
+.progress-bar{height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden;margin-bottom:16px}
+.progress-fill{height:100%;background:var(--gradient);border-radius:4px;transition:width .4s ease}
+.situation-card{background:#fff;border:2px solid #E5E7EB;border-radius:14px;padding:16px;margin:10px 0;cursor:pointer;transition:all .25s}
+.situation-card:hover{border-color:var(--primary-light);transform:translateY(-2px)}
+.situation-card.selected{border-color:var(--primary);background:linear-gradient(135deg,#F5F3FF,#EDE9FE);box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+.method-card{background:#fff;border:2px solid #E5E7EB;border-radius:14px;padding:14px;margin:8px 0;cursor:pointer;transition:all .25s;display:flex;align-items:center;gap:12px}
+.method-card:hover{border-color:var(--primary-light)}
+.method-card.selected{border-color:var(--primary);background:linear-gradient(135deg,#F5F3FF,#EDE9FE);box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+.method-card .method-emoji{font-size:1.5em;flex-shrink:0}
+.method-card .method-text{flex:1}
+.method-card .method-text .name{font-weight:900;font-size:.95em}
+.method-card .method-text .desc{font-weight:400;font-size:.8em;color:var(--text-light);margin-top:2px}
+.cat-title{font-size:1em;font-weight:900;color:var(--primary);margin:16px 0 6px;padding:8px 14px;background:#F5F3FF;border-radius:10px;display:inline-block}
+.eval-option{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff;border:2px solid #E5E7EB;border-radius:12px;margin:6px 0;cursor:pointer;transition:all .2s}
+.eval-option:hover{border-color:var(--primary-light)}
+.eval-option.selected{border-color:var(--primary);background:linear-gradient(135deg,#F5F3FF,#EDE9FE)}
+.eval-option .eval-emoji{font-size:1.4em}
+.toolbox{background:linear-gradient(135deg,#F5F3FF,#EDE9FE);border:2px solid var(--primary-light);border-radius:var(--radius);padding:20px;margin:12px 0}
+.toolbox-section{margin:12px 0}
+.toolbox-section h4{font-size:.9em;margin-bottom:8px}
+.toolbox-item{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;background:#fff;border-radius:20px;margin:3px;font-size:.85em;border:1px solid #E5E7EB}
+.badge{display:inline-flex;align-items:center;justify-content:center;padding:3px 10px;border-radius:20px;font-size:.75em;font-weight:700;color:#fff}
+.badge-green{background:var(--success)}
+.badge-yellow{background:var(--warning)}
+.badge-red{background:var(--error)}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:9px 14px;background:#fff;border:2px solid #E5E7EB;border-radius:20px;margin:4px 4px 4px 0;font-size:.85em;cursor:pointer;transition:all .2s;font-weight:700}
+.chip:hover{border-color:var(--primary-light)}
+.chip.selected{border-color:var(--primary);background:linear-gradient(135deg,#F5F3FF,#EDE9FE);color:var(--primary-dark);box-shadow:0 0 0 3px rgba(124,58,237,.12)}
+.hint-box{background:#F5F3FF;border:1px dashed var(--primary-light);border-radius:12px;padding:10px 12px;font-size:.8em;font-weight:400;color:#5B21B6;line-height:1.75;margin:4px 0 12px}
+.round-banner{background:linear-gradient(135deg,#EDE9FE,#F5F3FF);border:2px dashed var(--primary-light);border-radius:12px;padding:12px 14px;text-align:center;font-size:.85em;font-weight:700;color:var(--primary-dark);margin-bottom:12px;line-height:1.7}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:12px;color:#fff;font-weight:700;font-size:.9em;z-index:10000;animation:toastIn .3s ease;max-width:90%;text-align:center}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--error)}
+.toast.info{background:var(--primary)}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9999;justify-content:center;align-items:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:var(--radius);padding:28px;max-width:400px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h3{margin-bottom:10px}
+.modal p{font-weight:400;font-size:.9em;color:var(--text-light);margin-bottom:18px;line-height:1.6}
+.modal-buttons{display:flex;gap:10px;justify-content:center}
+.modal-buttons .btn{width:auto;flex:1}
+/* 대시보드 */
+.dash-screen{max-width:800px}
+.tab-bar{display:flex;gap:4px;background:#F3F4F6;border-radius:12px;padding:4px;margin-bottom:16px;overflow-x:auto}
+.tab-btn{flex:1;padding:10px 8px;border:none;background:transparent;border-radius:8px;font-weight:700;font-size:.8em;cursor:pointer;white-space:nowrap;color:var(--text-light);font-family:'Noto Sans KR',sans-serif}
+.tab-btn.active{background:#fff;color:var(--primary);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0}
+.stat-card{background:#fff;border-radius:12px;padding:14px;text-align:center;box-shadow:var(--shadow)}
+.stat-card .num{font-size:1.8em;font-weight:900;color:var(--primary)}
+.stat-card .label{font-size:.75em;color:var(--text-light);font-weight:400}
+.student-row{background:#fff;border-radius:12px;padding:14px;margin:8px 0;box-shadow:0 2px 8px rgba(0,0,0,.05);cursor:pointer;transition:all .2s}
+.student-row:hover{box-shadow:var(--shadow)}
+.student-detail{display:none;background:#F9FAFB;border-radius:0 0 12px 12px;padding:14px;margin-top:-4px;font-size:.85em;font-weight:400;line-height:1.7}
+.student-detail.open{display:block}
+canvas.chart{width:100%!important;max-height:300px;margin:10px 0}
+.word-cloud{min-height:200px;background:#fff;border-radius:12px;padding:16px;position:relative;overflow:hidden}
+.tts-section{background:#fff;border-radius:12px;padding:14px;margin:8px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tts-section .tts-label{flex:1;font-size:.9em}
+.tts-section .tts-btns{display:flex;gap:6px}
+.tts-section .tts-btns button{padding:6px 12px;border:none;border-radius:8px;font-size:.85em;cursor:pointer;font-weight:700;font-family:'Noto Sans KR',sans-serif}
+.script-preview{background:#F9FAFB;border-radius:12px;padding:14px;margin:8px 0;font-size:.82em;font-weight:400;line-height:1.8;max-height:200px;overflow-y:auto;display:none}
+.script-preview.show{display:block}
+@media(max-width:768px){body{font-size:16px;padding:0}.screen{padding:14px 12px 80px}.btn{font-size:.95em;padding:12px 16px}h1{font-size:1.4em}h2{font-size:1.15em}.stat-grid{grid-template-columns:repeat(2,1fr)}}
+@media print{body *{visibility:hidden}#screen-dashboard,#screen-dashboard *{visibility:visible}#screen-dashboard{position:absolute;left:0;top:0;width:100%}.tab-panel{display:block!important}.btn,.nav-btns,.tab-bar,.toast,.modal-overlay{display:none!important}.card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}}
+</style>
+</head>
+<body>
+
+<!-- ==================== 홈 ==================== -->
+<div class="screen active" id="screen-home">
+<div class="emoji-big">🧰</div>
+<h1>나만의 스트레스 대처 방법</h1>
+<p style="text-align:center;font-size:.9em;color:var(--text-light);font-weight:400;margin-bottom:10px">나에게 맞는 마음 도구를 찾아볼까요?</p>
+<p style="text-align:center;margin-bottom:20px"><span class="badge" style="background:var(--primary);font-size:.8em;padding:5px 14px">⏱️ 예상 소요시간: 약 5분</span></p>
+<div class="card">
+<button class="btn btn-primary" onclick="showScreen('screen-role')">🚀 시작하기</button>
+<button class="btn btn-outline" style="margin-top:10px" onclick="startSolo()">🎯 혼자 체험하기</button>
+</div>
+</div>
+
+<!-- ==================== 역할 선택 ==================== -->
+<div class="screen" id="screen-role">
+<div class="nav-btns"><button class="btn btn-outline btn-small" onclick="showScreen('screen-home')">🏠 처음으로</button></div>
+<div class="emoji-big">🔑</div>
+<h2>어떻게 참여할까요?</h2>
+<div class="card">
+<button class="btn btn-primary" onclick="showScreen('screen-create-room')">🏫 방 만들기 (교사)</button>
+<button class="btn btn-outline" style="margin-top:10px" onclick="showScreen('screen-join-room')">🙋 방 입장하기 (학생)</button>
+<button class="btn btn-outline" style="margin-top:10px" onclick="showScreen('screen-teacher-login')">🔐 교사 관리 입장</button>
+</div>
+<div class="privacy-notice">🔐 안심하세요!<br>우리가 사용하는 방 코드는 오직 입장할 때만 필요한 숫자일 뿐, 여러분이 누구인지 알려주는 이름표가 아니랍니다. 입장 코드는 숫자로만 구성되어 있어 개인정보를 포함하지 않습니다. 닉네임을 만들 때 개인정보를 포함하지 않도록 만들어 주세요. 여러분의 익명성은 소중히 보호됩니다.</div>
+</div>
+
+<!-- ==================== 방 만들기 ==================== -->
+<div class="screen" id="screen-create-room">
+<div class="nav-btns"><button class="btn btn-outline btn-small" onclick="showScreen('screen-home')">🏠 처음으로</button><button class="btn btn-outline btn-small" onclick="showScreen('screen-role')">◀ 뒤로</button></div>
+<h2>🏫 방 만들기</h2>
+<div class="card">
+<div class="input-group"><label>교사 닉네임</label><input type="text" id="teacher-name" placeholder="닉네임 입력" maxlength="10"></div>
+<div class="input-group"><label>관리자 비밀번호 (숫자 4자리)</label><input type="password" id="teacher-pw" placeholder="••••" maxlength="4" inputmode="numeric" pattern="[0-9]*"></div>
+<p style="font-size:.78em;color:var(--text-light);font-weight:400;margin:-6px 0 12px">💡 비밀번호는 한 번만 입력해요. 잊지 않도록 적어두세요.</p>
+<button class="btn btn-primary" onclick="createRoom()">방 만들기</button>
+</div>
+</div>
+
+<!-- ==================== 방 생성 완료 ==================== -->
+<div class="screen" id="screen-room-created">
+<div class="nav-btns"><button class="btn btn-outline btn-small" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div class="emoji-big">🎉</div>
+<h2>방이 만들어졌어요!</h2>
+<div class="card" style="text-align:center">
+<p style="font-size:.9em;color:var(--text-light);font-weight:400">방 코드를 학생들에게 알려주세요</p>
+<p id="display-room-code" style="font-size:2.5em;font-weight:900;color:var(--primary);letter-spacing:6px;margin:16px 0"></p>
+<button class="btn btn-outline btn-small" onclick="copyRoomCode()">📋 코드 복사</button>
+<div style="margin-top:16px;padding-top:16px;border-top:1px solid #E5E7EB">
+<p style="font-size:.8em;color:var(--text-light);font-weight:400">⏰ 이 방은 30일 후 자동 삭제됩니다.<br>수업 후 데이터 초기화를 권장합니다.</p>
+</div>
+</div>
+<button class="btn btn-primary" onclick="enterTeacherDashboard()">📊 대시보드 입장</button>
+</div>
+
+<!-- ==================== 학생 입장 ==================== -->
+<div class="screen" id="screen-join-room">
+<div class="nav-btns"><button class="btn btn-outline btn-small" onclick="showScreen('screen-home')">🏠 처음으로</button><button class="btn btn-outline btn-small" onclick="showScreen('screen-role')">◀ 뒤로</button></div>
+<h2>🙋 방 입장하기</h2>
+<div class="card">
+<div class="input-group"><label>방 코드 (숫자 6자리)</label><input type="text" id="join-code" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]*"></div>
+<div class="input-group"><label>닉네임</label><input type="text" id="join-nick" placeholder="닉네임 입력" maxlength="10"></div>
+<button class="btn btn-primary" onclick="joinRoom()">입장하기</button>
+</div>
+<div class="privacy-notice">🔐 안심하세요!<br>입장 코드는 숫자로만 구성되어 있어 개인정보를 포함하지 않습니다. 닉네임을 만들 때 개인정보를 포함하지 않도록 만들어 주세요.</div>
+</div>
+
+<!-- ==================== 교사 로그인 ==================== -->
+<div class="screen" id="screen-teacher-login">
+<div class="nav-btns"><button class="btn btn-outline btn-small" onclick="showScreen('screen-home')">🏠 처음으로</button><button class="btn btn-outline btn-small" onclick="showScreen('screen-role')">◀ 뒤로</button></div>
+<h2>🔐 교사 관리 입장</h2>
+<div class="card">
+<div class="input-group"><label>방 코드 (숫자 6자리)</label><input type="text" id="manage-code" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]*"></div>
+<div class="input-group"><label>관리자 비밀번호</label><input type="password" id="manage-pw" placeholder="••••" maxlength="4" inputmode="numeric" pattern="[0-9]*"></div>
+<button class="btn btn-primary" onclick="loginTeacher()">관리자 입장</button>
+</div>
+</div>
+
+<!-- ==================== 스토리 1 ==================== -->
+<div class="screen" id="screen-story1">
+<div class="nav-btns"><button class="btn btn-outline btn-small" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div class="progress-bar"><div class="progress-fill" style="width:8%"></div></div>
+<div class="emoji-big">📚</div>
+<h2>오늘의 이야기</h2>
+<div class="story-box">스트레스를 느끼는 건 누구에게나 <span class="story-highlight">자연스러운 일</span>이에요.<br><br>하지만 힘들 때 <span class="story-highlight">"참아"</span>라는 말만 듣지, 정작 <span class="story-highlight">어떻게 풀어야 하는지</span> 배운 적은 별로 없지 않나요?</div>
+<div class="story-box">오늘은 한 이야기를 들려줄게요. 수아가 겪은 일이에요.</div>
+<label class="check-label" id="s1check"><input type="checkbox" onchange="onCheck('s1check','s1next')"> 위 이야기를 읽었어요</label>
+<button class="btn btn-primary" id="s1next" disabled onclick="showScreen('screen-story2')">다음으로</button>
+</div>
+
+<!-- ==================== 스토리 2 ==================== -->
+<div class="screen" id="screen-story2">
+<div class="nav-btns"><button class="btn btn-outline btn-small" onclick="confirmGoHome()">🏠 처음으로</button><button class="btn btn-outline btn-small" onclick="showScreen('screen-story1')">◀ 뒤로</button></div>
+<div class="progress-bar"><div class="progress-fill" style="width:16%"></div></div>
+<div class="story-box">점심시간이 끝나고 5교시, <span class="story-highlight">조별 활동 시간</span>이에요.<br><br>수아는 정리 역할을 맡았는데, 친구들이 말을 잘 안 들어요.</div>
+<div class="story-box">"이건 여기 두는 거야." 수아가 말했지만, 목소리는 작고 친구는 이미 다른 일을 시작했어요.</div>
+<div class="thought-box">💭 <em>'...또 나 혼자 해야 하는 거야? 왜 맨날 나만...'</em></div>
+<label class="check-label" id="s2check"><input type="checkbox" onchange="onCheck('s2check','s2next')"> 위 이야기를 읽었어요</label>
+<button class="btn btn-primary" id="s2next" disabled onclick="showScreen('screen-story3')">다음으로</button>
+</div>
+
+<!-- ==================== 스토리 3 ==================== -->
+<div class="screen" id="screen-story3">
+<div class="nav-btns"><button class="btn btn-outline btn-small" onclick="confirmGoHome()">🏠 처음으로</button><button class="btn btn-outline btn-small" onclick="showScreen('screen-story2')">◀ 뒤로</button></div>
+<div class="progress-bar"><div class="progress-fill" style="width:24%"></div></div>
+<div class="story-box">수아는 몇 번 더 말하려다 결국 입을 다물었어요. 혼자서 모둠 상자를 끌어당겨 정리하기 시작했죠. 상자가 바닥에 떨어지며 <span class="story-highlight">쿵!</span> 소리가 났어요.</div>
+<div class="story-box">잠시 후, 수아는 이유 없이 교실을 한 바퀴 돌아요. 물을 마시러 갔다 오고, 다시 앉았다가 연필을 깎으러 일어나요. 아무에게도 말을 걸지 않았어요.</div>
+<div class="thought-box">💭 <em>'답답해... 뭘 어떻게 해야 할지 모르겠어. 그냥... 좀 움직이고 싶어.'</em></div>
+<div class="card" style="background:#FEF3C7;border:1px solid #F59E0B">
+<p style="font-size:.9em;line-height:1.7">수아는 지금 자신을 진정시키려고 노력하고 있어요. 하지만 <strong>나에게 맞는 방법</strong>을 아직 모를 뿐이에요.<br><br>오늘 우리는 <span class="story-highlight">나만의 마음 도구함</span>을 채워볼 거예요! 🧰</p>
+</div>
+<label class="check-label" id="s3check"><input type="checkbox" onchange="onCheck('s3check','s3next')"> 이야기를 모두 읽고 이해했어요</label>
+<button class="btn btn-primary" id="s3next" disabled onclick="showScreen('screen-situation')">나만의 도구함 채우러 가기 🧰</button>
+</div>
+
+<!-- ==================== 상황 선택 ==================== -->
+<div class="screen" id="screen-situation">
+<div class="nav-btns"><button class="btn btn-outline btn-small" onclick="confirmGoHome()">🏠 처음으로</button><button class="btn btn-outline btn-small" onclick="showScreen('screen-story3')">◀ 뒤로</button></div>
+<div class="progress-bar"><div class="progress-fill" style="width:35%"></div></div>
+<h2>💭 최근 스트레스 상황 떠올리기</h2>
+<p style="font-size:.9em;color:var(--text-light);font-weight:400;text-align:center;margin-bottom:14px">최근에 힘들거나 스트레스를 받았던 상황을 하나 골라보세요</p>
+<div id="situation-list"></div>
+<div class="input-group" style="margin-top:14px">
+<label>선택한 상황에 대해 조금 더 적어볼까요?</label>
+<div class="hint-box">✍️ 이렇게 적어도 좋아요<br>· "체육 시간에 팀을 정하는데 아무도 나를 부르지 않았어요."<br>· "숙제가 세 개나 밀렸는데 시간이 부족했어요."<br>· "동생 때문에 혼났는데 억울했어요."</div>
+<textarea id="situation-detail" placeholder="어떤 상황이었는지 자유롭게 적어주세요..." rows="3" oninput="autoSave('situationDetail','situation-detail')"></textarea>
+</div>
+<div class="card" style="padding:18px">
+<h3>🩺 그때 나에게 나타난 신호</h3>
+<p style="font-size:.85em;color:var(--text-light);font-weight:400;margin-bottom:8px">몸과 마음이 보낸 신호를 모두 골라보세요. (여러 개 선택 가능 / 선택하지 않아도 괜찮아요)</p>
+<div id="signal-list"></div>
+<p id="signal-count" style="font-size:.8em;color:var(--primary);margin-top:8px"></p>
+</div>
+<button class="btn btn-primary" id="btn-go-methods" disabled onclick="goToMethods()">대처 방법 탐색하기 🔍</button>
+</div>
+
+<!-- ==================== 대처 방법 탐색 ==================== -->
+<div class="screen" id="screen-methods">
+<div class="nav-btns"><button class="btn btn-outline btn-small" onclick="confirmGoHome()">🏠 처음으로</button><button class="btn btn-outline btn-small" onclick="showScreen('screen-situation')">◀ 뒤로</button></div>
+<div class="progress-bar"><div class="progress-fill" style="width:50%"></div></div>
+<h2>🧰 대처 방법 탐색</h2>
+<p style="font-size:.9em;color:var(--text-light);font-weight:400;text-align:center;margin-bottom:8px">다양한 방법 중에서 <strong>해본 것</strong>이나 <strong>해보고 싶은 것</strong>을 자유롭게 골라보세요 (최소 2개)</p>
+<div id="method-list"></div>
+<p id="method-count" style="text-align:center;font-size:.85em;color:var(--primary);margin:10px 0"></p>
+<button class="btn btn-primary" id="btn-go-eval" disabled onclick="goToEval()">선택 완료 → 효과 평가하기</button>
+</div>
+
+<!-- ==================== 효과 평가 ==================== -->
+<div class="screen" id="screen-eval">
+<div class="nav-btns"><button class="btn btn-outline btn-small" onclick="confirmGoHome()">🏠 처음으로</button><button class="btn btn-outline btn-small" onclick="showScreen('screen-methods')">◀ 뒤로</button></div>
+<div class="progress-bar"><div class="progress-fill" style="width:65%"></div></div>
+<h2>🔍 효과 평가하기</h2>
+<p style="font-size:.9em;color:var(--text-light);font-weight:400;text-align:center;margin-bottom:10px">내가 고른 방법들을 하나씩 평가해 봐요</p>
+<div id="eval-area"></div>
+</div>
+
+<!-- ==================== 도구상자 ==================== -->
+<div class="screen" id="screen-toolbox">
+<div class="nav-btns"><button class="btn btn-outline btn-small" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div>
+<div class="emoji-big">🧰</div>
+<h2>나만의 마음 도구함</h2>
+<div class="toolbox" id="toolbox-area"></div>
+<div class="card" style="background:#FEF3C7;border:1px solid #F59E0B;margin-top:12px">
+<p style="font-size:.85em;line-height:1.7">✨ 안 맞는 것을 발견하는 것도 아주 중요한 발견이에요!<br>도구함은 언제든 다시 채울 수 있어요. 오늘 못 찾았어도 괜찮아요.</p>
+</div>
+<button class="btn btn-primary" onclick="showScreen('screen-reflection')">💜 마무리 성찰하기</button>
+</div>
+
+<!-- ==================== 성찰 ==================== -->
+<div class="screen" id="screen-reflection">
+<div class="nav-btns"><button class="btn btn-outline btn-small" onclick="confirmGoHome()">🏠 처음으로</button><button class="btn btn-outline btn-small" onclick="showScreen('screen-toolbox')">◀ 뒤로</button></div>
+<div class="progress-bar"><div class="progress-fill" style="width:90%"></div></div>
+<h2>💜 마무리 성찰</h2>
+<div class="card">
+<div class="input-group"><label>오늘 활동을 하면서 느낀 점을 편하게 적어보세요</label>
+<div class="hint-box">💬 이런 문장으로 시작해도 좋아요<br>· "나는 ○○할 때 마음이 편해지는 것 같아요."<br>· "생각보다 ○○이 나에게 잘 맞았어요."<br>· "○○은 나랑 안 맞는다는 걸 알게 됐어요."</div>
+<textarea id="reflection-text" placeholder="어떤 생각이 들었나요? 새롭게 알게 된 점이 있나요?" rows="4" oninput="autoSave('reflection','reflection-text')"></textarea></div>
+<div class="input-group"><label>다음에 스트레스를 받으면, 가장 먼저 해보고 싶은 방법은?</label><textarea id="next-plan" placeholder="예: 잠깐 심호흡을 해볼 거예요" rows="3" oninput="autoSave('nextPlan','next-plan')"></textarea></div>
+</div>
+<div class="card">
+<h3>🌤️ 조금 더 들여다보기 <span style="font-size:.7em;color:var(--text-light);font-weight:400">(선택)</span></h3>
+<div class="input-group"><label>오늘 활동 중에, 언제 마음이 조금 나아지는 느낌이 들었나요?</label>
+<div class="hint-box">🕯️ "도구를 고를 때", "안 맞는 방법을 찾았을 때"처럼 순간을 적어보세요.</div>
+<textarea id="better-moment" placeholder="그 순간을 떠올려 적어보세요..." rows="3" oninput="autoSave('betterMoment','better-moment')"></textarea></div>
+<div class="input-group"><label>내 도구함을 알려주고 싶은 사람이 있나요? 뭐라고 말해줄까요?</label><textarea id="share-with" placeholder="예: 동생에게 '숨 크게 쉬어봐'라고 알려주고 싶어요" rows="3" oninput="autoSave('shareWith','share-with')"></textarea></div>
+<div class="input-group"><label>이 도구를 언제 다시 꺼내 쓸지 나와 약속해볼까요?</label><textarea id="my-promise" placeholder="예: 내일 시험 보기 전에 깊게 숨 쉬기를 해볼래요" rows="2" oninput="autoSave('promise','my-promise')"></textarea></div>
+</div>
+<button class="btn btn-primary" onclick="submitAll()">✅ 제출하기</button>
+<button class="btn btn-outline" onclick="startMethodRound2()">🔁 대처 방법 더 찾아보기 (2라운드)</button>
+</div>
+
+<!-- ==================== 완료 ==================== -->
+<div class="screen" id="screen-done">
+<div class="nav-btns"><button class="btn btn-outline btn-small" onclick="backToMain()">◀ 다시 탐험하기</button><button class="btn btn-outline btn-small" onclick="confirmGoHome()">🏠 처음으로</button></div>
+<div class="emoji-big">🎉</div>
+<h1>수고했어요!</h1>
+<div class="card" style="text-align:center">
+<p style="font-size:1em;line-height:1.8">시도했다는 것 자체가 <span class="story-highlight">자기 돌봄</span>이에요.<br><br>도구함은 언제든 다시 채울 수 있어요.<br>오늘 하나라도 시도해보면 충분해요! 💜</p>
+</div>
+<div class="card" id="done-summary-card"><h3>📋 오늘 내가 만든 도구함</h3><div id="done-summary" style="font-size:.85em;font-weight:400;line-height:1.8"></div></div>
+<button class="btn btn-outline" onclick="startMethodRound2()">🔁 도구함 더 채우기 (새 도구 열기)</button>
+<button class="btn btn-outline" onclick="backToMain()">📝 내 답변 다시 보기 / 고치기</button>
+<button class="btn btn-success" onclick="exportMyResult()">📄 내 결과 저장하기 (텍스트)</button>
+<button class="btn btn-primary" onclick="confirmGoHome()">🏠 처음으로 돌아가기</button>
+</div>
+
+<!-- ==================== 교사 대시보드 ==================== -->
+<div class="screen dash-screen" id="screen-dashboard">
+<div class="nav-btns"><button class="btn btn-outline btn-small" onclick="confirmGoHome()">🏠 처음으로</button><button class="btn btn-outline btn-small" onclick="manualRefresh()">🔄 새로고침</button></div>
+<h2>📊 교사 대시보드</h2>
+<p style="text-align:center;font-size:.85em;color:var(--text-light);font-weight:400;margin-bottom:4px">방 코드: <strong id="dash-room-code"></strong></p>
+<div class="tab-bar">
+<button class="tab-btn active" onclick="switchTab('tab-overview',this)">📋 현황</button>
+<button class="tab-btn" onclick="switchTab('tab-results',this)">📝 참여결과</button>
+<button class="tab-btn" onclick="switchTab('tab-stats',this)">📊 통계</button>
+<button class="tab-btn" onclick="switchTab('tab-tts',this)">🔊 TTS</button>
+<button class="tab-btn" onclick="switchTab('tab-export',this)">📥 내보내기</button>
+</div>
+
+<!-- 현황 탭 -->
+<div class="tab-panel active" id="tab-overview">
+<div class="stat-grid">
+<div class="stat-card"><div class="num" id="stat-total">0</div><div class="label">참여 인원</div></div>
+<div class="stat-card"><div class="num" id="stat-done">0</div><div class="label">완료</div></div>
+<div class="stat-card"><div class="num" id="stat-rate">0%</div><div class="label">완료율</div></div>
+<div class="stat-card"><div class="num" id="stat-inprog">0</div><div class="label">진행 중</div></div>
+</div>
+<h3>👥 참여 학생</h3>
+<div id="overview-students" style="font-size:.85em;color:var(--text-light);font-weight:400">아직 참여한 학생이 없습니다.</div>
+</div>
+
+<!-- 참여결과 탭 -->
+<div class="tab-panel" id="tab-results">
+<div id="results-list"><p style="font-size:.9em;color:var(--text-light);font-weight:400">아직 결과가 없습니다.</p></div>
+</div>
+
+<!-- 통계 탭 -->
+<div class="tab-panel" id="tab-stats">
+<div class="card"><h3>📊 스트레스 상황 분포</h3><canvas id="chart-situation" class="chart"></canvas></div>
+<div class="card"><h3>🧰 인기 대처 방법</h3><canvas id="chart-methods" class="chart"></canvas></div>
+<div class="card"><h3>📈 효과 평가 비율</h3><canvas id="chart-eval" class="chart"></canvas></div>
+<div class="card"><h3>🩺 몸·마음 신호 분포</h3><canvas id="chart-signals" class="chart"></canvas></div>
+<div class="card"><h3>⏰ 언제 해보겠다고 했을까</h3><canvas id="chart-when" class="chart"></canvas></div>
+<div class="card"><h3>💬 성찰 키워드</h3><div class="word-cloud" id="word-cloud"></div></div>
+</div>
+
+<!-- TTS 탭 -->
+<div class="tab-panel" id="tab-tts">
+<p style="font-size:.85em;color:var(--text-light);font-weight:400;margin-bottom:12px">읽고 싶은 영역을 선택하세요</p>
+<div id="tts-sections"></div>
+<div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+<button class="btn btn-primary btn-small" onclick="playTTS()">▶ 읽기</button>
+<button class="btn btn-outline btn-small" onclick="pauseTTS()">⏸ 일시정지</button>
+<button class="btn btn-outline btn-small" onclick="stopTTS()">⏹ 정지</button>
+</div>
+<div id="tts-script-preview" class="script-preview"></div>
+</div>
+
+<!-- 내보내기 탭 -->
+<div class="tab-panel" id="tab-export">
+<div class="card">
+<h3>📥 데이터 내보내기</h3>
+<button class="btn btn-success" onclick="exportXLSX()">📊 엑셀 파일 다운로드 (.xlsx)</button>
+<button class="btn btn-outline" onclick="exportCSV()">📄 CSV 다운로드</button>
+<button class="btn btn-outline" onclick="exportTXT()">📝 텍스트 다운로드</button>
+<button class="btn btn-outline" onclick="exportPDF()">📄 PDF 다운로드 (인쇄)</button>
+</div>
+<div class="card" style="margin-top:12px">
+<h3>🗑️ 데이터 관리</h3>
+<p style="font-size:.8em;color:var(--text-light);font-weight:400;margin-bottom:10px">수업이 끝나면 데이터 초기화를 권장합니다.<br>방은 30일 후 자동 삭제됩니다.</p>
+<button class="btn btn-danger" onclick="showModal('modal-reset')">🗑️ 데이터 초기화</button>
+</div>
+</div>
+</div>
+
+<!-- ==================== 모달들 ==================== -->
+<div class="modal-overlay" id="modal-reset"><div class="modal"><h3>⚠️ 정말 삭제할까요?</h3><p>이 방의 <strong>학생 기록이 모두</strong> 삭제됩니다.<br>이 작업은 되돌릴 수 없어요.<br><br>✅ 방 코드와 관리자 비밀번호는 그대로 유지되어,<br>같은 방을 계속 사용할 수 있어요.</p><div class="modal-buttons"><button class="btn btn-outline" onclick="hideModal('modal-reset')">취소</button><button class="btn btn-danger" onclick="resetRoomData()">삭제하기</button></div></div></div>
+<div class="modal-overlay" id="modal-go-home"><div class="modal"><h3>🏠 처음으로 돌아갈까요?</h3><p>지금까지 한 내용이 저장되지 않을 수 있어요.</p><div class="modal-buttons"><button class="btn btn-outline" onclick="hideModal('modal-go-home')">계속하기</button><button class="btn btn-primary" onclick="goHome()">처음으로</button></div></div></div>
+<div class="modal-overlay" id="modal-alert"><div class="modal"><h3 id="modal-alert-title">알림</h3><p id="modal-alert-msg"></p><div class="modal-buttons"><button class="btn btn-primary" onclick="hideModal('modal-alert')">확인</button></div></div></div>
+<div class="modal-overlay" id="modal-confirm"><div class="modal"><h3 id="modal-confirm-title">👋 다시 만났어요!</h3><p id="modal-confirm-msg"></p><div class="modal-buttons"><button class="btn btn-outline" onclick="closeConfirmModal()">취소</button><button class="btn btn-primary" id="confirmOkBtn" onclick="confirmModalOk()">확인</button></div></div></div>
+
+<!-- SheetJS -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
+<script type="module">
+// ═══════════════════════════════════════════════════════
+// 🔥 Firebase 초기화 - emo-dex 프로젝트 고정
+// Canvas든 Google Sites든 항상 같은 DB 사용 (교실 협업용)
+// ═══════════════════════════════════════════════════════
+import{initializeApp}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import{getAuth,signInAnonymously,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import{getFirestore,doc,setDoc,getDoc,deleteDoc,onSnapshot,collection,getDocs}from"https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+const firebaseConfig={
+    apiKey:"AIzaSyCtaNdcziJ3uJK4p-KGbTGt39f1_1mNK2s",
+    authDomain:"emo-dex.firebaseapp.com",
+    projectId:"emo-dex",
+    storageBucket:"emo-dex.firebasestorage.app",
+    messagingSenderId:"994736049700",
+    appId:"1:994736049700:web:8233fa7b68cd6e0cccd2b1",
+    measurementId:"G-6YLB5C6VNR"
+};
+const APP_ID='sel-lesson-11';
+
+let fireApp,auth,db,useFirebase=false;
+try{
+    fireApp=initializeApp(firebaseConfig);
+    auth=getAuth(fireApp);
+    db=getFirestore(fireApp);
+}catch(e){console.warn('Firebase init fail:',e)}
+
+let currentUserId=null;
+async function initAuth(){
+    if(!auth)return;
+    return new Promise((resolve)=>{
+        onAuthStateChanged(auth,u=>{if(u){currentUserId=u.uid;useFirebase=true;resolve(u)}});
+        signInAnonymously(auth).catch(e=>{console.warn('Auth fail:',e);resolve(null)});
+        setTimeout(()=>resolve(null),5000);
+    });
+}
+const authReady=initAuth();
+
+function roomRef(code){return doc(db,'artifacts',APP_ID,'public','data','rooms',code)}
+function studentRef(code,nick){return doc(db,'artifacts',APP_ID,'public','data','rooms',code,'students',nick)}
+function studentsCol(code){return collection(db,'artifacts',APP_ID,'public','data','rooms',code,'students')}
+
+// ═══════════════════════════════════════════════════════
+// 비밀번호 단방향 해시 (구 버전 평문 방도 계속 열리도록 fallback 유지)
+// ═══════════════════════════════════════════════════════
+async function hashPassword(pw){
+    try{
+        const enc=new TextEncoder().encode(pw+'sel-salt-11');
+        const buf=await crypto.subtle.digest('SHA-256',enc);
+        return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }catch(e){return fallbackHash(pw)}                 // crypto.subtle 미지원 환경 (평문은 절대 저장하지 않는다)
+}
+function fallbackHash(pw){
+    const s=pw+'sel-salt-11';let h=0;
+    for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0}
+    return 'h'+Math.abs(h).toString(36);
+}
+async function passwordMatches(roomData,pw,code){
+    if(!roomData)return false;
+    const stored=roomData.password;
+    if(stored===await hashPassword(pw))return true;       // 신규(해시) 방
+    if(stored===fallbackHash(pw))return true;              // crypto 미지원 환경에서 만든 방
+    if(stored===pw){                                       // 구 버전 평문 방 호환
+        if(code&&useFirebase&&db){
+            try{await setDoc(roomRef(code),{password:await hashPassword(pw)},{merge:true})}
+            catch(e){console.warn('pw upgrade fail:',e)}   // 업그레이드 실패해도 로그인은 통과
+        }
+        return true;
+    }
+    return false;
+}
+
+// ═══════════════════════════════════════════════════════
+// 전역 상태
+// ═══════════════════════════════════════════════════════
+let currentRoom='',currentUser='',isTeacher=false,isSoloMode=false;
+let selectedSituation=null,selectedMethods=[],evaluations={},selectedSignals=[];
+let methodRound=1;
+let unsubDash=null,dashStudents={};
+const MIN_METHODS=2;
+
+// ═══════════════════════════════════════════════════════
+// 데이터 정의
+// ═══════════════════════════════════════════════════════
+const SITUATIONS=[
+    {id:'study',emoji:'📝',title:'공부/시험',desc:'시험이 다가오거나, 성적이 안 나왔을 때'},
+    {id:'friends',emoji:'👫',title:'친구 관계',desc:'친구와 다투거나, 소외된 느낌이 들 때'},
+    {id:'family',emoji:'🏠',title:'가족',desc:'부모님과 의견 충돌이 있거나 혼났을 때'},
+    {id:'self',emoji:'🪞',title:'나 자신',desc:'내가 부족하게 느껴지거나 자신감이 없을 때'},
+    {id:'busy',emoji:'⏰',title:'바쁜 일정',desc:'할 일이 너무 많거나 시간이 부족할 때'},
+    {id:'group',emoji:'🧩',title:'모둠 활동',desc:'역할이 안 정해지거나, 나만 하는 것 같을 때'},
+    {id:'speech',emoji:'🎤',title:'발표·주목받기',desc:'앞에 나가 말하거나 여러 사람이 나를 볼 때'},
+    {id:'compare',emoji:'🏅',title:'비교·경쟁',desc:'친구와 비교되거나 등수가 자꾸 신경 쓰일 때'},
+    {id:'online',emoji:'📱',title:'온라인·메시지',desc:'단톡방이나 댓글 때문에 마음이 불편할 때'},
+    {id:'change',emoji:'🚪',title:'낯선 변화',desc:'새 학기, 자리 바꾸기처럼 아직 익숙하지 않을 때'},
+    {id:'tired',emoji:'😴',title:'몸이 지칠 때',desc:'잠이 부족하거나 몸이 힘들어 예민해질 때'},
+    {id:'others',emoji:'💭',title:'기타',desc:'위에 없는 다른 상황'}
+];
+
+// 🩺 몸·마음 신호 (상황 화면 추가 활동 — 책 캡처 화면 아님)
+const SIGNALS=[
+    {id:'heart',emoji:'💓',label:'심장이 두근두근했어요'},
+    {id:'ache',emoji:'🤕',label:'배나 머리가 아팠어요'},
+    {id:'hot',emoji:'🥵',label:'얼굴이 화끈거렸어요'},
+    {id:'tear',emoji:'🥺',label:'눈물이 났어요'},
+    {id:'tight',emoji:'✊',label:'어깨나 주먹에 힘이 들어갔어요'},
+    {id:'quiet',emoji:'🤐',label:'말이 하기 싫어졌어요'},
+    {id:'restless',emoji:'🚶',label:'가만히 있기 힘들었어요'},
+    {id:'sleep',emoji:'😪',label:'잠이 안 오거나 자꾸 졸렸어요'},
+    {id:'appetite',emoji:'🍽️',label:'입맛이 달라졌어요'},
+    {id:'blank',emoji:'🌫️',label:'머릿속이 하얘졌어요'},
+    {id:'alone',emoji:'🫥',label:'혼자 있고 싶어졌어요'},
+    {id:'snap',emoji:'⚡',label:'작은 일에도 짜증이 났어요'}
+];
+
+const METHOD_CATS=[
+    {cat:'🫁 몸으로 풀기',methods:[
+        {id:'breathe',name:'깊게 숨 쉬기',desc:'코로 4초 들이쉬고, 입으로 8초 내쉬기',emoji:'🫁'},
+        {id:'stretch',name:'스트레칭하기',desc:'목, 어깨, 팔을 천천히 펴기',emoji:'🤸'},
+        {id:'walk',name:'잠깐 걷기',desc:'밖에 나가거나 복도를 한 바퀴 걷기',emoji:'🚶'},
+        {id:'squeeze',name:'손 꽉 쥐었다 펴기',desc:'주먹을 5초 쥐고, 천천히 펴기',emoji:'✊'},
+        {id:'dance',name:'몸 흔들기/춤추기',desc:'좋아하는 음악에 맞춰 몸 움직이기',emoji:'💃'}
+    ]},
+    {cat:'🧠 생각으로 풀기',methods:[
+        {id:'selftalk',name:'나에게 말해주기',desc:'"할 수 있어", "괜찮아" 스스로에게 말하기',emoji:'💬'},
+        {id:'rethink',name:'다시 생각해보기',desc:'"이게 정말 큰 일일까?" 다시 떠올려보기',emoji:'🔄'},
+        {id:'count',name:'천천히 숫자 세기',desc:'1부터 10까지, 또는 거꾸로 세기',emoji:'🔢'},
+        {id:'gratitude',name:'감사한 것 떠올리기',desc:'지금 감사한 것 3가지 떠올리기',emoji:'🙏'}
+    ]},
+    {cat:'🎨 기분 전환하기',methods:[
+        {id:'music',name:'음악 듣기',desc:'좋아하는 노래를 들으며 마음 달래기',emoji:'🎵'},
+        {id:'draw',name:'그림 그리기/낙서',desc:'아무거나 자유롭게 끄적이기',emoji:'✏️'},
+        {id:'nature',name:'자연 느끼기',desc:'하늘 보기, 바람 느끼기, 풀 만지기',emoji:'🌿'},
+        {id:'humor',name:'웃긴 영상 보기',desc:'좋아하는 영상이나 만화 보기',emoji:'😂'},
+        {id:'imagine',name:'좋아하는 장소 떠올리기',desc:'마음이 편한 곳을 상상하기',emoji:'🏖️'}
+    ]},
+    {cat:'🤝 함께하기',methods:[
+        {id:'talk',name:'누군가에게 말하기',desc:'친구, 가족, 선생님에게 마음 이야기하기',emoji:'🗣️'},
+        {id:'hug',name:'안아주기/안기기',desc:'가족이나 반려동물에게 안기기',emoji:'🤗'},
+        {id:'help',name:'도움 요청하기',desc:'혼자 해결이 안 되면 도움 구하기',emoji:'🆘'}
+    ]},
+    {cat:'📝 기록하기',methods:[
+        {id:'diary',name:'일기 쓰기',desc:'마음속 이야기를 글로 적어보기',emoji:'📔'},
+        {id:'list',name:'할 일 정리하기',desc:'머릿속 복잡한 것을 목록으로 정리',emoji:'📋'},
+        {id:'letter',name:'편지 쓰기',desc:'나에게 또는 누군가에게 편지 쓰기',emoji:'✉️'}
+    ]},
+    {cat:'🛋️ 쉬어가기',methods:[
+        {id:'rest',name:'아무것도 안 하기',desc:'조용히 눈을 감고 쉬기',emoji:'😌'},
+        {id:'sleep',name:'잠깐 눈 붙이기',desc:'5~10분 짧게 눈 감기',emoji:'💤'},
+        {id:'bath',name:'따뜻한 물 마시기',desc:'따뜻한 물이나 차 마시기',emoji:'☕'}
+    ]}
+];
+
+// 🔁 2라운드 전용 추가 도구 — 1라운드(책 캡처 화면) 렌더링에는 절대 포함되지 않는다
+const EXTRA_METHOD_CATS=[
+    {cat:'🌟 나를 다독이기 (추가 도구)',methods:[
+        {id:'name-it',name:'감정에 이름 붙이기',desc:'"나는 지금 서운해"처럼 마음에 이름 붙이기',emoji:'🏷️'},
+        {id:'kind-hand',name:'내 손으로 나 토닥이기',desc:'가슴이나 팔을 천천히 토닥토닥 두드리기',emoji:'🫶'},
+        {id:'past-win',name:'예전에 잘 넘긴 일 떠올리기',desc:'"그때도 결국 지나갔지" 하고 떠올리기',emoji:'🏔️'},
+        {id:'future-me',name:'내일의 나에게 말 걸기',desc:'"내일의 나는 뭐라고 말해줄까?" 상상하기',emoji:'⏭️'},
+        {id:'safe-word',name:'나만의 주문 만들기',desc:'"천천히, 괜찮아" 같은 짧은 문장 정해두기',emoji:'🪄'}
+    ]},
+    {cat:'🧭 문제에 다가가기 (추가 도구)',methods:[
+        {id:'split',name:'큰 일을 잘게 쪼개기',desc:'할 일을 작은 단계로 나눠 하나만 먼저 하기',emoji:'🍰'},
+        {id:'first-step',name:'딱 1분만 시작하기',desc:'"1분만 해보자" 하고 아주 작게 시작하기',emoji:'⏱️'},
+        {id:'ask-clear',name:'궁금한 것 물어보기',desc:'모르는 부분을 선생님·친구에게 정확히 묻기',emoji:'❓'},
+        {id:'say-need',name:'내가 원하는 것 말하기',desc:'"나는 ○○했으면 좋겠어"라고 부탁해보기',emoji:'🙋'},
+        {id:'plan-b',name:'다른 방법도 적어보기',desc:'선택지를 2~3개 적고 비교해보기',emoji:'🗺️'}
+    ]},
+    {cat:'🎒 미리 준비해두기 (추가 도구)',methods:[
+        {id:'kit',name:'마음 진정 물건 챙기기',desc:'좋아하는 물건·사진을 가까이 두기',emoji:'🎒'},
+        {id:'routine',name:'하루 마무리 루틴 만들기',desc:'자기 전 같은 순서로 마음 정리하기',emoji:'🌙'},
+        {id:'water',name:'물 한 잔 천천히 마시기',desc:'차가운 물을 아주 천천히 마시며 숨 고르기',emoji:'🥤'},
+        {id:'move-day',name:'매일 조금씩 몸 움직이기',desc:'줄넘기·산책처럼 짧게라도 매일 움직이기',emoji:'🏃'},
+        {id:'sleep-fix',name:'잠 시간 지키기',desc:'자는 시간을 정해두고 지켜보기',emoji:'🛏️'}
+    ]}
+];
+
+const EVAL_OPTIONS=[
+    {id:'good',emoji:'👍',label:'나아질 것 같아',color:'var(--success)'},
+    {id:'maybe',emoji:'🤔',label:'모르겠어',color:'var(--warning)'},
+    {id:'bad',emoji:'👎',label:'안 맞을 것 같아',color:'var(--error)'}
+];
+
+// ⏰ 언제 해볼 수 있을지 (효과 평가 화면 추가 문항 — 책 캡처 화면 아님)
+const EVAL_WHEN=[
+    {id:'class',emoji:'🏫',label:'교실에서 바로'},
+    {id:'break',emoji:'🥎',label:'쉬는 시간에'},
+    {id:'home',emoji:'🏠',label:'집에 가서'},
+    {id:'night',emoji:'🌙',label:'잠들기 전에'},
+    {id:'anytime',emoji:'✨',label:'언제든 가능해'}
+];
+
+const TTS_SECTIONS=[
+    {id:'tts-intro',label:'📖 도입 이야기',text:'스트레스를 느끼는 건 누구에게나 자연스러운 일이에요. 하지만 힘들 때 참으라는 말만 듣지, 정작 어떻게 풀어야 하는지 배운 적은 별로 없지 않나요? 오늘은 수아가 겪은 이야기를 들려줄게요. 점심시간이 끝나고 5교시, 조별 활동 시간이에요. 수아는 정리 역할을 맡았는데, 친구들이 말을 잘 안 들어요. 수아는 지금 자신을 진정시키려고 노력하고 있어요. 하지만 나에게 맞는 방법을 아직 모를 뿐이에요.'},
+    {id:'tts-situation',label:'💭 상황 떠올리기',text:'최근에 힘들거나 스트레스를 받았던 상황을 하나 떠올려 봅시다. 공부나 시험, 친구 관계, 가족, 나 자신에 대한 것, 바쁜 일정 등 어떤 상황이든 좋아요. 어떤 상황이었는지 조금 더 적어보면 더 좋아요.'},
+    {id:'tts-signal',label:'🩺 몸·마음 신호 알아차리기',text:'스트레스를 받으면 몸과 마음이 우리에게 신호를 보내요. 심장이 두근거리기도 하고, 배나 머리가 아프기도 해요. 얼굴이 화끈거리거나, 눈물이 나거나, 어깨와 주먹에 힘이 들어가기도 하죠. 말이 하기 싫어지거나, 가만히 있기 힘들거나, 잠이 안 오거나 자꾸 졸릴 수도 있어요. 입맛이 달라지고, 머릿속이 하얘지고, 혼자 있고 싶어지고, 작은 일에도 짜증이 나기도 해요. 이 신호들은 좋은 것도 나쁜 것도 아니에요. 내가 지금 도움이 필요하다는 알림일 뿐이에요. 그때 나에게 나타났던 신호를 모두 골라 보세요.'},
+    {id:'tts-method',label:'🧰 대처 방법 탐색',text:'이제 여러 가지 대처 방법을 살펴볼게요. 몸으로 풀기에는 깊게 숨 쉬기, 스트레칭, 손 꽉 쥐었다 펴기, 잠시 걷기가 있어요. 생각으로 풀기에는 나에게 말해주기, 다시 생각해보기, 천천히 숫자 세기가 있어요. 기분 전환하기, 함께하기, 기록하기, 쉬어가기 등 다양한 방법 중에서 해본 것이나 해보고 싶은 것을 자유롭게 골라보세요.'},
+    {id:'tts-eval',label:'🔍 효과 평가',text:'이제 내가 고른 방법들을 하나씩 평가해 봅시다. 나아질 것 같아, 모르겠어, 안 맞을 것 같아 중에 골라주세요. 왜 그렇게 생각했는지 이유도 적어보면 좋아요. 안 맞았던 것을 발견하는 것도 아주 중요한 발견이에요.'},
+    {id:'tts-round2',label:'🔁 2라운드 추가 도구',text:'첫 번째 도구함을 채웠다면, 새로운 도구를 더 열어볼 수 있어요. 나를 다독이는 도구에는 감정에 이름 붙이기, 내 손으로 나 토닥이기, 예전에 잘 넘긴 일 떠올리기, 내일의 나에게 말 걸기, 나만의 주문 만들기가 있어요. 문제에 다가가는 도구에는 큰 일을 잘게 쪼개기, 딱 1분만 시작하기, 궁금한 것 물어보기, 내가 원하는 것 말하기, 다른 방법도 적어보기가 있어요. 미리 준비해두는 도구에는 마음 진정 물건 챙기기, 하루 마무리 루틴 만들기, 물 한 잔 천천히 마시기, 매일 조금씩 몸 움직이기, 잠 시간 지키기가 있답니다. 마음에 드는 도구를 더 골라 도구함을 채워보세요.'},
+    {id:'tts-toolbox',label:'🧰 도구 상자 정리',text:'내가 고르고 평가한 방법들이 나만의 대처 도구 상자에 정리되었어요. 나아질 것 같은 방법, 더 시도해볼 방법, 안 맞았던 방법으로 분류되어 있답니다. 도구 상자는 언제든 다시 채울 수 있어요.'},
+    {id:'tts-reflection',label:'💜 마무리 성찰',text:'오늘 여러 가지 방법을 살펴보았어요. 나에게 맞는 방법도 있었고, 안 맞는 방법도 있었을 거예요. 안 맞는 것을 알게 된 것도 아주 중요한 발견이에요. 오늘 활동을 하면서 느낀 점을 편하게 적어보세요. 시도했다는 것 자체가 자기 돌봄이에요. 도구 상자는 언제든 다시 채울 수 있어요. 오늘 못 찾았어도 괜찮아요.'}
+];
+
+// ═══════════════════════════════════════════════════════
+// 유틸 함수
+// ═══════════════════════════════════════════════════════
+// 사용자 입력(닉네임·자유입력)을 innerHTML에 넣기 전 반드시 통과시킬 것
+function esc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id)?.classList.add('active');window.scrollTo(0,0)}
+function showModal(id){document.getElementById(id)?.classList.add('show')}
+function hideModal(id){document.getElementById(id)?.classList.remove('show')}
+function showAlert(t,m){document.getElementById('modal-alert-title').textContent=t;document.getElementById('modal-alert-msg').textContent=m;showModal('modal-alert')}
+function showToast(msg,type='info'){const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500)}
+function confirmGoHome(){showModal('modal-go-home')}
+let confirmCallback=null;
+function showConfirmModal(msgHtml,onConfirm,okLabel){
+    document.getElementById('modal-confirm-msg').innerHTML=msgHtml;
+    document.getElementById('confirmOkBtn').textContent=okLabel||'\ud655\uc778';
+    confirmCallback=onConfirm;
+    showModal('modal-confirm');
+}
+function closeConfirmModal(){hideModal('modal-confirm');confirmCallback=null}
+function confirmModalOk(){const cb=confirmCallback;closeConfirmModal();if(cb)cb()}
+function goHome(){hideModal('modal-go-home');if(unsubDash){unsubDash();unsubDash=null}isSoloMode=false;isTeacher=false;currentRoom='';currentUser='';selectedSituation=null;selectedMethods=[];evaluations={};selectedSignals=[];methodRound=1;dashStudents={};clearActivityInputs();showScreen('screen-home')}
+function onCheck(checkId,btnId){const cb=document.querySelector('#'+checkId+' input');document.getElementById(btnId).disabled=!cb.checked}
+function allMethodCats(){return methodRound>=2?METHOD_CATS.concat(EXTRA_METHOD_CATS):METHOD_CATS}
+function getMethodInfo(id){for(const c of METHOD_CATS.concat(EXTRA_METHOD_CATS)){const f=c.methods.find(m=>m.id===id);if(f)return f}return null}
+function isExtraMethod(id){return EXTRA_METHOD_CATS.some(c=>c.methods.some(m=>m.id===id))}
+function sitLabel(id){return SITUATIONS.find(s=>s.id===id)?.title||'미선택'}
+function signalLabels(){return selectedSignals.map(id=>SIGNALS.find(s=>s.id===id)?.label).filter(Boolean)}
+function whenLabel(id){return EVAL_WHEN.find(w=>w.id===id)?.label||''}
+function buildMethodRecords(){return selectedMethods.map(id=>({id,...getMethodInfo(id),...(evaluations[id]||{})}))}
+const ACTIVITY_FIELDS=[['situation-detail','situationDetail'],['reflection-text','reflection'],['next-plan','nextPlan'],['better-moment','betterMoment'],['share-with','shareWith'],['my-promise','promise']];
+function clearActivityInputs(){ACTIVITY_FIELDS.forEach(([id])=>{const el=document.getElementById(id);if(el)el.value=''})}
+function fieldValue(id){const el=document.getElementById(id);return el?el.value.trim():''}
+// 입력 즉시 저장 (중간 이탈해도 유실되지 않도록)
+const saveTimers={};
+function autoSave(field,elId){
+    clearTimeout(saveTimers[field]);
+    saveTimers[field]=setTimeout(()=>{saveProgress({[field]:fieldValue(elId)})},700);
+}
+async function saveProgress(obj){
+    if(isSoloMode||isTeacher||!currentRoom||!currentUser)return;
+    if(!useFirebase||!db)return;
+    try{await setDoc(studentRef(currentRoom,currentUser),obj,{merge:true})}catch(e){console.warn('progress save fail:',e)}
+}
+// 재입장 시 기존 데이터 복원 (지침 4-3-1)
+function restoreStudentData(d){
+    d=d||{};
+    selectedSituation=d.situation||null;
+    selectedMethods=(d.methods||[]).map(m=>m&&m.id).filter(Boolean);
+    evaluations={};
+    (d.methods||[]).forEach(m=>{if(m&&m.id&&m.rating)evaluations[m.id]={rating:m.rating,reason:m.reason||'',when:m.when||''}});
+    selectedSignals=Array.isArray(d.signals)?d.signals.slice():[];
+    methodRound=(d.methodRound===2||selectedMethods.some(isExtraMethod))?2:1;
+    setTimeout(()=>{
+        ACTIVITY_FIELDS.forEach(([elId,field])=>{const el=document.getElementById(elId);if(el)el.value=d[field]||''});
+        renderSignals();
+    },50);
+}
+// 완료/재입장 후 활동 이어가기 (지침 4-8)
+function backToMain(){
+    renderSituations();
+    renderSignals();
+    if(selectedSituation){
+        document.getElementById('sit-'+selectedSituation)?.classList.add('selected');
+        const b=document.getElementById('btn-go-methods');if(b)b.disabled=false;
+    }
+    showScreen('screen-situation');
+}
+
+// ═══════════════════════════════════════════════════════
+// 코드 복사 (fallback)
+// ═══════════════════════════════════════════════════════
+async function copyRoomCode(){
+    const c=currentRoom;
+    try{await navigator.clipboard.writeText(c);showToast('✅ 코드가 복사되었습니다!','success')}
+    catch{try{const ta=document.createElement('textarea');ta.value=c;ta.style.cssText='position:fixed;opacity:0;left:-9999px';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('✅ 코드가 복사되었어요!','success')}
+    catch{showToast('📋 코드: '+c+' (직접 입력해주세요)','info')}}
+}
+
+// ═══════════════════════════════════════════════════════
+// 방 만들기
+// ═══════════════════════════════════════════════════════
+async function createRoom(){
+    await authReady;
+    const name=document.getElementById('teacher-name').value.trim();
+    const pw=document.getElementById('teacher-pw').value.trim();
+    if(!name)return showAlert('⚠️','닉네임을 입력해주세요.');
+    if(!pw||pw.length!==4||!/^\d{4}$/.test(pw))return showAlert('⚠️','비밀번호는 숫자 4자리로 입력해주세요.');
+    const code=String(Math.floor(100000+Math.random()*900000));
+    try{
+        if(useFirebase&&db){
+            const ex=new Date();ex.setDate(ex.getDate()+30);
+            await setDoc(roomRef(code),{teacherName:name,password:await hashPassword(pw),createdAt:new Date().toISOString(),expiresAt:ex.toISOString()});
+        }
+        currentRoom=code;currentUser=name;isTeacher=true;
+        document.getElementById('display-room-code').textContent=code;
+        showScreen('screen-room-created');
+    }catch(e){showAlert('❌','방 생성 실패: '+e.message)}
+}
+
+// ═══════════════════════════════════════════════════════
+// 학생 입장
+// ═══════════════════════════════════════════════════════
+async function joinRoom(){
+    await authReady;
+    const code=document.getElementById('join-code').value.trim();
+    const nick=document.getElementById('join-nick').value.trim();
+    if(!code||code.length!==6||!/^\d{6}$/.test(code))return showAlert('⚠️','방 코드는 숫자 6자리입니다.');
+    if(!nick)return showAlert('⚠️','닉네임을 입력해주세요.');
+    try{
+        if(useFirebase&&db){
+            const snap=await getDoc(roomRef(code));
+            if(!snap.exists())return showAlert('⚠️','존재하지 않는 방입니다.');
+            const rd=snap.data();
+            if(rd.expiresAt&&new Date(rd.expiresAt)<new Date()){
+                await deleteDoc(roomRef(code));
+                return showAlert('⏰','이 방은 만료되어 삭제되었습니다.');
+            }
+            const existSnap=await getDoc(studentRef(code,nick));
+            if(existSnap.exists()){
+                // ═══ 재입장: 차단하지 않고 이어하기 모달 (지침 4-3) ═══
+                const ex=existSnap.data()||{};
+                const nMethods=(ex.methods||[]).length;
+                const nSignals=(ex.signals||[]).length;
+                const stateTxt=ex.status==='완료'?'✅ 활동을 완료했어요':'⏳ 활동을 진행 중이었어요';
+                showConfirmModal(
+                    `<strong>${esc(nick)}</strong>님, 이전에 참여한 기록이 있어요!<br><br>`+
+                    `💭 고른 상황: ${esc(ex.situationLabel||'아직 없음')}<br>`+
+                    `🩺 고른 신호: ${nSignals}개<br>`+
+                    `🧰 고른 방법: ${nMethods}개<br>`+
+                    `${stateTxt}<br><br>이어서 할까요?`,
+                    async()=>{
+                        currentRoom=code;currentUser=nick;isTeacher=false;isSoloMode=false;
+                        restoreStudentData(ex);
+                        try{await setDoc(studentRef(code,nick),{lastVisit:new Date().toISOString()},{merge:true})}catch(e){console.warn(e)}
+                        showToast(`🎉 ${nick}님, 다시 오셨군요!`,'success');
+                        backToMain();
+                    },'이어하기');
+                return;
+            }
+            await setDoc(studentRef(code,nick),{nickname:nick,joinedAt:new Date().toISOString(),lastVisit:new Date().toISOString(),status:'진행중'});
+        }
+        currentRoom=code;currentUser=nick;isTeacher=false;isSoloMode=false;
+        selectedSituation=null;selectedMethods=[];evaluations={};selectedSignals=[];methodRound=1;
+        clearActivityInputs();
+        renderSituations();renderSignals();showScreen('screen-story1');
+    }catch(e){showAlert('❌','입장 실패: '+e.message)}
+}
+
+// ═══════════════════════════════════════════════════════
+// 교사 로그인
+// ═══════════════════════════════════════════════════════
+async function loginTeacher(){
+    await authReady;
+    const code=document.getElementById('manage-code').value.trim();
+    const pw=document.getElementById('manage-pw').value.trim();
+    if(!code||code.length!==6)return showAlert('⚠️','방 코드는 숫자 6자리입니다.');
+    if(!pw)return showAlert('⚠️','비밀번호를 입력해주세요.');
+    try{
+        if(useFirebase&&db){
+            const snap=await getDoc(roomRef(code));
+            if(!snap.exists())return showAlert('⚠️','존재하지 않는 방입니다.');
+            const rd=snap.data();
+            if(!(await passwordMatches(rd,pw,code)))return showAlert('❌','비밀번호가 맞지 않습니다.');
+            if(rd.expiresAt&&new Date(rd.expiresAt)<new Date()){
+                await deleteDoc(roomRef(code));
+                return showAlert('⏰','이 방은 만료되어 삭제되었습니다.');
+            }
+            currentUser=rd.teacherName||'교사';
+        }
+        currentRoom=code;isTeacher=true;
+        enterTeacherDashboard();
+    }catch(e){showAlert('❌','로그인 실패: '+e.message)}
+}
+
+// ═══════════════════════════════════════════════════════
+// 혼자 체험하기
+// ═══════════════════════════════════════════════════════
+function startSolo(){
+    isSoloMode=true;isTeacher=false;currentRoom='solo';currentUser='나';
+    selectedSituation=null;selectedMethods=[];evaluations={};selectedSignals=[];methodRound=1;
+    clearActivityInputs();
+    renderSituations();renderSignals();showScreen('screen-story1');
+}
+
+// ═══════════════════════════════════════════════════════
+// 상황 선택
+// ═══════════════════════════════════════════════════════
+function renderSituations(){
+    const el=document.getElementById('situation-list');
+    el.innerHTML=SITUATIONS.map(s=>`<div class="situation-card" id="sit-${s.id}" onclick="selectSituation('${s.id}')"><span style="font-size:1.3em">${s.emoji}</span> <strong>${s.title}</strong><br><span style="font-size:.8em;font-weight:400;color:var(--text-light)">${s.desc}</span></div>`).join('');
+}
+function selectSituation(id){
+    selectedSituation=id;
+    document.querySelectorAll('.situation-card').forEach(c=>c.classList.remove('selected'));
+    document.getElementById('sit-'+id)?.classList.add('selected');
+    document.getElementById('btn-go-methods').disabled=false;
+    saveProgress({situation:id,situationLabel:sitLabel(id)});
+}
+
+// ═══════════════════════════════════════════════════════
+// 몸·마음 신호 (상황 화면 추가 활동)
+// ═══════════════════════════════════════════════════════
+function renderSignals(){
+    const el=document.getElementById('signal-list');if(!el)return;
+    el.innerHTML=SIGNALS.map(s=>`<span class="chip${selectedSignals.includes(s.id)?' selected':''}" id="sig-${s.id}" onclick="toggleSignal('${s.id}')">${s.emoji} ${s.label}</span>`).join('');
+    updateSignalCount();
+}
+function toggleSignal(id){
+    const i=selectedSignals.indexOf(id);
+    if(i>=0)selectedSignals.splice(i,1);else selectedSignals.push(id);
+    document.getElementById('sig-'+id)?.classList.toggle('selected',selectedSignals.includes(id));
+    updateSignalCount();
+    saveProgress({signals:selectedSignals.slice(),signalLabels:signalLabels()});
+}
+function updateSignalCount(){
+    const el=document.getElementById('signal-count');if(!el)return;
+    el.textContent=selectedSignals.length?`선택한 신호: ${selectedSignals.length} / ${SIGNALS.length}개`:'';
+}
+
+// ═══════════════════════════════════════════════════════
+// 대처 방법 탐색
+// ═══════════════════════════════════════════════════════
+// ⚠️ 1라운드(methodRound===1) 렌더링 결과는 책 캡처 화면 그대로여야 한다. 절대 바꾸지 마라.
+function renderMethodList(){
+    const el=document.getElementById('method-list');
+    let html='';
+    if(methodRound>=2){
+        const n=EXTRA_METHOD_CATS.reduce((s,c)=>s+c.methods.length,0);
+        html+=`<div class="round-banner">🔁 2라운드 — 새로운 도구 ${n}가지가 열렸어요!<br>이미 고른 도구는 그대로 있으니, 마음에 드는 것을 더 골라보세요.</div>`;
+    }
+    html+=allMethodCats().map(c=>{
+        let h=`<div class="cat-title">${c.cat}</div>`;
+        h+=c.methods.map(m=>`<div class="method-card" id="mc-${m.id}" onclick="toggleMethod('${m.id}')"><span class="method-emoji">${m.emoji}</span><div class="method-text"><div class="name">${m.name}</div><div class="desc">${m.desc}</div></div></div>`).join('');
+        return h;
+    }).join('');
+    el.innerHTML=html;
+    selectedMethods.forEach(id=>document.getElementById('mc-'+id)?.classList.add('selected'));
+    updateMethodCount();
+}
+function goToMethods(){
+    saveProgress({situationDetail:fieldValue('situation-detail')});
+    renderMethodList();
+    showScreen('screen-methods');
+}
+// 2라운드 진입 — 완료 화면/성찰 화면에서만 호출 (캡처 화면에는 버튼을 추가하지 않는다)
+function startMethodRound2(){
+    if(!selectedMethods.length&&!selectedSituation){backToMain();return}
+    methodRound=2;
+    saveProgress({methodRound:2});
+    renderMethodList();
+    showScreen('screen-methods');
+    showToast('🧰 새로운 도구가 열렸어요! 더 골라보세요','success');
+}
+function toggleMethod(id){
+    const idx=selectedMethods.indexOf(id);
+    if(idx>=0){selectedMethods.splice(idx,1);delete evaluations[id]}
+    else selectedMethods.push(id);
+    document.getElementById('mc-'+id)?.classList.toggle('selected',selectedMethods.includes(id));
+    updateMethodCount();
+    saveProgress({methods:buildMethodRecords()});
+}
+function updateMethodCount(){
+    const total=allMethodCats().reduce((s,c)=>s+c.methods.length,0);
+    document.getElementById('method-count').textContent=`선택: ${selectedMethods.length}개`;
+    document.getElementById('btn-go-eval').disabled=selectedMethods.length<MIN_METHODS;
+    return total;
+}
+
+// ═══════════════════════════════════════════════════════
+// 효과 평가
+// ═══════════════════════════════════════════════════════
+let evalIdx=0,evalQueue=[];
+function goToEval(){
+    // 이미 평가한 도구는 건너뛴다 (재입장·2라운드 시 중복 평가 방지)
+    evalQueue=selectedMethods.filter(id=>!(evaluations[id]&&evaluations[id].rating));
+    evalIdx=0;
+    saveProgress({methods:buildMethodRecords()});
+    if(!evalQueue.length){renderToolbox();showScreen('screen-toolbox');return}
+    renderEvalItem();
+    showScreen('screen-eval');
+}
+function renderEvalItem(){
+    if(evalIdx>=evalQueue.length){renderToolbox();showScreen('screen-toolbox');return}
+    const mId=evalQueue[evalIdx];
+    const m=getMethodInfo(mId)||{emoji:'🧰',name:mId,desc:''};
+    const cur=evaluations[mId]||{};
+    const area=document.getElementById('eval-area');
+    area.innerHTML=`
+        <div class="card"><p style="font-size:.85em;color:var(--text-light);font-weight:400">${evalIdx+1} / ${evalQueue.length}</p>
+        <div style="display:flex;align-items:center;gap:10px;margin:10px 0"><span style="font-size:2em">${m.emoji}</span><div><strong style="font-size:1.1em">${esc(m.name)}</strong><br><span style="font-size:.85em;color:var(--text-light);font-weight:400">${esc(m.desc)}</span></div></div>
+        <p style="font-weight:900;margin:12px 0">이 방법을 해보면 어떨 것 같아?</p>
+        ${EVAL_OPTIONS.map(o=>`<div class="eval-option${cur.rating===o.id?' selected':''}" id="eo-${mId}-${o.id}" onclick="evalSelect('${mId}','${o.id}')"><span class="eval-emoji">${o.emoji}</span><span>${o.label}</span></div>`).join('')}
+        <div class="input-group" style="margin-top:12px"><label>왜 그렇게 생각했어? (선택사항)</label><textarea id="eval-reason-${mId}" placeholder="이유를 적어보세요..." rows="2">${esc(cur.reason||'')}</textarea></div>
+        <div class="input-group"><label>이 방법을 언제 해볼 수 있을까? (선택사항)</label><div id="eval-when-${mId}">${EVAL_WHEN.map(w=>`<span class="chip${cur.when===w.id?' selected':''}" id="ew-${mId}-${w.id}" onclick="evalWhen('${mId}','${w.id}')">${w.emoji} ${w.label}</span>`).join('')}</div></div>
+        <button class="btn btn-primary" id="eval-next-btn"${cur.rating?'':' disabled'} onclick="nextEval('${mId}')">다음</button></div>`;
+}
+function evalSelect(mId,rating){
+    evaluations[mId]=Object.assign({},evaluations[mId]||{},{rating});
+    EVAL_OPTIONS.forEach(o=>{
+        document.getElementById('eo-'+mId+'-'+o.id)?.classList.toggle('selected',o.id===rating);
+    });
+    document.getElementById('eval-next-btn').disabled=false;
+}
+function evalWhen(mId,whenId){
+    const cur=evaluations[mId]||{};
+    cur.when=cur.when===whenId?'':whenId;
+    evaluations[mId]=cur;
+    EVAL_WHEN.forEach(w=>{
+        document.getElementById('ew-'+mId+'-'+w.id)?.classList.toggle('selected',cur.when===w.id);
+    });
+}
+function nextEval(mId){
+    const reason=document.getElementById('eval-reason-'+mId)?.value.trim()||'';
+    if(evaluations[mId]){evaluations[mId].reason=reason;evaluations[mId].whenLabel=whenLabel(evaluations[mId].when)}
+    saveProgress({methods:buildMethodRecords()});
+    evalIdx++;
+    renderEvalItem();
+}
+
+// ═══════════════════════════════════════════════════════
+// 도구 상자
+// ═══════════════════════════════════════════════════════
+function renderToolbox(){
+    const good=[],maybe=[],bad=[];
+    selectedMethods.forEach(id=>{
+        const ev=evaluations[id];if(!ev)return;
+        const m=getMethodInfo(id);
+        const item={...m,...ev};
+        if(ev.rating==='good')good.push(item);
+        else if(ev.rating==='maybe')maybe.push(item);
+        else bad.push(item);
+    });
+    const area=document.getElementById('toolbox-area');
+    let html='';
+    if(good.length){
+        html+=`<div class="toolbox-section"><h4>👍 나아질 것 같은 방법 (${good.length})</h4>`;
+        good.forEach(m=>{html+=`<div class="toolbox-item">${m.emoji} ${m.name}</div>`});html+='</div>';
+    }
+    if(maybe.length){
+        html+=`<div class="toolbox-section"><h4>🤔 더 시도해볼 방법 (${maybe.length})</h4>`;
+        maybe.forEach(m=>{html+=`<div class="toolbox-item">${m.emoji} ${m.name}</div>`});html+='</div>';
+    }
+    if(bad.length){
+        html+=`<div class="toolbox-section"><h4>👎 안 맞았던 방법 (${bad.length})</h4>`;
+        bad.forEach(m=>{html+=`<div class="toolbox-item">${m.emoji} ${m.name}</div>`});html+='</div>';
+    }
+    if(!html)html='<p style="text-align:center;color:var(--text-light);font-weight:400">아직 비어 있어요. 괜찮아요!</p>';
+    area.innerHTML=html;
+}
+
+// ═══════════════════════════════════════════════════════
+// 제출
+// ═══════════════════════════════════════════════════════
+function buildMyResult(){
+    return {
+        nickname:currentUser,
+        situation:selectedSituation,
+        situationLabel:sitLabel(selectedSituation),
+        situationDetail:fieldValue('situation-detail'),
+        signals:selectedSignals.slice(),
+        signalLabels:signalLabels(),
+        methods:buildMethodRecords(),
+        methodRound,
+        reflection:fieldValue('reflection-text'),
+        nextPlan:fieldValue('next-plan'),
+        betterMoment:fieldValue('better-moment'),
+        shareWith:fieldValue('share-with'),
+        promise:fieldValue('my-promise')
+    };
+}
+async function submitAll(){
+    if(!fieldValue('reflection-text'))return showAlert('⚠️','느낀 점을 적어주세요.');
+    const data=Object.assign(buildMyResult(),{
+        completedAt:new Date().toISOString(),
+        lastVisit:new Date().toISOString(),
+        status:'완료'
+    });
+    try{
+        if(!isSoloMode&&useFirebase&&db){
+            await setDoc(studentRef(currentRoom,currentUser),data,{merge:true});
+        }
+        renderDoneSummary();
+        showScreen('screen-done');
+    }catch(e){showAlert('❌','제출 실패: '+e.message)}
+}
+function renderDoneSummary(){
+    const el=document.getElementById('done-summary');if(!el)return;
+    const d=buildMyResult();
+    const good=d.methods.filter(m=>m.rating==='good'),maybe=d.methods.filter(m=>m.rating==='maybe'),bad=d.methods.filter(m=>m.rating==='bad');
+    const line=arr=>arr.length?arr.map(m=>`${m.emoji||''} ${esc(m.name||m.id)}${m.whenLabel?` <span style="color:var(--text-light)">(${esc(m.whenLabel)})</span>`:''}`).join(', '):'-';
+    el.innerHTML=
+        `<div>💭 <strong>내 상황</strong> : ${esc(d.situationLabel)}${d.situationDetail?'<br><span style="color:var(--text-light)">'+esc(d.situationDetail)+'</span>':''}</div>`+
+        `<div style="margin-top:8px">🩺 <strong>내 신호</strong> (${d.signalLabels.length}개) : ${d.signalLabels.length?esc(d.signalLabels.join(', ')):'-'}</div>`+
+        `<div style="margin-top:8px">👍 <strong>나아질 것 같은 도구</strong> (${good.length}) : ${line(good)}</div>`+
+        `<div style="margin-top:8px">🤔 <strong>더 시도해볼 도구</strong> (${maybe.length}) : ${line(maybe)}</div>`+
+        `<div style="margin-top:8px">👎 <strong>안 맞았던 도구</strong> (${bad.length}) : ${line(bad)}</div>`+
+        (d.nextPlan?`<div style="margin-top:8px">🎯 <strong>다음에 먼저 해볼 것</strong> : ${esc(d.nextPlan)}</div>`:'')+
+        (d.promise?`<div style="margin-top:8px">🤝 <strong>나와의 약속</strong> : ${esc(d.promise)}</div>`:'')+
+        `<div style="margin-top:10px;color:var(--text-light)">🧰 열어본 도구 라운드: ${d.methodRound}단계 / 고른 도구 ${d.methods.length}개</div>`;
+}
+// 혼자 체험 결과 저장 (지침 6-3)
+function exportMyResult(){
+    try{
+        const d=buildMyResult();
+        let txt=`나만의 스트레스 대처 방법 - 내 결과\n작성: ${new Date().toLocaleString('ko-KR')}\n${'='.repeat(40)}\n\n`;
+        txt+=`[내 상황]\n${d.situationLabel}\n${d.situationDetail||''}\n\n`;
+        txt+=`[그때 나에게 나타난 신호] (${d.signalLabels.length}개)\n${d.signalLabels.length?d.signalLabels.map(s=>'· '+s).join('\n'):'· 선택 없음'}\n\n`;
+        txt+=`[나만의 마음 도구함] (${d.methods.length}개)\n`;
+        d.methods.forEach(m=>{
+            const r=m.rating==='good'?'👍 나아질 것 같아':m.rating==='maybe'?'🤔 모르겠어':m.rating==='bad'?'👎 안 맞을 것 같아':'(평가 전)';
+            txt+=`· ${m.name||m.id} — ${r}${m.whenLabel?' / '+m.whenLabel:''}${m.reason?'\n    이유: '+m.reason:''}\n`;
+        });
+        txt+=`\n[오늘의 성찰]\n${d.reflection||''}\n\n`;
+        txt+=`[다음에 먼저 해보고 싶은 방법]\n${d.nextPlan||''}\n\n`;
+        if(d.betterMoment)txt+=`[마음이 나아진 순간]\n${d.betterMoment}\n\n`;
+        if(d.shareWith)txt+=`[함께 나누고 싶은 사람]\n${d.shareWith}\n\n`;
+        if(d.promise)txt+=`[나와의 약속]\n${d.promise}\n\n`;
+        txt+=`${'='.repeat(40)}\n시도했다는 것 자체가 자기 돌봄이에요. 도구함은 언제든 다시 채울 수 있어요. 💜\n`;
+        downloadBlob(txt,'text/plain;charset=utf-8',`나만의_스트레스_대처방법_${new Date().toISOString().slice(0,10)}.txt`);
+        showToast('📄 내 결과를 저장했어요!','success');
+    }catch(e){showToast('저장에 실패했어요. 잠시 후 다시 시도해 주세요.','error')}
+}
+
+// ═══════════════════════════════════════════════════════
+// 교사 대시보드
+// ═══════════════════════════════════════════════════════
+function enterTeacherDashboard(){
+    document.getElementById('dash-room-code').textContent=currentRoom;
+    if(useFirebase&&db){
+        if(unsubDash){unsubDash();unsubDash=null}
+        unsubDash=onSnapshot(studentsCol(currentRoom),snap=>{
+            dashStudents={};
+            snap.forEach(d=>{dashStudents[d.id]=d.data()});
+            refreshDashboard();
+        });
+    }
+    showScreen('screen-dashboard');
+    renderTTSSections();
+}
+async function manualRefresh(){
+    if(!useFirebase||!db)return;
+    try{
+        const snap=await getDocs(studentsCol(currentRoom));
+        dashStudents={};snap.forEach(d=>{dashStudents[d.id]=d.data()});
+        refreshDashboard();
+    }catch(e){console.warn('새로고침 실패:',e)}
+}
+
+function refreshDashboard(){
+    const entries=Object.entries(dashStudents);
+    const total=entries.length;
+    const done=entries.filter(([,d])=>d.status==='완료').length;
+    const rate=total?Math.round(done/total*100):0;
+    document.getElementById('stat-total').textContent=total;
+    document.getElementById('stat-done').textContent=done;
+    document.getElementById('stat-rate').textContent=rate+'%';
+    document.getElementById('stat-inprog').textContent=total-done;
+    // 현황
+    const ov=document.getElementById('overview-students');
+    if(!total)ov.innerHTML='아직 참여한 학생이 없습니다.';
+    else ov.innerHTML=entries.map(([n,d])=>`<div class="student-row"><span style="font-weight:900">${esc(n)}</span> <span class="badge ${d.status==='완료'?'badge-green':'badge-yellow'}">${esc(d.status||'진행중')}</span></div>`).join('');
+    // 결과
+    renderResults(entries);
+    renderStats(entries);
+}
+
+function renderResults(entries){
+    const el=document.getElementById('results-list');
+    const completed=entries.filter(([,d])=>d.status==='완료');
+    if(!completed.length){el.innerHTML='<p style="font-size:.9em;color:var(--text-light);font-weight:400">아직 완료한 학생이 없습니다.</p>';return}
+    el.innerHTML=completed.map(([n,d],i)=>{
+        const methods=(d.methods||[]).map(m=>{
+            const r=m.rating==='good'?'👍':m.rating==='maybe'?'🤔':m.rating==='bad'?'👎':'·';
+            return `${m.emoji||''} ${esc(m.name||m.id)} ${r} ${m.whenLabel?'['+esc(m.whenLabel)+']':''} ${m.reason?'('+esc(m.reason)+')':''}`;
+        }).join('<br>');
+        const sig=(d.signalLabels||[]).map(esc).join(', ');
+        return `<div class="student-row" onclick="toggleDetail('rd-${i}')"><strong>${esc(n)}</strong> <span class="badge badge-green">완료</span></div>
+        <div class="student-detail" id="rd-${i}">
+        <strong>상황:</strong> ${esc(d.situationLabel||'-')} ${d.situationDetail?'/ '+esc(d.situationDetail):''}<br>
+        <strong>몸·마음 신호:</strong> ${sig||'-'}<br>
+        <strong>선택한 방법과 평가:</strong><br>${methods||'-'}<br>
+        <strong>성찰:</strong> ${esc(d.reflection||'-')}<br>
+        <strong>다음 계획:</strong> ${esc(d.nextPlan||'-')}<br>
+        <strong>마음이 나아진 순간:</strong> ${esc(d.betterMoment||'-')}<br>
+        <strong>함께 나누고 싶은 사람:</strong> ${esc(d.shareWith||'-')}<br>
+        <strong>나와의 약속:</strong> ${esc(d.promise||'-')}<br>
+        <strong>도구 라운드:</strong> ${esc(d.methodRound||1)}단계<br>
+        <strong>완료 시간:</strong> ${d.completedAt?esc(new Date(d.completedAt).toLocaleString('ko-KR')):'-'}
+        </div>`;
+    }).join('');
+}
+function toggleDetail(id){document.getElementById(id)?.classList.toggle('open')}
+
+function renderStats(entries){
+    const completed=entries.filter(([,d])=>d.status==='완료').map(([,d])=>d);
+    // 상황 분포
+    drawBarChart('chart-situation',countBy(completed,d=>d.situationLabel||'미선택'),'#7C3AED');
+    // 인기 대처 방법
+    const methodCount={};
+    completed.forEach(d=>(d.methods||[]).forEach(m=>{const nm=m.name||m.id;methodCount[nm]=(methodCount[nm]||0)+1}));
+    drawBarChart('chart-methods',methodCount,'#A78BFA');
+    // 평가 비율
+    let good=0,maybe=0,bad=0;
+    completed.forEach(d=>(d.methods||[]).forEach(m=>{if(m.rating==='good')good++;else if(m.rating==='maybe')maybe++;else if(m.rating==='bad')bad++}));
+    drawPieChart('chart-eval',[{label:'나아질것같아',val:good,color:'#10B981'},{label:'모르겠어',val:maybe,color:'#F59E0B'},{label:'안맞을것같아',val:bad,color:'#EF4444'}]);
+    // 몸·마음 신호 분포
+    const sigCount={};
+    completed.forEach(d=>(d.signalLabels||[]).forEach(s=>{sigCount[s]=(sigCount[s]||0)+1}));
+    drawBarChart('chart-signals',sigCount,'#6366F1');
+    // 실천 시점 분포
+    const whenCount={};
+    completed.forEach(d=>(d.methods||[]).forEach(m=>{if(m.whenLabel)whenCount[m.whenLabel]=(whenCount[m.whenLabel]||0)+1}));
+    drawBarChart('chart-when',whenCount,'#10B981');
+    // 워드 클라우드
+    const words=[];
+    completed.forEach(d=>{[d.reflection,d.betterMoment,d.promise].forEach(t=>{if(t)words.push(...String(t).replace(/[.,!?~\n]/g,' ').split(/\s+/).filter(w=>w.length>1))})});
+    drawWordCloud('word-cloud',words);
+}
+function countBy(arr,fn){const m={};arr.forEach(d=>{const k=fn(d);m[k]=(m[k]||0)+1});return m}
+
+// ═══════════════════════════════════════════════════════
+// 차트 (Canvas API)
+// ═══════════════════════════════════════════════════════
+function drawBarChart(canvasId,data,color){
+    const canvas=document.getElementById(canvasId);if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    const entries=Object.entries(data).sort((a,b)=>b[1]-a[1]);
+    if(!entries.length){canvas.height=60;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.font='bold 14px Noto Sans KR';ctx.fillStyle='#999';ctx.fillText('데이터 없음',10,35);return}
+    const W=Math.max(260,(canvas.parentElement?.clientWidth||0)-48);canvas.width=W;
+    const barH=32,gap=8,padTop=10,padLeft=120,maxVal=Math.max(...entries.map(e=>e[1]),1);
+    canvas.height=padTop+entries.length*(barH+gap)+10;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    entries.forEach(([label,val],i)=>{
+        const y=padTop+i*(barH+gap);
+        const barW=(W-padLeft-20)*(val/maxVal);
+        ctx.fillStyle=color;
+        const r=6;ctx.beginPath();ctx.moveTo(padLeft+r,y);ctx.lineTo(padLeft+barW,y);ctx.arcTo(padLeft+barW+r,y,padLeft+barW+r,y+barH,r);ctx.arcTo(padLeft+barW+r,y+barH,padLeft,y+barH,r);ctx.lineTo(padLeft+r,y+barH);ctx.arcTo(padLeft,y+barH,padLeft,y,r);ctx.arcTo(padLeft,y,padLeft+r,y,r);ctx.fill();
+        ctx.font='bold 13px Noto Sans KR';ctx.fillStyle='#333';ctx.textAlign='right';ctx.fillText(label.length>8?label.slice(0,8)+'…':label,padLeft-8,y+barH/2+5);
+        ctx.fillStyle='#fff';ctx.textAlign='left';ctx.fillText(val,padLeft+8,y+barH/2+5);
+    });
+}
+function drawPieChart(canvasId,data){
+    const canvas=document.getElementById(canvasId);if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    const total=data.reduce((s,d)=>s+d.val,0);
+    if(!total){canvas.height=60;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.font='bold 14px Noto Sans KR';ctx.fillStyle='#999';ctx.fillText('데이터 없음',10,35);return}
+    const W=Math.max(260,(canvas.parentElement?.clientWidth||0)-48);canvas.width=W;canvas.height=200;
+    ctx.clearRect(0,0,W,200);
+    const cx=100,cy=100,r=80;let angle=-Math.PI/2;
+    data.forEach(d=>{
+        const slice=(d.val/total)*2*Math.PI;
+        ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,angle,angle+slice);ctx.fillStyle=d.color;ctx.fill();
+        angle+=slice;
+    });
+    let ly=30;
+    data.forEach(d=>{
+        ctx.fillStyle=d.color;ctx.fillRect(210,ly-10,14,14);
+        ctx.fillStyle='#333';ctx.font='bold 13px Noto Sans KR';ctx.textAlign='left';
+        ctx.fillText(`${d.label}: ${d.val}명 (${total?Math.round(d.val/total*100):0}%)`,230,ly);
+        ly+=26;
+    });
+}
+function drawWordCloud(containerId,words){
+    const el=document.getElementById(containerId);if(!el)return;
+    if(!words.length){el.innerHTML='<p style="color:#999;text-align:center;padding:30px">데이터 없음</p>';return}
+    const freq={};words.forEach(w=>{freq[w]=(freq[w]||0)+1});
+    const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,30);
+    const maxF=sorted[0]?.[1]||1;
+    const colors=['#7C3AED','#A78BFA','#5B21B6','#C4B5FD','#10B981','#F59E0B','#EF4444','#6366F1'];
+    el.innerHTML=sorted.map(([w,f])=>{
+        const size=Math.max(14,Math.min(40,14+(f/maxF)*26));
+        const color=colors[Math.floor(Math.random()*colors.length)];
+        return `<span style="font-size:${size}px;color:${color};font-weight:900;display:inline-block;margin:4px 6px;opacity:${.5+f/maxF*.5}">${esc(w)}</span>`;
+    }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// TTS
+// ═══════════════════════════════════════════════════════
+let selectedTTS=null,isSpeaking=false;
+function renderTTSSections(){
+    const el=document.getElementById('tts-sections');
+    el.innerHTML=TTS_SECTIONS.map(s=>`<div class="tts-section" id="tts-row-${s.id}" onclick="selectTTSSection('${s.id}')"><span class="tts-label">${s.label}</span><span class="tts-btns"><button onclick="event.stopPropagation();previewScript('${s.id}')">📝</button></span></div>`).join('');
+}
+function selectTTSSection(id){
+    selectedTTS=id;
+    document.querySelectorAll('.tts-section').forEach(el=>el.style.borderLeft='none');
+    document.getElementById('tts-row-'+id).style.borderLeft='4px solid var(--primary)';
+    document.getElementById('tts-script-preview').classList.remove('show');
+}
+function previewScript(id){
+    const s=TTS_SECTIONS.find(t=>t.id===id);if(!s)return;
+    const el=document.getElementById('tts-script-preview');
+    el.textContent=s.text;el.classList.toggle('show');
+}
+function playTTS(){
+    if(!selectedTTS)return showToast('읽을 영역을 선택하세요','info');
+    window.speechSynthesis.cancel();
+    const s=TTS_SECTIONS.find(t=>t.id===selectedTTS);if(!s)return;
+    const utt=new SpeechSynthesisUtterance(s.text);
+    utt.lang='ko-KR';utt.rate=0.9;
+    utt.onend=()=>{isSpeaking=false};
+    window.speechSynthesis.speak(utt);isSpeaking=true;
+}
+function pauseTTS(){
+    if(window.speechSynthesis.speaking){
+        if(window.speechSynthesis.paused)window.speechSynthesis.resume();
+        else window.speechSynthesis.pause();
+    }
+}
+function stopTTS(){window.speechSynthesis.cancel();isSpeaking=false}
+
+// ═══════════════════════════════════════════════════════
+// 탭 전환
+// ═══════════════════════════════════════════════════════
+// 암묵적 전역 event에 의존하지 않는다 (strict mode / Firefox 대응). btn 미전달 시 기존 인덱스 방식 fallback.
+function switchTab(tabId,btn){
+    const panels=Array.from(document.querySelectorAll('.tab-panel'));
+    const btns=Array.from(document.querySelectorAll('.tab-btn'));
+    btns.forEach((b,i)=>b.classList.toggle('active',btn?b===btn:(panels[i]&&panels[i].id===tabId)));
+    panels.forEach(p=>p.classList.toggle('active',p.id===tabId));
+    if(tabId==='tab-stats')renderStats(Object.entries(dashStudents));
+}
+
+// ═══════════════════════════════════════════════════════
+// 엑셀/CSV/TXT 내보내기
+// ═══════════════════════════════════════════════════════
+function exportXLSX(){
+    try{
+        const entries=Object.entries(dashStudents).filter(([,d])=>d.status==='완료');
+        if(!entries.length)return showAlert('⚠️','내보낼 데이터가 없습니다.');
+        // Sheet 1: 학생 기록
+        const ws1Data=[['닉네임','스트레스 상황','상황 상세','몸·마음 신호','선택한 방법','평가','실천 시점','도구 라운드','성찰','다음 계획','마음이 나아진 순간','함께 나누고 싶은 사람','나와의 약속','완료 시간']];
+        entries.forEach(([n,d])=>{
+            const methods=(d.methods||[]).map(m=>`${m.name||m.id}`).join(', ');
+            const evals=(d.methods||[]).map(m=>{const r=m.rating==='good'?'👍':m.rating==='maybe'?'🤔':m.rating==='bad'?'👎':'·';return `${m.name||m.id}:${r}${m.reason?' ('+m.reason+')':''}`}).join('; ');
+            const whens=(d.methods||[]).filter(m=>m.whenLabel).map(m=>`${m.name||m.id}:${m.whenLabel}`).join('; ');
+            ws1Data.push([n,d.situationLabel||'',d.situationDetail||'',(d.signalLabels||[]).join(', '),methods,evals,whens,d.methodRound||1,d.reflection||'',d.nextPlan||'',d.betterMoment||'',d.shareWith||'',d.promise||'',d.completedAt?new Date(d.completedAt).toLocaleString('ko-KR'):'']);
+        });
+        // Sheet 2: 요약
+        const totalAll=Object.keys(dashStudents).length;
+        const ws2Data=[['항목','값'],['총 참여 인원',totalAll],['완료',entries.length],['완료율',(totalAll?Math.round(entries.length/totalAll*100):0)+'%'],['2라운드까지 진행',entries.filter(([,d])=>(d.methodRound||1)>=2).length]];
+        // Sheet 3: 인기 방법
+        const mc={};entries.forEach(([,d])=>(d.methods||[]).forEach(m=>{const nm=m.name||m.id;mc[nm]=(mc[nm]||0)+1}));
+        const ws3Data=[['대처 방법','선택 횟수'],...Object.entries(mc).sort((a,b)=>b[1]-a[1])];
+        // Sheet 4: 몸·마음 신호
+        const sg={};entries.forEach(([,d])=>(d.signalLabels||[]).forEach(s=>{sg[s]=(sg[s]||0)+1}));
+        const ws4Data=[['몸·마음 신호','선택 인원'],...Object.entries(sg).sort((a,b)=>b[1]-a[1])];
+
+        const wb=XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ws1Data),'학생기록');
+        XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ws2Data),'요약');
+        XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ws3Data),'인기방법');
+        XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ws4Data),'몸마음신호');
+        XLSX.writeFile(wb,`스트레스대처_${currentRoom}_${new Date().toISOString().slice(0,10)}.xlsx`);
+        showToast('엑셀 다운로드 완료!','success');
+    }catch(e){showAlert('❌','내보내기 실패: '+e.message)}
+}
+function exportCSV(){
+    try{
+        const entries=Object.entries(dashStudents).filter(([,d])=>d.status==='완료');
+        if(!entries.length)return showAlert('⚠️','내보낼 데이터가 없습니다.');
+        const q=s=>`"${String(s==null?'':s).replace(/"/g,'""')}"`;
+        let csv='\uFEFF닉네임,상황,상황상세,몸마음신호,방법,평가,실천시점,도구라운드,성찰,다음계획,마음이나아진순간,함께나누고싶은사람,나와의약속,완료시간\n';
+        entries.forEach(([n,d])=>{
+            const methods=(d.methods||[]).map(m=>m.name||m.id).join('; ');
+            const evals=(d.methods||[]).map(m=>{const r=m.rating==='good'?'👍':m.rating==='maybe'?'🤔':m.rating==='bad'?'👎':'·';return `${m.name||m.id}${r}`}).join('; ');
+            const whens=(d.methods||[]).filter(m=>m.whenLabel).map(m=>`${m.name||m.id}:${m.whenLabel}`).join('; ');
+            csv+=`${q(n)},${q(d.situationLabel)},${q(d.situationDetail)},${q((d.signalLabels||[]).join('; '))},${q(methods)},${q(evals)},${q(whens)},${q(d.methodRound||1)},${q(d.reflection)},${q(d.nextPlan)},${q(d.betterMoment)},${q(d.shareWith)},${q(d.promise)},${q(d.completedAt?new Date(d.completedAt).toLocaleString('ko-KR'):'')}\n`;
+        });
+        downloadBlob(csv,'text/csv;charset=utf-8',`스트레스대처_${currentRoom}.csv`);
+        showToast('CSV 다운로드 완료!','success');
+    }catch(e){showAlert('❌',e.message)}
+}
+function exportTXT(){
+    try{
+        const entries=Object.entries(dashStudents).filter(([,d])=>d.status==='완료');
+        if(!entries.length)return showAlert('⚠️','내보낼 데이터가 없습니다.');
+        let txt=`나만의 스트레스 대처 방법 - 참여결과\n방코드: ${currentRoom}\n출력일: ${new Date().toLocaleString('ko-KR')}\n${'='.repeat(50)}\n\n`;
+        entries.forEach(([n,d])=>{
+            txt+=`[${n}]\n상황: ${d.situationLabel||''} ${d.situationDetail?'/ '+d.situationDetail:''}\n`;
+            txt+=`몸·마음 신호: ${(d.signalLabels||[]).join(', ')||'-'}\n`;
+            txt+=`방법: ${(d.methods||[]).map(m=>`${m.name||m.id}(${m.rating==='good'?'👍':m.rating==='maybe'?'🤔':m.rating==='bad'?'👎':'·'}${m.whenLabel?' / '+m.whenLabel:''}${m.reason?' '+m.reason:''})`).join(', ')}\n`;
+            txt+=`도구 라운드: ${d.methodRound||1}단계\n`;
+            txt+=`성찰: ${d.reflection||''}\n다음계획: ${d.nextPlan||''}\n`;
+            if(d.betterMoment)txt+=`마음이 나아진 순간: ${d.betterMoment}\n`;
+            if(d.shareWith)txt+=`함께 나누고 싶은 사람: ${d.shareWith}\n`;
+            if(d.promise)txt+=`나와의 약속: ${d.promise}\n`;
+            txt+=`${'─'.repeat(40)}\n\n`;
+        });
+        downloadBlob(txt,'text/plain;charset=utf-8',`스트레스대처_${currentRoom}.txt`);
+        showToast('텍스트 다운로드 완료!','success');
+    }catch(e){showAlert('❌',e.message)}
+}
+function exportPDF(){
+    const entries=Object.entries(dashStudents);
+    if(!entries.length)return showAlert('⚠️','내보낼 데이터가 없습니다.');
+    const done=entries.filter(([,d])=>d.status==='완료');
+    let body='';
+    body+=`<div class="card"><h3>📊 참여 현황</h3><p>참여 ${entries.length}명 / 완료 ${done.length}명 / 완료율 ${entries.length?Math.round(done.length/entries.length*100):0}%</p></div>`;
+    const sc={};done.forEach(([,d])=>{const k=d.situationLabel||'미선택';sc[k]=(sc[k]||0)+1});
+    const scRows=Object.entries(sc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('');
+    body+=`<div class="card"><h3>💭 스트레스 상황 분포</h3><table><tr><th>상황</th><th>인원</th></tr>${scRows||'<tr><td colspan="2">-</td></tr>'}</table></div>`;
+    const mc={};done.forEach(([,d])=>(d.methods||[]).forEach(m=>{const nm=m.name||m.id;mc[nm]=(mc[nm]||0)+1}));
+    const mcRows=Object.entries(mc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('');
+    body+=`<div class="card"><h3>🧰 인기 대처 방법</h3><table><tr><th>대처 방법</th><th>선택 횟수</th></tr>${mcRows||'<tr><td colspan="2">-</td></tr>'}</table></div>`;
+    let evG=0,evM=0,evB=0;
+    done.forEach(([,d])=>(d.methods||[]).forEach(m=>{if(m.rating==='good')evG++;else if(m.rating==='maybe')evM++;else if(m.rating)evB++}));
+    body+=`<div class="card"><h3>📈 효과 평가 비율</h3><table><tr><th>평가</th><th>횟수</th></tr><tr><td>👍 나아질 것 같아</td><td>${evG}</td></tr><tr><td>🤔 모르겠어</td><td>${evM}</td></tr><tr><td>👎 안 맞을 것 같아</td><td>${evB}</td></tr></table></div>`;
+    const sg={};done.forEach(([,d])=>(d.signalLabels||[]).forEach(x=>{sg[x]=(sg[x]||0)+1}));
+    const sgRows=Object.entries(sg).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('');
+    body+=`<div class="card"><h3>🩺 몸·마음 신호 분포</h3><table><tr><th>신호</th><th>인원</th></tr>${sgRows||'<tr><td colspan="2">-</td></tr>'}</table></div>`;
+    const wc={};done.forEach(([,d])=>(d.methods||[]).forEach(m=>{if(m.whenLabel)wc[m.whenLabel]=(wc[m.whenLabel]||0)+1}));
+    const wcRows=Object.entries(wc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join('');
+    body+=`<div class="card"><h3>⏰ 실천 시점 분포</h3><table><tr><th>시점</th><th>횟수</th></tr>${wcRows||'<tr><td colspan="2">-</td></tr>'}</table></div>`;
+    let rows='';
+    entries.forEach(([nm,d])=>{
+        const ms=(d.methods||[]).map(m=>`${esc(m.name||m.id)}${m.rating==='good'?'(👍)':m.rating==='maybe'?'(🤔)':m.rating==='bad'?'(👎)':''}${m.whenLabel?' ['+esc(m.whenLabel)+']':''}${m.reason?' - '+esc(m.reason):''}`).join('<br>');
+        const extra=[d.betterMoment?'· 나아진 순간: '+esc(d.betterMoment):'',d.shareWith?'· 나누고 싶은 사람: '+esc(d.shareWith):'',d.promise?'· 나와의 약속: '+esc(d.promise):''].filter(Boolean).join('<br>');
+        rows+=`<tr><td>${esc(nm)}</td><td>${esc(d.status||'진행중')}</td><td>${esc(d.situationLabel||'-')}${d.situationDetail?'<br>'+esc(d.situationDetail):''}</td><td>${esc((d.signalLabels||[]).join(', '))||'-'}</td><td>${ms||'-'}</td><td>${esc(d.methodRound||1)}단계</td><td>${esc(d.reflection||'-')}</td><td>${esc(d.nextPlan||'-')}${extra?'<br>'+extra:''}</td><td>${d.completedAt?new Date(d.completedAt).toLocaleString('ko-KR'):'-'}</td></tr>`;
+    });
+    body+=`<div class="card"><h3>📋 학생별 상세 기록</h3><table><tr><th>닉네임</th><th>상태</th><th>스트레스 상황</th><th>몸·마음 신호</th><th>선택한 방법과 평가</th><th>도구 라운드</th><th>성찰</th><th>다음 계획 / 추가 기록</th><th>완료 시간</th></tr>${rows}</table></div>`;
+    const head=`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>나만의 스트레스 대처 방법 - 참여결과</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet"><style>*{font-family:'Noto Sans KR',sans-serif;margin:0;padding:0;box-sizing:border-box}body{padding:24px;font-size:14px;color:#1F2937;line-height:1.6}.print-header{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #7C3AED}.print-header h2{color:#7C3AED;font-size:20px;margin-bottom:4px}.print-header p{color:#6B7280;font-size:12px}.card{border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin:12px 0;page-break-inside:avoid}table{width:100%;border-collapse:collapse;margin:8px 0}th,td{border:1px solid #E5E7EB;padding:8px 10px;text-align:left;font-size:13px;vertical-align:top}th{background:#F3F4F6;font-weight:700}h3{color:#7C3AED;font-size:16px;margin:0 0 8px}.print-guide{background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;text-align:center}@media print{.print-guide{display:none}}</style></head><body><div class="print-guide">💡 <strong>PDF로 저장하려면:</strong> 인쇄 대화상자에서 "대상"을 <strong>"PDF로 저장"</strong>으로 선택하세요.</div><div class="print-header"><h2>📊 나만의 스트레스 대처 방법 - 참여결과</h2><p>방 코드: ${currentRoom} | 출력: ${new Date().toLocaleString('ko-KR')}</p></div>`;
+    const tail='<scr'+'ipt>setTimeout(function(){window.print()},1000);</scr'+'ipt></body></html>';
+    try{
+        const w=window.open('','_blank');
+        if(w){
+            w.document.write(head+body+tail);
+            w.document.close();
+            showToast('📄 새 창에서 인쇄 화면이 열립니다. "PDF로 저장"을 선택하세요.','success');
+            return;
+        }
+    }catch(e){console.log('[PDF] 새 창 방식 실패:',e.message)}
+    try{
+        showToast('📄 인쇄 대화상자에서 "PDF로 저장"을 선택해주세요.','info');
+        setTimeout(function(){window.print()},500);
+        return;
+    }catch(e){console.log('[PDF] window.print 실패:',e.message)}
+    showToast('📄 키보드에서 Ctrl+P (Mac: ⌘+P)를 눌러 PDF로 저장해주세요.','info');
+}
+function downloadBlob(content,type,filename){
+    const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);
+}
+
+// ═══════════════════════════════════════════════════════
+// 데이터 초기화
+// ═══════════════════════════════════════════════════════
+// ⚠️ 학생 subcollection만 삭제한다. 방 문서(비밀번호·만료일)는 절대 지우지 않는다.
+//    방 문서를 지우면 교사가 자기 비밀번호로 다시 들어올 수 없게 된다.
+async function resetRoomData(){
+    hideModal('modal-reset');
+    if(!currentRoom)return showAlert('⚠️','방 정보가 없습니다.');
+    try{
+        if(useFirebase&&db){
+            const snap=await getDocs(studentsCol(currentRoom));
+            await Promise.all(snap.docs.map(d=>deleteDoc(d.ref)));
+        }
+        dashStudents={};
+        refreshDashboard();
+        showAlert('✅ 완료','학생 기록이 모두 삭제되었어요.\n방 코드와 비밀번호는 그대로 유지됩니다.');
+    }catch(e){showAlert('❌','초기화 실패: '+e.message)}
+}
+
+// ═══════════════════════════════════════════════════════
+// window 전역 함수 노출 (module scope)
+// ═══════════════════════════════════════════════════════
+Object.assign(window,{
+    showScreen,showModal,hideModal,showAlert,confirmGoHome,goHome,
+    createRoom,joinRoom,loginTeacher,startSolo,copyRoomCode,
+    onCheck,selectSituation,goToMethods,toggleMethod,goToEval,evalSelect,evalWhen,nextEval,
+    submitAll,enterTeacherDashboard,manualRefresh,
+    switchTab,toggleDetail,selectTTSSection,previewScript,playTTS,pauseTTS,stopTTS,
+    exportXLSX,exportCSV,exportTXT,exportPDF,resetRoomData,
+    showConfirmModal,closeConfirmModal,confirmModalOk,backToMain,restoreStudentData,
+    autoSave,toggleSignal,startMethodRound2,exportMyResult,renderDoneSummary,esc
+});
+
+document.addEventListener('DOMContentLoaded',()=>{showScreen('screen-home');renderSituations();renderSignals()});
+</script>
+</body>
+</html>
