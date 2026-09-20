@@ -5,103 +5,335 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>화가 날 때, 멈추는 연습</title>
 <style>
-:root{--main:#7C3AED;--bg:#F5F3FF;--text:#1F2937;--dim:#6B7280;--hot:#EF4444;--warm:#F59E0B;--cool:#10B981}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;padding:16px}
-.wrap{max-width:560px;margin:0 auto}
-.screen{display:none}.screen.on{display:block}
-.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:0 2px 12px rgba(124,58,237,.08)}
-h1{font-size:25px;color:var(--main);text-align:center;margin-bottom:6px}
-h2{font-size:20px;color:var(--main);margin-bottom:10px}
-h3{font-size:16px;margin:14px 0 8px}
-p.sub{text-align:center;color:var(--dim);font-size:15px;margin-bottom:12px}
-.btn{display:block;width:100%;padding:14px;margin:8px 0;border:none;border-radius:12px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer}
-.btn-main{background:var(--main);color:#fff}
-.btn-sub{background:#EDE9FE;color:var(--main)}
-.btn-stop{background:var(--cool);color:#fff}
-.btn-line{background:#fff;color:var(--dim);border:1px solid #E5E7EB;font-size:14px;padding:9px;width:auto;display:inline-block;margin-right:6px}
-input,textarea{width:100%;padding:12px;border:1px solid #DDD6FE;border-radius:10px;font-size:15px;font-family:inherit;margin:6px 0 12px}
-textarea{min-height:62px;resize:vertical}
-label{font-size:15px;font-weight:700}
+
+:root {
+    --primary: #7C3AED;
+    --primary-light: #A78BFA;
+    --primary-dark: #5B21B6;
+    --gradient: linear-gradient(135deg, #7C3AED 0%, #A78BFA 50%, #C4B5FD 100%);
+    --gradient-bg: linear-gradient(135deg, #EDE9FE 0%, #F5F3FF 50%, #FFFFFF 100%);
+    --success: #10B981;
+    --error: #EF4444;
+    --warning: #F59E0B;
+    --text: #1F2937;
+    --text-light: #6B7280;
+    --bg-card: rgba(255,255,255,0.95);
+    --thermo-green: #10B981;
+    --thermo-yellow: #F59E0B;
+    --thermo-orange: #F97316;
+    --thermo-red: #EF4444;
+    --thermo-darkred: #DC2626;
+}
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Noto Sans KR',sans-serif; }
+body { background: var(--gradient-bg); min-height:100vh; font-weight:700; font-size:18px; line-height:1.7; color:var(--text); }
+.container { max-width:500px; margin:0 auto; padding:16px; }
+.screen { display:none; }
+.screen.active { display:block; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+h1,h2{font-weight:900;}
+.btn{padding:16px 24px;border-radius:16px;font-size:17px;font-weight:900;font-family:'Noto Sans KR',sans-serif;border:none;cursor:pointer;min-height:52px;transition:all 0.2s;width:100%;max-width:400px;display:block;margin:8px auto;text-align:center;}
+.btn-primary{background:var(--gradient);color:#fff;box-shadow:0 4px 15px rgba(124,58,237,0.3);}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,0.4);}
+.btn-secondary{background:rgba(124,58,237,0.1);color:var(--primary);border:2px solid var(--primary-light);}
+.btn-secondary:hover{background:rgba(124,58,237,0.18);}
+.btn-danger{background:var(--error);color:#fff;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none!important;}
+.btn-small{padding:10px 16px;font-size:14px;min-height:40px;width:auto;display:inline-block;}
+
+input,textarea{min-height:48px;font-size:16px;font-family:'Noto Sans KR',sans-serif;font-weight:700;border:2px solid #E5E7EB;border-radius:12px;padding:12px 16px;width:100%;box-sizing:border-box;}
+input:focus,textarea:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(124,58,237,0.1);}
+textarea{min-height:80px;resize:vertical;}
+
+.card{background:var(--bg-card);border-radius:20px;padding:24px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+.privacy-notice{background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.15);border-radius:12px;padding:14px;font-size:13px;font-weight:400;color:var(--text-light);line-height:1.6;margin-top:16px;}
+.badge{display:inline-block;background:rgba(124,58,237,0.1);color:var(--primary);padding:6px 14px;border-radius:20px;font-size:14px;font-weight:700;}
+.nav-buttons{display:flex;gap:8px;margin-bottom:12px;}
+.nav-btn{background:rgba(124,58,237,0.08);border:none;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:700;color:var(--primary);cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.nav-btn:hover{background:rgba(124,58,237,0.15);}
+
+/* Choice buttons */
+.choice-btn{padding:16px;border:2px solid #E5E7EB;border-radius:14px;background:white;cursor:pointer;transition:all 0.2s;text-align:left;width:100%;display:block;margin:8px 0;font-family:'Noto Sans KR',sans-serif;font-size:16px;font-weight:700;color:var(--text);}
+.choice-btn:hover{border-color:var(--primary-light);background:rgba(124,58,237,0.03);}
+.choice-btn.selected{border-color:var(--primary);background:rgba(124,58,237,0.08);box-shadow:0 0 0 3px rgba(124,58,237,0.15);transform:scale(1.02);}
+.choice-btn.selected::after{content:' ✓';color:var(--primary);font-weight:900;}
+
+/* Thermometer */
+.thermo-container{position:relative;width:60px;height:240px;margin:0 auto 16px;background:#F3F4F6;border-radius:30px;overflow:hidden;border:3px solid #E5E7EB;}
+.thermo-fill{position:absolute;bottom:0;left:0;right:0;background:var(--thermo-green);transition:all 1s ease;border-radius:0 0 27px 27px;}
+.thermo-label{text-align:center;font-size:28px;font-weight:900;margin-bottom:4px;}
+.thermo-desc{text-align:center;font-size:14px;color:var(--text-light);margin-bottom:12px;}
+
+/* Story bubble */
+.story-bubble{background:white;border-radius:20px;padding:20px;margin:12px 0;border-left:4px solid var(--primary);box-shadow:0 2px 8px rgba(0,0,0,0.04);font-size:16px;line-height:1.8;}
+.story-char{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.story-char .avatar{width:48px;height:48px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.story-char .name{font-weight:900;font-size:16px;color:var(--primary);}
+
+/* Breathing circle */
+.breath-circle-wrap{display:flex;justify-content:center;align-items:center;height:200px;margin:20px 0;}
+.breath-circle{width:80px;height:80px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:18px;transition:all 0.3s;}
+.breath-circle.inhale{animation:breathIn 4s ease forwards;}
+.breath-circle.hold{animation:none;}
+.breath-circle.exhale{animation:breathOut 6s ease forwards;}
+@keyframes breathIn{from{width:80px;height:80px;font-size:18px}to{width:180px;height:180px;font-size:24px}}
+@keyframes breathOut{from{width:180px;height:180px;font-size:24px}to{width:80px;height:80px;font-size:18px}}
+
+/* Brake card collection */
+.brake-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:12px 0;}
+.brake-card{background:white;border:2px solid #E5E7EB;border-radius:16px;padding:16px;text-align:center;transition:all 0.3s;position:relative;}
+.brake-card.collected{border-color:var(--primary);background:rgba(124,58,237,0.05);}
+.brake-card.locked{opacity:0.4;filter:grayscale(1);}
+.brake-card .card-icon{font-size:36px;margin-bottom:8px;}
+.brake-card .card-name{font-size:14px;font-weight:900;color:var(--text);}
+.brake-card .card-badge{position:absolute;top:-8px;right:-8px;background:var(--success);color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;}
+
+/* Progress bar */
+.progress-bar{height:8px;background:#E5E7EB;border-radius:4px;overflow:hidden;margin:8px 0;}
+.progress-fill{height:100%;background:var(--gradient);transition:width 0.5s;border-radius:4px;}
+
+/* Tabs */
+.tab-buttons{display:flex;gap:4px;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.tab-btn{flex-shrink:0;padding:10px 16px;border:none;background:rgba(124,58,237,0.08);border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;color:var(--text-light);}
+.tab-btn.active{background:var(--primary);color:white;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* Ending scene */
+.ending-scene{text-align:center;padding:20px;border-radius:20px;margin:12px 0;}
+.ending-good{background:linear-gradient(135deg,#D1FAE5,#A7F3D0);border:2px solid var(--success);}
+.ending-bad{background:linear-gradient(135deg,#FEE2E2,#FECACA);border:2px solid var(--error);}
+
+/* Timer ring */
+.timer-ring{position:relative;width:80px;height:80px;margin:0 auto;}
+.timer-ring svg{transform:rotate(-90deg);}
+.timer-ring circle{fill:none;stroke-width:6;}
+.timer-ring .bg{stroke:#E5E7EB;}
+.timer-ring .fg{stroke:var(--primary);stroke-linecap:round;transition:stroke-dashoffset 1s linear;}
+.timer-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:24px;font-weight:900;color:var(--primary);}
+
+/* Toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:rgba(31,41,55,0.95);color:white;padding:14px 28px;border-radius:14px;font-size:15px;font-weight:700;z-index:10000;opacity:0;transition:all 0.3s;max-width:90%;text-align:center;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:center;padding:20px;}
+.modal-content{background:white;border-radius:20px;padding:28px;max-width:360px;width:100%;text-align:center;}
+.modal-icon{font-size:48px;margin-bottom:12px;}
+.modal-message{font-size:16px;line-height:1.6;margin-bottom:20px;color:var(--text);}
+.modal-buttons{display:flex;gap:12px;}
+.modal-buttons .btn{flex:1;margin:0;}
+
+/* Explosion animation */
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.shake{animation:shake 0.3s 3;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.pulse{animation:pulse 0.6s 2;}
+
+/* Dashboard chart */
+.chart-container{width:100%;height:200px;position:relative;margin:12px 0;}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #F3F4F6;}
+.stat-label{font-size:14px;color:var(--text-light);}
+.stat-value{font-size:18px;font-weight:900;color:var(--primary);}
+
+/* Print */
+@media print{
+    body *{visibility:hidden;}
+    #dashboard-content,#dashboard-content *{visibility:visible;}
+    #dashboard-content{position:absolute;left:0;top:0;width:100%;}
+    .btn,.nav-buttons,.tab-buttons,#toast,.modal-overlay{display:none!important;}
+    .card{break-inside:avoid;box-shadow:none;border:1px solid #ddd;}
+}
+
+@media(max-width:768px){
+    body{font-size:16px;padding:8px;}
+    .container{max-width:100%;padding:12px;}
+    .btn{min-height:48px;font-size:16px;}
+    input,textarea{min-height:44px;font-size:16px;}
+    .thermo-container{height:180px;width:50px;}
+}
+@media(min-width:769px){.container{max-width:600px;}}
+
+*{font-family:'Noto Sans KR',sans-serif;margin:0;padding:0;box-sizing:border-box;}body{padding:24px;font-size:14px;color:#1F2937;line-height:1.6;}.print-header{text-align:center;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid #7C3AED;}.print-header h2{color:#7C3AED;font-size:20px;margin-bottom:4px;}.print-header p{color:#6B7280;font-size:12px;}.card{border:1px solid #E5E7EB;border-radius:12px;padding:16px;margin:12px 0;page-break-inside:avoid;}table{width:100%;border-collapse:collapse;margin:8px 0;}th,td{border:1px solid #E5E7EB;padding:8px 10px;text-align:left;font-size:13px;}th{background:#F3F4F6;font-weight:700;}h3{color:#7C3AED;font-size:16px;margin:12px 0 8px;}.print-guide{background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;text-align:center;}@media print{.print-guide{display:none;}}
+
+/* ── 간소화판 전용 클래스를 원본 디자인 토큰으로 맞춘 부분 ── */
+.wrap{max-width:500px;margin:0 auto;padding:16px}
+@media(min-width:769px){.wrap{max-width:600px}}
+.btn-main{background:var(--gradient);color:#fff;box-shadow:0 4px 15px rgba(124,58,237,.3)}
+.btn-main:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,.4)}
+.btn-sub{background:rgba(124,58,237,.1);color:var(--primary);border:2px solid var(--primary-light)}
+.btn-line{padding:8px 14px;border-radius:10px;font-size:14px;font-weight:700;border:none;cursor:pointer;
+          background:rgba(124,58,237,.08);color:var(--primary);width:auto;display:inline-block;
+          margin:0 6px 10px 0;min-height:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{padding:10px 14px;border-radius:999px;border:2px solid rgba(124,58,237,.2);background:#fff;
+      font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;color:var(--text)}
+.chip.on{border-color:var(--primary);background:rgba(124,58,237,.08);color:var(--primary)}
+.chip small{display:block;font-weight:500;font-size:12px;color:var(--text-light)}
+.chip.on small{color:var(--primary)}
+.choice{display:block;width:100%;text-align:left;padding:14px;margin:8px 0;border-radius:14px;
+        border:2px solid rgba(124,58,237,.18);background:#fff;font-size:15px;font-weight:700;
+        font-family:'Noto Sans KR',sans-serif;cursor:pointer;line-height:1.6;color:var(--text)}
+.choice:hover{border-color:var(--primary);background:rgba(124,58,237,.04)}
+.choice small{display:block;font-weight:500;font-size:13px;color:var(--text-light)}
+.detail,.feedback,.guide,.got,.result,.box,.situation,.scene,.story,.mine,.pick,.sdesc,.note,.legend{
+      border-radius:14px;padding:14px;margin:10px 0;font-size:15px;font-weight:500}
+.detail,.situation,.scene,.story{background:rgba(124,58,237,.05);border:1px solid rgba(124,58,237,.15)}
+.story,.scene{white-space:pre-line}
+.feedback.ok,.guide,.result.positive{background:#F0FDF4;border:1px solid rgba(16,185,129,.25)}
+.feedback.no,.got,.note,.box,.result.neutral{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3)}
+.boom,.result.negative{background:#FEF2F2;border:1px solid rgba(239,68,68,.25);border-radius:14px;
+      padding:14px;margin:10px 0;font-size:15px;font-weight:500}
+.detail dt,.sdesc b{font-size:13px;color:var(--primary);font-weight:700;margin-top:8px;display:block}
+.detail dd{font-size:15px}
+.tag{display:inline-block;padding:8px 13px;border-radius:999px;background:rgba(124,58,237,.08);
+     border:1px solid var(--primary-light);color:var(--primary);font-size:14px;font-weight:700}
+.strengths{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.stat{display:flex;justify-content:space-around;text-align:center;margin:12px 0}
+.stat b{display:block;font-size:30px;color:var(--primary);font-weight:900}
+.stat span{font-size:13px;color:var(--text-light);font-weight:500}
+.bar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:14px;font-weight:500}
+.bar i{display:block;height:16px;background:var(--gradient);border-radius:4px;font-style:normal}
+.row{border-bottom:1px solid #F3F4F6;padding:10px 0;font-size:14px;font-weight:500}
+.row b{color:var(--primary)}
+.tally{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+.tally div{flex:1;min-width:110px;text-align:center;border-radius:14px;padding:12px;
+           background:rgba(124,58,237,.05);border:1px solid rgba(124,58,237,.12)}
+.tally b{display:block;font-size:26px;font-weight:900}
+.tally span{font-size:13px;color:var(--text-light);font-weight:500}
+.top{margin-bottom:10px}
+.step{font-size:13px;color:var(--text-light);text-align:right;font-weight:500}
 .gauge{height:20px;border-radius:999px;background:#F3F4F6;overflow:hidden;margin:10px 0 4px}
 .gauge i{display:block;height:100%;border-radius:999px;transition:width .5s;font-style:normal}
 .temp{font-size:14px;font-weight:700;text-align:right}
-.story{background:#FAFAFA;border-left:4px solid var(--main);border-radius:10px;padding:14px;font-size:15px;margin:10px 0}
-.emotion{font-size:15px;font-weight:700;color:var(--hot);margin:8px 0}
-.choice{display:block;width:100%;text-align:left;padding:13px;margin:7px 0;border:2px solid #E5E7EB;border-radius:12px;background:#fff;font-size:15px;font-family:inherit;cursor:pointer;line-height:1.5}
-.choice:hover{border-color:var(--main);background:#FAF9FF}
-.choice small{display:block;font-size:13px;color:var(--dim)}
-.guide{background:#ECFDF5;border:1px solid #A7F3D0;border-radius:12px;padding:14px;font-size:15px;margin:10px 0}
-.boom{background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:14px;font-size:15px;margin:10px 0}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
-.chip{padding:9px 13px;border-radius:999px;border:2px solid #E5E7EB;background:#fff;font-size:14px;font-family:inherit;cursor:pointer;font-weight:700}
-.chip.on{border-color:var(--main);background:#F5F3FF;color:var(--main)}
-.note{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:12px;font-size:14px;margin-top:12px}
-.stat{display:flex;justify-content:space-around;text-align:center;margin:12px 0}
-.stat b{display:block;font-size:30px;color:var(--main)}
-.stat span{font-size:13px;color:var(--dim)}
-.bar{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:14px}
-.bar i{display:block;height:16px;background:var(--main);border-radius:4px;font-style:normal}
-.row{border-bottom:1px solid #F3F4F6;padding:10px 0;font-size:14px}
-.row b{color:var(--main)}
-.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--text);color:#fff;padding:11px 20px;border-radius:999px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;z-index:9}
-.toast.on{opacity:1}
-.top{margin-bottom:10px}
-.step{font-size:13px;color:var(--dim);text-align:right}
+.emotion,.feel{font-size:15px;font-weight:700;color:var(--error);margin:8px 0}
+.urge{font-size:14px;color:var(--text-light);margin-bottom:10px;font-weight:500}
+.cat{font-size:15px;font-weight:700;margin:14px 0 4px}
+.mini{display:flex;flex-wrap:wrap;gap:6px}
+.mini button{padding:7px 11px;border-radius:999px;border:2px solid rgba(124,58,237,.2);background:#fff;
+             font-size:13px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;font-weight:700}
+.mini button.on{border-color:var(--primary);background:rgba(124,58,237,.08);color:var(--primary)}
+.signal{display:flex;gap:8px;margin:12px 0}
+.signal button{flex:1;padding:16px 6px;border-radius:14px;border:3px solid #E5E7EB;background:#fff;
+               font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer}
+.signal button .dot{display:block;width:26px;height:26px;border-radius:50%;margin:0 auto 6px}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="container">
 
   <!-- 1. 시작 -->
-  <section class="screen on" id="s-start">
-    <div class="card">
-      <h1 id="t-title"></h1>
-      <p class="sub" id="t-sub"></p>
-      <p class="sub" id="t-meta"></p>
-      <button class="btn btn-main" onclick="go('teacher')">방 만들기 (선생님)</button>
-      <button class="btn btn-sub" onclick="go('student')">방 코드로 참여하기 (학생)</button>
-      <button class="btn btn-sub" onclick="solo()">혼자 해보기</button>
-      <div class="note">화를 참는 연습이 아니라, 터지기 전에 멈추는 연습입니다.</div>
-      <p class="sub" id="db-state" style="font-size:13px;margin:10px 0 0">저장소 확인 중</p>
+  <div class="screen active" id="screen-start">
+<div class="container" style="text-align:center;padding-top:40px;">
+    <div style="font-size:64px;margin-bottom:8px;">🚴</div>
+    <h1 style="font-size:26px;color:var(--primary);margin-bottom:4px;">화가 날 때, 멈추는 연습</h1>
+    <p style="color:var(--text-light);font-size:15px;margin-bottom:16px;">감정과 행동 사이, 작은 틈을 만드는 시간</p>
+    <span class="badge">⏱️ 예상 소요시간: 약 10~15분</span>
+    <div style="margin-top:28px;">
+        <button class="btn btn-primary" onclick="showScreen('screen-login')">👩‍🏫 방 만들기 / 입장하기</button>
+        <button class="btn btn-secondary" onclick="startSoloMode()">🌟 혼자 체험하기</button>
     </div>
-  </section>
+    <div class="privacy-notice">
+        🔐 <strong>안심하세요!</strong><br>
+        우리가 사용하는 방 코드는 오직 입장할 때만 필요한 숫자일 뿐,
+        여러분이 누구인지 알려주는 이름표가 아니랍니다.
+        닉네임을 만들 때 개인정보를 포함하지 않도록 만들어 주세요.
+        여러분의 익명성은 소중히 보호됩니다.
+    </div>
+</div>
+
+    <p id="db-state" style="text-align:center;font-size:13px;color:var(--text-light);font-weight:500;margin-top:10px;">저장소 확인 중</p>
+</div>
+
+<div class="screen" id="screen-login">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-start')">← 처음으로</button></div>
+    <div class="card" style="text-align:center;">
+        <h2 style="margin-bottom:20px;">🚪 입장하기</h2>
+        <button class="btn btn-primary" onclick="showScreen('screen-create-room')" style="margin-bottom:8px;">👩‍🏫 방 만들기 (교사용)</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-teacher-login')" style="margin-bottom:8px;">🔑 교사로 접속하기</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-student-login')">🧒 학생으로 참여하기</button>
+    </div>
+    <div class="privacy-notice">
+        🔐 <strong>안심하세요!</strong><br>
+        입장 코드는 숫자로만 구성되어 있어 개인정보를 포함하지 않습니다.
+    </div>
+</div>
+</div>
+
+<div class="screen" id="screen-create-room">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="text-align:center;margin-bottom:20px;">👩‍🏫 방 만들기</h2>
+        <label style="font-size:14px;color:var(--text-light);">선생님 닉네임</label>
+        <input id="create-teacher-name" placeholder="예: 김선생님" maxlength="10" style="margin-bottom:12px;">
+        <label style="font-size:14px;color:var(--text-light);">관리 비밀번호 (숫자 4자리)</label>
+        <input id="create-password" type="password" placeholder="숫자 4자리" maxlength="4" inputmode="numeric" pattern="[0-9]*" style="margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="createRoom()">🏠 방 만들기</button>
+    </div>
+</div>
+</div>
+
+<div class="screen" id="screen-room-created">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+    <div class="card" style="text-align:center;">
+        <h2 style="margin-bottom:16px;">🎉 방이 만들어졌어요!</h2>
+        <p style="font-size:14px;color:var(--text-light);margin-bottom:8px;">학생들에게 이 코드를 알려주세요</p>
+        <div id="room-code-display" style="font-size:48px;font-weight:900;color:var(--primary);letter-spacing:8px;margin:16px 0;"></div>
+        <button class="btn btn-secondary" onclick="copyRoomCode()" style="margin-bottom:16px;">📋 코드 복사하기</button>
+        <button class="btn btn-primary" onclick="enterDashboard()">📊 대시보드로 이동</button>
+    </div>
+</div>
+</div>
+
+<div class="screen" id="screen-teacher-login">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="text-align:center;margin-bottom:20px;">🔑 교사로 접속</h2>
+        <label style="font-size:14px;color:var(--text-light);">방 코드 (숫자 6자리)</label>
+        <input id="teacher-room-code" placeholder="000000" maxlength="6" inputmode="numeric" style="margin-bottom:12px;">
+        <label style="font-size:14px;color:var(--text-light);">비밀번호</label>
+        <input id="teacher-password" type="password" placeholder="숫자 4자리" maxlength="4" inputmode="numeric" style="margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="joinAsTeacher()">🔓 접속하기</button>
+    </div>
+</div>
+</div>
+
+<div class="screen" id="screen-student-login">
+<div class="container">
+    <div class="nav-buttons"><button class="nav-btn" onclick="showScreen('screen-login')">← 뒤로</button><button class="nav-btn" onclick="showScreen('screen-start')">🏠 처음으로</button></div>
+    <div class="card">
+        <h2 style="text-align:center;margin-bottom:20px;">🧒 학생으로 참여</h2>
+        <label style="font-size:14px;color:var(--text-light);">방 코드 (숫자 6자리)</label>
+        <input id="student-room-code" placeholder="000000" maxlength="6" inputmode="numeric" style="margin-bottom:12px;">
+        <label style="font-size:14px;color:var(--text-light);">닉네임</label>
+        <input id="student-nickname" placeholder="예: 용감한사자" maxlength="10" style="margin-bottom:16px;">
+        <button class="btn btn-primary" onclick="joinAsStudent()">🚀 참여하기</button>
+    </div>
+    <div class="privacy-notice">
+        🔐 닉네임에 실명이나 개인정보를 쓰지 마세요. 여러분의 익명성은 소중히 보호됩니다.
+    </div>
+</div>
+</div>
 
   <!-- 2. 방 입장 -->
-  <section class="screen" id="s-join">
-    <div class="card">
-      <h2 id="join-title"></h2>
-      <div id="join-teacher" style="display:none">
-        <p class="sub">아래 방 코드를 칠판에 적어 주세요.</p>
-        <h1 id="new-code" style="font-size:44px;letter-spacing:6px"></h1>
-        <button class="btn btn-main" onclick="openDash()">대시보드 열기</button>
-        <p class="sub" style="margin-top:18px">지난 시간에 만든 방을 다시 열려면</p>
-        <input id="in-dash" inputmode="numeric" maxlength="6" placeholder="예: 482913">
-        <button class="btn btn-sub" onclick="reopenDash()">그 방 대시보드 열기</button>
-      </div>
-      <div id="join-student" style="display:none">
-        <label>방 코드 (6자리)</label>
-        <input id="in-code" inputmode="numeric" maxlength="6" placeholder="예: 482913">
-        <label>닉네임 (실명 말고)</label>
-        <input id="in-nick" maxlength="10" placeholder="예: 파랑새7">
-        <button class="btn btn-main" onclick="joinRoom()">들어가기</button>
-      </div>
-      <button class="btn btn-line" onclick="home()">처음으로</button>
-    </div>
-  </section>
+  
 
   <!-- 3. 인물 고르기 -->
-  <section class="screen" id="s-pick">
+  <div class="screen" id="s-pick">
     <div class="top"><button class="btn btn-line" onclick="home()">처음으로</button><span id="who" style="font-size:14px;color:#6B7280"></span></div>
     <div class="card">
       <h2>누구의 하루를 따라가 볼까요</h2>
       <p class="sub">하루 동안 화가 어떻게 쌓이는지 지켜보고, 터지기 전에 멈춰 보세요.</p>
       <div id="hero-list"></div>
     </div>
-  </section>
+  </div>
 
   <!-- 4. 에피소드 -->
-  <section class="screen" id="s-play">
+  <div class="screen" id="s-play">
     <div class="top"><button class="btn btn-line" onclick="go('pick')">인물 다시 고르기</button><span class="step" id="step-label"></span></div>
     <div class="card">
       <div class="gauge"><i id="gauge-fill" style="width:0%"></i></div>
@@ -111,18 +343,18 @@ label{font-size:15px;font-weight:700}
       <div class="emotion" id="ep-emotion"></div>
       <div id="ep-actions"></div>
     </div>
-  </section>
+  </div>
 
   <!-- 5. 브레이크 -->
-  <section class="screen" id="s-brake">
+  <div class="screen" id="s-brake">
     <div class="card">
       <h2 id="brake-head">브레이크 걸기</h2>
       <div id="brake-body"></div>
     </div>
-  </section>
+  </div>
 
   <!-- 6. 나의 브레이크 -->
-  <section class="screen" id="s-mine">
+  <div class="screen" id="s-mine">
     <div class="card">
       <h2>나의 브레이크 정하기</h2>
       <h3>나는 이럴 때 화가 나요</h3>
@@ -134,10 +366,10 @@ label{font-size:15px;font-weight:700}
       <button class="btn btn-main" onclick="submitMine()">내 브레이크 내기</button>
       <button class="btn btn-line" onclick="go('pick')">다른 인물도 보기</button>
     </div>
-  </section>
+  </div>
 
   <!-- 7. 완료 -->
-  <section class="screen" id="s-done">
+  <div class="screen" id="s-done">
     <div class="card" style="text-align:center">
       <h2 id="done-title"></h2>
       <div id="done-body" style="text-align:left"></div>
@@ -145,10 +377,10 @@ label{font-size:15px;font-weight:700}
       <button class="btn btn-line" onclick="go('pick')">다른 인물도 보기</button>
       <button class="btn btn-line" onclick="home()">처음으로</button>
     </div>
-  </section>
+  </div>
 
   <!-- 8. 교사 대시보드 -->
-  <section class="screen" id="s-dash">
+  <div class="screen" id="s-dash">
     <div class="card">
       <h2>교사 대시보드</h2>
       <p class="sub">방 코드 <b id="dash-code"></b></p>
@@ -159,7 +391,7 @@ label{font-size:15px;font-weight:700}
       <button class="btn btn-sub" onclick="copyAll()">전체 결과 복사하기</button>
       <button class="btn btn-line" onclick="home()">처음으로</button>
     </div>
-  </section>
+  </div>
 
 </div>
 <div class="toast" id="toast"></div>
@@ -167,7 +399,7 @@ label{font-size:15px;font-weight:700}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 /* ═══════════════════════════════════════════════
    여기만 고치면 우리 반 앱이 됩니다
@@ -394,12 +626,12 @@ var 고른화 = [], 고른브 = [];
 
 function $(id){ return document.getElementById(id); }
 function esc(v){ return String(v==null?'':v).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
-function toast(msg){ var t = $('toast'); t.textContent = msg; t.classList.add('on'); setTimeout(function(){ t.classList.remove('on'); }, 1600); }
+function toast(msg){ var t = $('toast'); t.textContent = msg; t.classList.add('active'); setTimeout(function(){ t.classList.remove('active'); }, 1600); }
 
 function go(name){
-  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); });
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
   if (name === 'teacher' || name === 'student'){
-    $('s-join').classList.add('on');
+    $('s-join').classList.add('active');
     $('join-title').textContent = (name === 'teacher') ? '방 만들기' : '방 코드로 참여하기';
     $('join-teacher').style.display = (name === 'teacher') ? 'block' : 'none';
     $('join-student').style.display = (name === 'student') ? 'block' : 'none';
@@ -407,11 +639,11 @@ function go(name){
     window.scrollTo(0,0); return;
   }
   var map = { start:'s-start', pick:'s-pick', play:'s-play', brake:'s-brake', mine:'s-mine', done:'s-done', dash:'s-dash' };
-  $(map[name]).classList.add('on');
+  $(map[name]).classList.add('active');
   window.scrollTo(0,0);
 }
 function home(){ go('start'); }
-function solo(){ 방코드 = ''; 닉네임 = '나'; $('who').textContent = '혼자 해보기'; go('pick'); }
+function solo(){ 방코드 = ''; 닉네임 = '나'; ($('who')||{}).textContent = '혼자 해보기'; go('pick'); }
 
 async function joinRoom(){
   var c = $('in-code').value.trim(), n = $('in-nick').value.trim();
@@ -419,7 +651,7 @@ async function joinRoom(){
   if (!n) { toast('닉네임을 입력해 주세요'); return; }
   방코드 = c; 닉네임 = n;
   await save(c, n, { nick:n, joinedAt: Date.now() });
-  $('who').textContent = 방코드 + '번 방 · ' + 닉네임;
+  ($('who')||{}).textContent = 방코드 + '번 방 · ' + 닉네임;
   go('pick');
 }
 
@@ -517,8 +749,8 @@ function 다중칩(host, items, 담는배열, 라벨){
     b.textContent = 라벨(it);
     b.onclick = function(){
       var i = 담는배열.indexOf(it.id);
-      if (i >= 0) { 담는배열.splice(i,1); b.classList.remove('on'); }
-      else { 담는배열.push(it.id); b.classList.add('on'); }
+      if (i >= 0) { 담는배열.splice(i,1); b.classList.remove('active'); }
+      else { 담는배열.push(it.id); b.classList.add('active'); }
     };
     $(host).appendChild(b);
   });
@@ -611,12 +843,68 @@ function fallback(text){
 }
 
 /* 시작 */
-$('t-title').textContent = CONFIG.제목;
-$('t-sub').textContent = CONFIG.부제;
-$('t-meta').textContent = CONFIG.학년 + ' · 약 ' + CONFIG.소요시간;
 document.title = CONFIG.제목;
 drawHeroes();
 drawMine();
+
+
+/* ── 원본 대문이 부르는 함수들 ── */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  var el = document.getElementById(id);
+  if (el) el.classList.add('active');
+  window.scrollTo(0, 0);
+}
+function confirmGoHome(){ if (window.confirm('처음 화면으로 돌아갈까요?')) showScreen('screen-start'); }
+function 활동시작(){ var w = $('who'); if (w) w.textContent = 방코드 ? (방코드 + '번 방 · ' + 닉네임) : '혼자 해보기'; go('pick'); }
+
+function startSoloMode(){ 방코드 = ''; 닉네임 = '나'; 활동시작(); }
+
+async function createRoom(){
+  var name = ($('create-teacher-name') || {}).value, pw = ($('create-password') || {}).value;
+  name = (name || '').trim(); pw = (pw || '').trim();
+  if (!name) { toast('교사 닉네임을 입력해 주세요'); return; }
+  if (!/^[0-9]{4}$/.test(pw)) { toast('비밀번호는 숫자 4자리입니다'); return; }
+  방코드 = String(Math.floor(Math.random()*900000+100000)); 닉네임 = name;
+  await 방저장(방코드, { teacher:name, pw:pw, createdAt: Date.now() });
+  var d = $('room-code-display'); if (d) d.textContent = 방코드;
+  showScreen('screen-room-created');
+}
+function copyRoomCode(){ copy(방코드); }
+function enterDashboard(){ openDash(); }
+
+async function joinAsTeacher(){
+  var c = (($('teacher-room-code')||{}).value || '').trim(), pw = (($('teacher-password')||{}).value || '').trim();
+  if (!/^[0-9]{6}$/.test(c)) { toast('방 코드 6자리를 입력해 주세요'); return; }
+  var room = await 방읽기(c);
+  if (!room) { toast('그런 방이 없습니다'); return; }
+  if (room.pw !== pw) { toast('비밀번호가 다릅니다'); return; }
+  방코드 = c; 닉네임 = room.teacher || '선생님';
+  openDash();
+}
+
+async function joinAsStudent(){
+  var c = (($('student-room-code')||{}).value || '').trim(), n = (($('student-nickname')||{}).value || '').trim();
+  if (!/^[0-9]{6}$/.test(c)) { toast('방 코드 6자리를 입력해 주세요'); return; }
+  if (!n) { toast('닉네임을 입력해 주세요'); return; }
+  방코드 = c; 닉네임 = n;
+  await save(c, n, { nick:n, joinedAt: Date.now() });
+  활동시작();
+}
+
+async function 방저장(code, data){
+  await ready;
+  if (online){ try { await setDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',code), data, {merge:true}); return; } catch(e){} }
+  memory['room_' + code] = Object.assign({}, memory['room_' + code], data);
+}
+async function 방읽기(code){
+  await ready;
+  if (online){ try { var s = await getDoc(doc(db,'artifacts',APP_ID,'public','data','rooms',code)); return s.exists() ? s.data() : null; } catch(e){} }
+  return memory['room_' + code] || null;
+}
+Object.assign(window, { showScreen:showScreen, confirmGoHome:confirmGoHome,
+  startSoloMode:startSoloMode, createRoom:createRoom, copyRoomCode:copyRoomCode,
+  enterDashboard:enterDashboard, joinAsTeacher:joinAsTeacher, joinAsStudent:joinAsStudent });
 
 Object.assign(window, { go:go, home:home, solo:solo, joinRoom:joinRoom, openHero:openHero,
   nextEp:nextEp, explode:explode, drawBrakes:drawBrakes, doBrake:doBrake, finishBrake:finishBrake,
